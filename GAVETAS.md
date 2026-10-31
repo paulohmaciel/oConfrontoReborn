@@ -6,6 +6,7 @@ O projeto é dividido em gavetas: cada pasta tem uma função, regras próprias 
 | Quero mudar… | Gaveta (servidor) | Gaveta (tela) |
 |---|---|---|
 | combate, atributos, loja NPC, forja, tarefas, jornada, classes | `backend/src/game` | `features/adventure`, `hero`, `inventory`, `shop`, `forge`, `tasks`, `characters` |
+| caçada em grupo, duelo (PvP) | `backend/src/game` (`groupHuntService`, `duelService`, `duelEngine`) | `features/group`, `duel` |
 | ouro, itens, taxas, mercado, extrato, conciliação | `backend/src/economy` | `features/market`, `ledger` |
 | Premium e pagamentos | `backend/src/premium` | `features/premium` |
 | perfil, recados, depoimentos, amigos, fórum | `backend/src/community` | `features/profile` |

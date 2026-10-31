@@ -24,6 +24,7 @@ O tema claro está em `frontend/src/theme-classic.css`, limitado ao atributo dat
 - Chefes com preparação visível e golpe pesado que pode ser defendido ou interrompido.
 - Diário persistente, cinco conquistas, bestiário e histórico dos últimos 20 combates.
 - Equipamentos com poder mágico, crítico, proteção contra fogo e mobilidade convertida em esquiva.
+- Duelo entre amigos (aba Duelo, `/duelo`): desafio, rodadas secretas com prazo, rendição, histórico, ranking de honra por classe e denúncia. Não mexe em vida, mana, ouro, XP ou itens.
 
 Os números de combate e progressão são regras desta adaptação. Não são uma reprodução certificada das fórmulas de O Confronto ou Tibia. O código legado PHP não foi migrado como dados de jogadores.
 
@@ -129,6 +130,7 @@ Depois de ampliar o manifesto, execute `npm run build` para atualizar a bibliote
 | Mercado | Preço em ouro para a pilha inteira. O anúncio mantém o item em custódia até compra, cancelamento ou expiração (48 h, configurável). Taxa de anúncio de 10 de ouro e taxa de 5% sobre a venda (ambas configuráveis). |
 | Promoção | A partir do nível 20, por 5000 de ouro (configurável): +10% de ataque e defesa e +2 de crítico. Usa os itens e a progressão da classe base. |
 | Tarefas | Cinco abates por tarefa do catálogo, aceitação prévia e recompensa única. |
+| Duelo | Só entre amigos de contas diferentes, a partir do nível 20, com até 10% de diferença de nível; 10 por dia; desafio vale 24 h e cada rodada 24 h (quem não escolhe defende; duas seguidas = derrota). Quem tem mais agilidade age primeiro. Só conta vitórias e derrotas. Tudo configurável no painel (grupo Duelo). Equilíbrio entre vocações: `npm run duel:simulate -- 1000`. Migração aditiva `202611010003_pvp_duel`. |
 
 Não há morte permanente nem penalidade de XP nesta versão. A derrota deixa o personagem sem vida e permite recuperação no Templo. O nível do monstro indica dificuldade e não é um bloqueio de acesso.
 
