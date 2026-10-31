@@ -5,3 +5,11 @@ export const adminTab=['admin','Equipe','Royal Helmet|Demon Helmet'] as const;
 export const mobileMain:readonly Tab[]=['journey','hunt','bag','forge','temple'];
 export const shortLabels:Partial<Record<Tab,string>>={bag:'Mochila',temple:'Templo'};
 export const drawerGroups:readonly (readonly [string,readonly Tab[]])[]=[['Aventura',['journal','tasks','stats','characters']],['Comércio',['shop','market','ledger']],['Conta',['premium','support','atlas','admin']]];
+// Endereço de cada aba (/atributos, /inventario…): atualizar a página ou abrir o link mantém a pessoa onde estava.
+export const tabSlugs:Record<Tab,string>={journey:'jornada',journal:'diario',hunt:'cacar',bag:'inventario',shop:'mercador',market:'mercado',forge:'ferreiro',temple:'templo',tasks:'tarefas',stats:'atributos',characters:'personagens',premium:'premium',ledger:'extrato',support:'suporte',atlas:'icones',admin:'equipe'};
+export const pathForTab=(tab:Tab)=>tab==='journey'?'/':`/${tabSlugs[tab]}`;
+export function tabFromPath(pathname:string):Tab|null{
+  const slug=decodeURIComponent(pathname).replace(/^\/+|\/+$/g,'').split('/')[0].toLowerCase();
+  if(!slug)return 'journey';
+  return (Object.keys(tabSlugs) as Tab[]).find(t=>tabSlugs[t]===slug)??null;
+}
