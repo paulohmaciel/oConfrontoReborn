@@ -75,6 +75,12 @@ function Accounts({has}:{has:(p:Permission)=>boolean}) {
 }
 
 type Econ={days:number;inflow:string;outflow:string;net:string;circulation:{inHand:string;inBank:string;characters:number};gold:{reason:string;kind:string;total:string;count:number}[];items:{reason:string;kind:string;total:number;count:number}[];daily:{day:string;kind:string;total:string}[];market:{byStatus:{status:string;count:number}[];sales:number;volume:string;fees:string};premium:{active:number;paidOrders:number;revenueCents:number}};
+// Por dia: criado, removido, líquido e o acumulado do período (quanto o estoque de ouro do mundo cresceu desde o início da janela).
+function perDay(rows:Econ['daily']){
+  const map=new Map<string,{day:string;in:bigint;out:bigint}>();
+  for(const r of rows){const d=map.get(r.day)??{day:r.day,in:0n,out:0n};if(r.kind==='in')d.in+=BigInt(r.total);else if(r.kind==='out')d.out+=-BigInt(r.total);map.set(r.day,d);}
+  let acc=0n;return [...map.values()].sort((a,b)=>a.day.localeCompare(b.day)).map(d=>{const net=d.in-d.out;acc+=net;return {...d,net,acc};}).reverse();
+}
 function Economy() {
   const [days,setDays]=useState(7),[d,setD]=useState<Econ|null>(null),[err,setErr]=useState('');
   useEffect(()=>{setErr('');api<Econ>(`/admin/economy?days=${days}`).then(setD).catch(e=>setErr(msg(e)));},[days]);
@@ -83,10 +89,12 @@ function Economy() {
     {d&&<><div className="stat-tiles"><div><b>{fmt(d.inflow)}</b><span>ouro criado</span></div><div><b>{fmt(d.outflow)}</b><span>ouro removido</span></div><div><b className={BigInt(d.net)>0n?'neg':'pos'}>{BigInt(d.net)>0n?'+':''}{fmt(d.net)}</b><span>saldo líquido do mundo</span></div><div><b>{fmt(d.circulation.inHand)}</b><span>em circulação ({d.circulation.characters} personagens)</span></div></div>
       <p className="muted">Saldo líquido positivo = mais ouro entrando do que saindo (inflação). Taxas e compras no NPC são os principais ralos.</p>
       <table className="admin-table"><thead><tr><th>Origem/destino</th><th>Tipo</th><th>Total</th><th>Eventos</th></tr></thead><tbody><LimitedRows items={d.gold} cols={10} render={g=><tr key={g.reason}><td>{reasonLabel[g.reason]??g.reason}</td><td>{kindName[g.kind]}</td><td>{fmt(g.total)}</td><td>{g.count}</td></tr>}/></tbody></table>
-      <h3>Itens</h3><table className="admin-table"><tbody><LimitedRows items={d.items} cols={10} render={i=><tr key={i.reason}><td>{i.reason}</td><td>{kindName[i.kind]}</td><td>{i.total}</td><td>{i.count}</td></tr>}/></tbody></table>
+      <h3>Itens</h3><table className="admin-table"><thead><tr><th>Origem/destino</th><th>Tipo</th><th>Quantidade</th><th>Eventos</th></tr></thead><tbody><LimitedRows items={d.items} cols={10} render={i=><tr key={i.reason}><td>{reasonLabel[i.reason]??i.reason}</td><td>{kindName[i.kind]}</td><td>{i.total}</td><td>{i.count}</td></tr>}/></tbody></table>
       <h3>Mercado</h3><p>{d.market.sales} vendas · volume {fmt(d.market.volume)} · taxas coletadas {fmt(d.market.fees)} · anúncios: {d.market.byStatus.map(s=>`${s.status} ${s.count}`).join(', ')||'—'}</p>
       <h3>Premium</h3><p>{d.premium.active} contas ativas · {d.premium.paidOrders} pedidos pagos no período · {brl(d.premium.revenueCents)}</p>
-      <h3>Por dia</h3><table className="admin-table"><tbody><LimitedRows items={d.daily} cols={10} render={r=><tr key={r.day+r.kind}><td>{r.day}</td><td>{kindName[r.kind==='in'?'source':r.kind==='out'?'sink':'transfer']}</td><td>{fmt(r.total)}</td></tr>}/></tbody></table></>}</section>;
+      <h3>Por dia</h3><p className="muted">Acumulado = soma do saldo líquido desde o primeiro dia da janela (quanto o ouro do mundo cresceu ou encolheu). Ouro entre jogadores (mercado) não conta.</p>
+      <table className="admin-table"><thead><tr><th>Dia</th><th>Criado</th><th>Removido</th><th>Líquido</th><th>Acumulado</th></tr></thead><tbody><LimitedRows items={perDay(d.daily)} cols={5} render={r=><tr key={r.day}><td>{new Date(`${r.day}T12:00:00`).toLocaleDateString('pt-BR')}</td><td>{fmt(r.in.toString())}</td><td>{fmt(r.out.toString())}</td><td>{r.net>0n?'+':''}{fmt(r.net.toString())}</td><td>{r.acc>0n?'+':''}{fmt(r.acc.toString())}</td></tr>}/></tbody></table>
+      <p className="muted">Estoque total de ouro hoje: {fmt((BigInt(d.circulation.inHand)+BigInt(d.circulation.inBank)).toString())} (na mão {fmt(d.circulation.inHand)} · no banco {fmt(d.circulation.inBank)}) · média por personagem {fmt((d.circulation.characters?(BigInt(d.circulation.inHand)+BigInt(d.circulation.inBank))/BigInt(d.circulation.characters):0n).toString())}.</p></>}</section>;
 }
 
 type SettingRow={key:string;value:number;label:string;unit:string;group:string;min:number;max:number;default:number};
