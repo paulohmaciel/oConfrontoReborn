@@ -1,6 +1,7 @@
 # TODO / DONE — O Confronto
 
 > Arquivo vivo. Cada item concluído vira `[x]` na hora, com a data. Itens que dependem da SUA máquina (eu não consigo rodar MySQL/npm real aqui) ficam em "Só você pode fazer".
+> **Segurança:** pendências levantadas em 2026-10-31 estão em `SEGURANCA.md` (13 itens, nada corrigido ainda — o jogo está em teste). Ler antes de publicar.
 > Avaliação das propostas do GPT Astra: ver `ASTRA-AVALIACAO.md` (cada seção aceita/adaptada/adiada tem itens aqui, marcados com **[Astra N]**).
 > Regra: ao terminar algo, marque aqui, ajuste o `GAVETA.md` da gaveta tocada e rode `npm run check:drawers`.
 
