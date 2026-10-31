@@ -150,3 +150,7 @@
 :where(:root[data-theme="light"]) .equipment-inline .equipment-panel { border-color: #b9892f; }
 :where(:root[data-theme="light"]) .drawer-foot .quiet { color: #633113; font-weight: 600; }
 :root[data-theme="light"] .attr-radar { --radar-surface: #f4e2bd; --radar-you: #2a78d6; --radar-typical: #eb6834; }
+:root[data-theme="light"] .xp-meter { border-color: #bfa16a; }
+:root[data-theme="light"] .xp-meter .xp b { color: #8c4b1d; }
+:root[data-theme="light"] .xp-bar, :root[data-theme="light"] .xp-bar::-webkit-progress-bar { background: #d9c08e; }
+:root[data-theme="light"] .xp-detail { color: #745927; }
