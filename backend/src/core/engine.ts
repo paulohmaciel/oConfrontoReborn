@@ -28,6 +28,18 @@ export function monsterIntent(monster:Enemy, turn=monster.turn??0) {
 export type Dice = (min: number, max: number) => number;
 // O que o monstro fez no turno: atacou, golpe pesado, concentrou, foi interrompido, ou nada (fuga/vitória antes dele agir).
 export type FoeMove = 'ATTACK' | 'HEAVY' | 'CHARGE' | 'INTERRUPTED' | 'NONE';
+// Fórmulas do golpe e da cura do herói, usadas no combate contra monstros e no duelo (backend/src/game/duelEngine.ts).
+export const skillMultiplier = (action: Action) => action === 'TRIPLE_HIT' ? 1.85 : action === 'FIFTH_HIT' ? 2.75 : action === 'DEFEND_SHIELD' ? .5 : action === 'INTERRUPT' ? .65 : 1;
+export function strike(attacker: Fighter, targetDefense: number, action: Action, dice: Dice) {
+  const base = Math.max(2, attacker.attack * skillMultiplier(action) - targetDefense*.5);
+  let dealt = dice(Math.floor(base*.8), Math.ceil(base*1.2)), crit = false;
+  if (dice(1, 100) <= (attacker.criticalChance??Math.min(30, 10 + Math.floor((attacker.agility ?? 20)/4)))) { dealt = Math.floor(dealt*1.5); crit = true; }
+  return { dealt, crit };
+}
+export function healRoll(f: Pick<Fighter, 'maxHp' | 'vocation'>, dice: Dice) {
+  const profile = vocations[baseVocation(f.vocation ?? 'KNIGHT')];
+  return dice(Math.floor(f.maxHp*.25*profile.healing), Math.floor(f.maxHp*.45*profile.healing));
+}
 // Função pura: não consulta banco e não concede recompensas.
 export function resolveTurn(player: Fighter, monster: Enemy, action: Action, dice: Dice) {
   if (player.hp <= 0 || monster.hp <= 0) throw new GameError(409, 'Combate encerrado.');
@@ -36,19 +48,15 @@ export function resolveTurn(player: Fighter, monster: Enemy, action: Action, dic
   const log: string[] = [];
   if (action === 'FLEE') return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, status: 'FLED' as const, log: ['Você bate em retirada.'] };
   const costs = skillCosts(player.vocation??'KNIGHT');
-  const profile=vocations[baseVocation(player.vocation??'KNIGHT')];
   // Política explícita: mana insuficiente rejeita o turno inteiro.
   if (mana < costs[action]) throw new GameError(409, 'Mana insuficiente.');
   mana -= costs[action];
   if (action === 'HEAL') {
-    healed = Math.min(player.maxHp - hp, dice(Math.floor(player.maxHp*.25*profile.healing), Math.floor(player.maxHp*.45*profile.healing)));
+    healed = Math.min(player.maxHp - hp, healRoll(player, dice));
     hp += healed;
     log.push(`Você recupera ${healed} de vida.`);
   } else {
-    const multiplier = action === 'TRIPLE_HIT' ? 1.85 : action === 'FIFTH_HIT' ? 2.75 : action === 'DEFEND_SHIELD' ? .5 : action==='INTERRUPT'?.65:1;
-    const base = Math.max(2, player.attack * multiplier - monster.defense*.5);
-    dealt = dice(Math.floor(base*.8), Math.ceil(base*1.2));
-    if (dice(1, 100) <= (player.criticalChance??Math.min(30, 10 + Math.floor((player.agility ?? 20)/4)))) { dealt = Math.floor(dealt*1.5); crit = true; }
+    ({ dealt, crit } = strike(player, monster.defense, action, dice));
     monsterHp = Math.max(0, monsterHp - dealt);
     log.push(`Seu golpe causa ${dealt} de dano.`);
   }

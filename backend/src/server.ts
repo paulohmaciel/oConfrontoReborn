@@ -19,6 +19,7 @@ import { adminRoutes } from './admin/adminRoutes';
 import { publicNoticeRoutes } from './admin/noticeRoutes';
 import { communityRoutes } from './community/communityRoutes';
 import { expireListings } from './economy/marketService';
+import { expireDuels } from './game/duelService';
 import { requestId } from './core/monitor';
 
 export function createApp() {
@@ -61,7 +62,10 @@ if (require.main === module) {
   if (problems.length) { for (const p of problems) console.error(`[segurança] ${p}`); process.exit(1); }
   if (process.env.DEV_QUICK_LOGIN === '1') console.warn(devQuickLoginEnabled() ? '[dev] Entrada "mestre" ligada (somente neste computador). Remova DEV_QUICK_LOGIN do .env antes de publicar.' : '[segurança] DEV_QUICK_LOGIN ignorado: exige NODE_ENV=development e HOST em loopback.');
   const port = Number(process.env.PORT ?? 3333);
-  const sweep = setInterval(() => { void expireListings().catch(e => console.error('[mercado] varredura falhou:', e instanceof Error ? e.message : e)); }, 60_000);
+  const sweep = setInterval(() => {
+    void expireListings().catch(e => console.error('[mercado] varredura falhou:', e instanceof Error ? e.message : e));
+    void expireDuels().catch(e => console.error('[duelo] varredura falhou:', e instanceof Error ? e.message : e));
+  }, 60_000);
   sweep.unref();
   const server = createApp().listen(port, process.env.HOST ?? '127.0.0.1', () => console.log(`Jogo/API: http://localhost:${port}`));
   const stop = () => { clearInterval(sweep); server.close(() => { void prisma.$disconnect().then(() => process.exit(0)); }); };

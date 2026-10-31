@@ -5,6 +5,7 @@ import { recordError } from '../core/monitor';
 import { buyNpc, equip } from './inventoryService';
 import { addStat, heal, resetStats, sellNpc, unequip, upgrade, usePotion } from './gameService';
 import { craft, forgeOverview, reforge, salvage } from './forgeService';
+import { advanceDuel, answerDuel, cancelChallenge, challenge, chooseDuelAction, duelHistory, duelRanking, duelState, forfeitDuel } from './duelService';
 import { advanceGroupRound, answerInvite, chooseGroupAction, createParty, groupState, inviteFriend, leaveParty, removeMember, startGroupHunt } from './groupHuntService';
 
 // O middleware de autenticação DEVE validar sessão/token e preencher res.locals.accountId.
@@ -35,6 +36,15 @@ export function gameRouter() {
   router.post('/characters/:characterId/group/start', handle((a, c) => startGroupHunt(a, c)));
   router.post('/characters/:characterId/group/battles/:battleId/act', handle((a, c, req) => chooseGroupAction(a, c, integer(Number(req.params.battleId)), integer(req.body?.round, 1), req.body?.action)));
   router.post('/characters/:characterId/group/battles/:battleId/advance', handle((a, c, req) => advanceGroupRound(a, c, integer(Number(req.params.battleId)), integer(req.body?.round, 1))));
+  router.get('/characters/:characterId/duel', handle((a, c, req) => duelState(a, c, req.query.q)));
+  router.get('/characters/:characterId/duel/history', handle((a, c, req) => duelHistory(a, c, req.query as Record<string, unknown>)));
+  router.get('/duel/ranking', async (req, res, next) => { try { res.json(await duelRanking(req.query.tier)); } catch (e) { next(e); } });
+  router.post('/characters/:characterId/duel/challenge', handle((a, c, req) => challenge(a, c, req.body?.name)));
+  router.post('/characters/:characterId/duel/invites/:duelId/:answer(accept|decline)', handle((a, c, req) => answerDuel(a, c, integer(Number(req.params.duelId)), req.params.answer === 'accept')));
+  router.post('/characters/:characterId/duel/invites/:duelId/cancel', handle((a, c, req) => cancelChallenge(a, c, integer(Number(req.params.duelId)))));
+  router.post('/characters/:characterId/duel/:duelId/act', handle((a, c, req) => chooseDuelAction(a, c, integer(Number(req.params.duelId)), integer(req.body?.round, 1), req.body?.action)));
+  router.post('/characters/:characterId/duel/:duelId/advance', handle((a, c, req) => advanceDuel(a, c, integer(Number(req.params.duelId)), integer(req.body?.round, 1))));
+  router.post('/characters/:characterId/duel/:duelId/forfeit', handle((a, c, req) => forfeitDuel(a, c, integer(Number(req.params.duelId)))));
   router.post('/characters/:characterId/equip', handle((a, c, req) => equip(a, c, integer(req.body?.itemId))));
   router.post('/characters/:characterId/shop', handle((a, c, req) => buyNpc(a, c, integer(req.body?.blueprintId), integer(req.body?.quantity), req.get('idempotency-key') ?? '')));
   router.post('/characters/:characterId/unequip', handle((a, c, req) => unequip(a, c, integer(req.body?.itemId))));
