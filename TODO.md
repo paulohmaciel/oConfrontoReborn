@@ -72,7 +72,7 @@
 - [x] **[Astra 1]** Materiais por faixa + Ferreiro fabrica, reforja e desmonta (2026-10-31): 8 materiais com sprite do TibiaWiki, Mercador só vende equipamento até o nível 100 (`shop.maxEquipmentLevel`), custos em `forge.*`, extrato com motivos `FORGE_*`, teste de integração
 - [ ] **Você:** `npm run seed` no seu banco para os materiais caírem dos monstros (sem isso o Ferreiro avisa que faltam materiais)
 - [ ] **[Astra 7]** Sumidouros de ouro além da quebra (taxas, serviços, anúncios) e alerta de duplicação por conciliação agendada
-- [ ] **[Astra 8]** Mercado: busca por nome/classe/nível/aprimoramento, comparar com o equipado, histórico pessoal
+- [x] **[Astra 8]** Mercado: busca por nome, filtros por tipo, "só o que posso usar" e melhoria mínima; comparação ▲/▼ com o equipado; histórico pessoal já está em Extrato (2026-10-31)
 - [ ] **[Astra 5]** Chefes individuais com fases
 - [ ] **[Astra 4]** Efeitos de status (veneno, queimadura, lentidão) com duração visível; limite de duração do combate
 - [ ] **[Astra 2]** Atributos secundários nos itens (crítico, mana, resistência) — respeitando `combatStats.ts` como única origem
