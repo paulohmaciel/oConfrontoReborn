@@ -12,8 +12,11 @@ function mine(t:TurnRecord,labels:Record<string,string>){
   if(t.action==='HEAL')return `${labels.HEAL}: +${n(t.healed)} de vida`;
   return `${labels[t.action]??t.action}: ${n(t.dealt)} de dano${t.crit?' (crítico!)':''}`;
 }
+// Sem ação do monstro: ou ele caiu no seu golpe, ou você fugiu antes.
+const foeDown=(t:TurnRecord)=>t.foe==='NONE'&&t.monsterHp===0;
 function theirs(t:TurnRecord){
-  if(t.foe==='NONE')return '—';
+  if(foeDown(t))return 'Derrotado';
+  if(t.foe==='NONE')return t.action==='FLEE'?'Ficou para trás':'—';
   if(t.foe==='CHARGE')return 'Concentrou forças';
   if(t.foe==='INTERRUPTED')return 'Golpe pesado interrompido';
   if(t.dodged)return 'Você esquivou';
@@ -36,10 +39,10 @@ export default function TurnLog({turns,log,turnVersion,heroName,heroIcon,monster
         <div className="mini-bar"><span style={{width:pct(last.monsterHp,last.monsterMaxHp)}}/></div><small>Monstro: {n(last.monsterHp)} / {n(last.monsterMaxHp)}</small>
       </article>
       <span className="turn-vs" aria-hidden="true">⚔</span>
-      <article className={`turn-card foe-side ${last.foe==='HEAVY'?'heavy':''}`}>
-        <header><Icon name={monsterName} src={monsterSprite} size={32}/><div><small>Turno do monstro · {monsterName}</small><b>{last.foe==='HEAVY'?'Golpe pesado':last.foe==='CHARGE'?'Concentração':last.foe==='INTERRUPTED'?'Interrompido':last.foe==='NONE'?'Sem reação':'Ataque'}</b></div></header>
-        <p className="turn-number">{last.foe==='ATTACK'||last.foe==='HEAVY'?(last.dodged?<span>Esquiva!</span>:<span className="hit">−{n(last.received)}</span>):<span>—</span>}</p>
-        <p className="turn-tag">{last.foe==='ATTACK'||last.foe==='HEAVY'?(last.dodged?'você desviou do golpe':'em você'):theirs(last)}</p>
+      <article className={`turn-card foe-side ${last.foe==='HEAVY'?'heavy':''} ${foeDown(last)?'down':''}`}>
+        <header><Icon name={monsterName} src={monsterSprite} size={32}/><div><small>Turno do monstro · {monsterName}</small><b>{last.foe==='HEAVY'?'Golpe pesado':last.foe==='CHARGE'?'Concentração':last.foe==='INTERRUPTED'?'Interrompido':foeDown(last)?'Derrotado!':last.foe==='NONE'?'Ficou para trás':'Ataque'}</b></div></header>
+        <p className="turn-number">{last.foe==='ATTACK'||last.foe==='HEAVY'?(last.dodged?<span>Esquiva!</span>:<span className="hit">−{n(last.received)}</span>):foeDown(last)?<span className="heal">Vitória</span>:last.action==='FLEE'?<span>Fuga</span>:<span>0</span>}</p>
+        <p className="turn-tag">{last.foe==='ATTACK'||last.foe==='HEAVY'?(last.dodged?'você desviou do golpe':'em você'):foeDown(last)?'não resistiu ao seu golpe':last.action==='FLEE'?'você escapou do combate':theirs(last)}</p>
         <div className="mini-bar mine"><span style={{width:pct(last.hp,last.maxHp)}}/></div><small>Você: {n(last.hp)} / {n(last.maxHp)}</small>
       </article>
     </div>
