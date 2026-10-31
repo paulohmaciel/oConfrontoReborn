@@ -120,6 +120,9 @@ model Character {
   friendRequestsReceived Friendship[]           @relation("FriendAddressee")
   profileVisits          ProfileVisit[]         @relation("ProfileVisited")
   visitsMade             ProfileVisit[]         @relation("ProfileVisitor")
+  forumPosts             ForumPost[]
+  forumComments          ForumComment[]
+  forumVotes             ForumVote[]
   profileTitle           String?                @db.VarChar(24)
   profileEmblem          String?                @db.VarChar(40)
   profileBio             String?                @db.VarChar(160)
@@ -613,4 +616,61 @@ model ProfileVisit {
 
   @@unique([profileId, visitorId])
   @@index([profileId, visitedAt])
+}
+
+// ----- Fórum (estilo Reddit): tópicos por categoria, comentários com respostas e votos -----
+model ForumPost {
+  id              Int            @id @default(autoincrement())
+  category        String         @db.VarChar(16)
+  authorId        Int
+  author          Character      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title           String         @db.VarChar(120)
+  body            String         @db.Text
+  score           Int            @default(0)
+  commentCount    Int            @default(0)
+  solvedCommentId Int?
+  pinned          Boolean        @default(false)
+  locked          Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  lastActivityAt  DateTime       @default(now())
+  editedAt        DateTime?
+  deletedAt       DateTime?
+  comments        ForumComment[]
+  votes           ForumVote[]
+
+  @@index([category, lastActivityAt])
+  @@index([lastActivityAt])
+  @@index([score])
+  @@index([authorId, createdAt])
+}
+
+model ForumComment {
+  id        Int         @id @default(autoincrement())
+  postId    Int
+  post      ForumPost   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  Int
+  author    Character   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentId  Int?
+  body      String      @db.Text
+  score     Int         @default(0)
+  createdAt DateTime    @default(now())
+  deletedAt DateTime?
+  votes     ForumVote[]
+
+  @@index([postId, id])
+  @@index([authorId, createdAt])
+}
+
+model ForumVote {
+  id          Int           @id @default(autoincrement())
+  characterId Int
+  character   Character     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  postId      Int?
+  post        ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commentId   Int?
+  comment     ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  value       Int
+
+  @@unique([characterId, postId])
+  @@unique([characterId, commentId])
 }
