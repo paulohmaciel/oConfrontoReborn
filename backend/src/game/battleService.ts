@@ -33,12 +33,12 @@ export class BattleService {
       const existing = await tx.battle.findFirst({ where: { characterId, isFinished: false } });
       if (existing) return existing;
       if (await inGroupBattle(tx, characterId)) throw new GameError(409, 'Você está numa caçada em grupo. Termine-a antes de caçar sozinho.');
-      if (character.hp <= 0 || character.energy < 5) throw new GameError(409, 'Vida ou energia insuficiente.');
+      if (character.hp <= 0 || character.energy < 5) throw new GameError(409, 'Você está ferido ou exausto demais para caçar. Descanse no Templo de Capriel.');
       if (character.huntEndsAt) throw new GameError(409, 'Resolva a caça pendente antes de combater.');
       const monster = await tx.monster.findUnique({ where: { id: monsterId } });
-      if (!monster || monster.hp <= 0) throw new GameError(404, 'Monstro indisponível.');
+      if (!monster || monster.hp <= 0) throw new GameError(404, 'Essa criatura não está mais por aqui.');
       const region=regions.find(r=>r.key===monster.regionKey);
-      if(!region||character.level<region.minLevel||character.journeyStep<region.journeyStep)throw new GameError(409,'Região bloqueada. Avance na sua jornada e confira o nível necessário.');
+      if(!region||character.level<region.minLevel||character.journeyStep<region.journeyStep)throw new GameError(409,'Estas terras ainda estão fechadas para você. Avance na jornada e alcance o nível necessário.');
       await tx.character.update({ where: { id: characterId }, data: { energy: { decrement: 5 } } });
       return tx.battle.create({ data: { characterId, activeCharacterId: characterId, monsterId, monsterHp: monster.hp } });
     });
@@ -63,12 +63,12 @@ export class BattleService {
       const c = await lockCharacter(tx, accountId, characterId);
       const b = await tx.battle.findFirst({ where: { id: battleId, characterId }, include: { monster: { include: { loots: { include: { blueprint: { select: { name: true } } } } } } } });
       if (!b) throw new GameError(404, 'Batalha não encontrada.');
-      if (b.isFinished || b.turnVersion !== expectedTurn) throw new GameError(409, 'Turno desatualizado ou batalha encerrada.');
+      if (b.isFinished || b.turnVersion !== expectedTurn) throw new GameError(409, 'Esse turno já passou ou a batalha terminou. Atualize a tela.');
       const equipment = await tx.inventoryItem.findMany({ where: { characterId, isEquipped: true }, include: { blueprint: true } });
       for (const item of equipment) {
         if (item.quantity !== 1 || item.upgradeTier < 0 || ['LOOT', 'CONSUMABLE'].includes(item.blueprint.slot)
           || item.equippedSlot !== item.blueprint.slot || item.blueprint.minLevel > c.level)
-          throw new GameError(409, 'Equipamento inconsistente; revise o inventário.');
+          throw new GameError(409, 'Algo está errado com seu equipamento; revise a mochila.');
         if (!vocationAllowed(item.blueprint.vocations, c.vocation)) throw new GameError(409, 'Vocação incompatível.');
       }
       const stats=combatStats(c,equipment);

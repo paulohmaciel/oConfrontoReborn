@@ -27,7 +27,7 @@ export default function MarketPanel({hero,market,setMarket,config,busy,command}:
   const apply=(next:Filters)=>{setF(next);void load(1,next);};
   busy=busy||loading;
   const active=market.filters&&(market.filters.q||market.filters.slot||market.filters.usable||market.filters.minTier);
-  return <section className="panel"><div className="section-title"><h2>Mercado de aventureiros</h2><button disabled={busy} onClick={()=>void load(market.page)}>Atualizar</button></div><p className="muted">Anuncie pela mochila. O preço cobre toda a pilha.{config?` Taxa de ${config.saleFeePercent}% sobre vendas; anúncios expiram em ${config.listingHours} h. O histórico fica em Extrato.`:''}</p>{error&&<p className="error" role="alert">{error}</p>}
+  return <section className="panel"><div className="section-title"><h2>Mercado de aventureiros</h2><button disabled={busy} onClick={()=>void load(market.page)}>Atualizar</button></div><p className="muted">Para vender, ofereça itens pela mochila; o preço vale pela pilha toda.{config?` Taxa de ${config.saleFeePercent}% sobre vendas; anúncios expiram em ${config.listingHours} h. O histórico fica em Extrato.`:''}</p>{error&&<p className="error" role="alert">{error}</p>}
     <ItemTabs value={f.slot} onChange={slot=>apply({...f,slot})}/>
     <form className="mission-search-row market-filters" onSubmit={e=>{e.preventDefault();apply({...f,q:f.q.trim()});}}>
       <input className="mission-search" aria-label="Buscar no mercado" placeholder="Buscar item pelo nome…" value={f.q} maxLength={40} onChange={e=>setF({...f,q:e.target.value})}/><button disabled={busy}>Buscar</button>

@@ -21,11 +21,11 @@ test('druida cura mais e gasta menos mana',()=>{
 });
 test('chefe carrega golpe e anuncia o próximo ataque',()=>{
   const result=resolveTurn(player,{...monster,isBoss:true,turn:1},'ATTACK',max);
-  assert.equal(result.received,0);assert.match(result.log.join(' '),/concentra energia/);assert.equal(monsterIntent({...monster,isBoss:true},2).warning,true);
+  assert.equal(result.received,0);assert.match(result.log.join(' '),/concentra forças/);assert.equal(monsterIntent({...monster,isBoss:true},2).warning,true);
 });
 test('interromper cancela o golpe pesado e consome mana',()=>{
   const result=resolveTurn(player,{...monster,isBoss:true,turn:2},'INTERRUPT',max);
-  assert.equal(result.received,0);assert.equal(result.mana,88);assert(result.dealt>0);assert.match(result.log.join(' '),/interrompeu/);
+  assert.equal(result.received,0);assert.equal(result.mana,88);assert(result.dealt>0);assert.match(result.log.join(' '),/interrompe o golpe/);
 });
 test('defender mitiga golpe pesado; resistência mitiga fogo',()=>{
   const enemy={...monster,isBoss:true,turn:2,element:'FIRE'};
