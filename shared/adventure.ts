@@ -43,7 +43,11 @@ export const regions = [
   { key: 'abyss', name: 'Portões do Abismo', icon: 'Demon', minLevel: 20, journeyStep: 5, description: 'O território dos demônios. Um desafio para aventureiros bem preparados.' },
   { key: 'labyrinth', name: 'Labirinto dos Minotauros', icon: 'Minotaur Guard', minLevel: 30, journeyStep: 5, description: 'Corredores de pedra onde arqueiros e magos minotauros vigiam cada curva.' },
   { key: 'frost', name: 'Terras Geladas', icon: 'Polar Bear', minLevel: 60, journeyStep: 5, description: 'Neve sem fim, trolls do gelo e mamutes. Só os bem equipados atravessam.' },
-  { key: 'swamp', name: 'Vale da Perdição de Capriel', icon: 'Giant Spider', minLevel: 80, journeyStep: 5, description: 'O lugar mais temido do mundo. Águas envenenadas, bruxas e crocodilos; no fundo da teia, a Aranha Gigante não deixa ninguém sair. Poucos voltam.' },
+  { key: 'swamp', name: 'Pântano Sombrio', icon: 'Giant Spider', minLevel: 80, journeyStep: 5, description: 'Águas paradas, crocodilos e bruxas. No fundo da teia, a Aranha Gigante espera.' },
+  { key: 'crypt', name: 'Cripta Esquecida', icon: 'Necromancer', minLevel: 100, journeyStep: 5, description: 'Corredores sob a terra onde necromantes erguem os mortos. O Bruxo guarda o último salão.' },
+  { key: 'citadel', name: 'Cidadela dos Renegados', icon: 'Assassin', minLevel: 125, journeyStep: 5, description: 'Assassinos, elfos exilados e monges sem ordem. O Herói caído comanda a muralha.' },
+  // A região final é sempre a mais perigosa do jogo e leva o nome de Capriel.
+  { key: 'capriel', name: 'Vale da Perdição de Capriel', icon: 'Infernatil', minLevel: 160, journeyStep: 5, description: 'O lugar mais temido do mundo. Elementais antigos, dragões anciões e, no fim do vale, Infernatil. Poucos voltam.' },
 ] as const;
 export const journey = [
   { key: 'vocation', title: 'Encontre sua vocação', description: 'Escolha como você quer lutar. Sua escolha será permanente nesta etapa.', icon: 'Sword', target: 1, gold: 25, xp: 0, action: 'vocation' },

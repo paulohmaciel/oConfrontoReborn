@@ -112,6 +112,15 @@ Achados para depois:
 - **Armas de mago param no nível 35** (Skull Staff) **e de Arqueiro no 65** (Throwing Star): não há outros sprites no manifesto. Robes/chapéus compensam os magos; para 100+ é preciso importar varinhas, cajados e arcos.
 - **Antes de jogar no seu banco:** `npm run seed` (o `iniciar.bat` já roda). Personagens existentes não perdem nada; os monstros antigos ficam mais resistentes.
 
+## Resultado da Fase 2 (2026-10-31)
+
+- **3 regiões novas:** Cripta Esquecida (100, chefe Warlock), Cidadela dos Renegados (125, chefe Hero) e **Vale da Perdição de Capriel** (160, chefe **Infernatil** no 250). Regra do dono: a região final é sempre a mais perigosa e leva o nome de Capriel; a do nível 80 voltou a ser Pântano Sombrio. Na Fase 3 o nome de Capriel passa para a nova última região.
+- **17 monstros novos** (total 58). No Vale, alguns reaproveitam sprites com nome próprio (Elemental de Fogo Ancestral, Golem Ancestral, Gosma Primordial, Serpente Abissal, Dragão Ancião), como o Guardião da Pedreira faz com o Cyclops.
+- **38 equipamentos novos:** armas, escudos, armaduras, elmos, botas e amuleto até o nível 235, todos com sprite do manifesto.
+- **Munição / foco:** o espaço de munição agora é equipamento permanente (não empilha; regra em `economy.ts`). O Arqueiro usa Arrow → Throwing Knife (20–230) e os magos usam runas como foco mágico (Light Magic Missile → Sudden Death, 20–210). Isso resolve a falta de armas de mago acima do 35 e de Arqueiro acima do 65 sem importar sprites.
+- Todos os 58 monstros recalibrados com o equipamento novo (os da Fase 1 mudaram pouco).
+- **Ainda falta:** pernas acima do 85 e armaduras acima do 160 (sem sprites livres); o Arqueiro continua perdendo ~2× mais vida (23% contra 6–11% nos comuns), então o problema dele é defesa/vida, não ataque.
+
 ## 6. Decisões do dono
 
 1. **❓1 Ritmo:** ~31 lutas por nível (≈ 260–400 h até o 1000) está bom? Mais lento = monstros dão menos XP.
