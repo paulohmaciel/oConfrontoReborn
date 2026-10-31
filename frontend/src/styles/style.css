@@ -13,3 +13,5 @@ input[type=checkbox],input[type=radio]{width:auto;flex:0 0 auto;margin:0}
 .bag-slot.selected .bag-name{color:#e3d3a5}
 :where(:root[data-theme="light"]) .bag-name{color:#633113}
 :where(:root[data-theme="light"]) .bag-slot.selected .bag-name{color:#4a1f08}
+.nav-group{display:grid;gap:2px}.nav-group+.nav-group{margin-top:14px;padding-top:12px;border-top:1px solid #2c3538}
+.nav-title{font-size:9px;letter-spacing:2px;font-weight:700;color:#a99871;text-transform:uppercase;padding:0 12px 4px}

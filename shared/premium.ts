@@ -16,6 +16,7 @@ export const profileTitles = [
   { key: 'explorer', name: 'Explorador' }, { key: 'guardian', name: 'Guardião de Capriel' }, { key: 'dragonbane', name: 'Terror dos Dragões' },
 ] as const;
 export const emblems = ['Sword', 'Mastermind Shield', 'Dragon', 'Demon', 'Cyclops', 'Magic Longsword', 'Backpack', 'Ring of the Sky'] as const;
+export const titleName = (key: string | null | undefined) => profileTitles.find(t => t.key === key)?.name ?? '';
 export const premiumPlan = { source: 'PURCHASE', currency: 'BRL', provider: 'MERCADOPAGO' } as const;
 
 const DAY = 86_400_000;

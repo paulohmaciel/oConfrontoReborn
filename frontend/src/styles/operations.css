@@ -84,3 +84,22 @@
 .class-ladder li div{display:grid;gap:2px;min-width:0}.class-ladder li small{font-size:11px;opacity:.8}
 .class-ladder li.done{opacity:.9}.class-ladder li.done b{background:color-mix(in srgb,#2f8f4e 35%,transparent);border-color:#2f8f4e}
 .class-ladder li.next{opacity:1;border-color:#b9892f;box-shadow:0 0 0 1px #b9892f}.class-ladder li.next b{background:#b9892f;border-color:#b9892f;color:#171b1c}
+
+/* Perfil de comunidade (estilo Orkut). */
+.profile-page{display:grid;gap:16px}.profile-grid{display:grid;grid-template-columns:minmax(240px,300px) minmax(0,1fr);gap:16px;align-items:start}
+.profile-side{display:grid;gap:16px}.profile-card-main{display:grid;justify-items:center;text-align:center;gap:6px}
+.profile-avatar{width:96px;height:112px}.profile-card-main h2{font-family:Georgia,serif;font-size:22px;font-weight:400}
+.profile-about{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.6;text-align:left;width:100%;padding:10px;border-radius:8px;background:color-mix(in srgb,currentColor 5%,transparent)}
+.friend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.friend{display:grid;justify-items:center;gap:4px;padding:8px 4px;background:transparent}.friend small{font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profile-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.profile-tabs button{min-height:38px}
+.profile-write{max-width:none;margin-top:0}.profile-write textarea{width:100%}
+.post{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,currentColor 14%,transparent)}.post.pending{opacity:.85;border-left:3px solid #b9892f;padding-left:10px}
+.post-avatar{padding:2px;background:transparent;border:0}.post-head{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}.post-head small{font-size:11px;opacity:.65}
+.post-text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.6;margin:4px 0}.post-actions{display:flex;gap:14px}
+.profile-subtitle{font-size:14px;margin:16px 0 6px}
+.profile-search{position:relative;max-width:420px}.search-results{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 4px);display:grid;border-radius:8px;overflow:hidden;border:1px solid color-mix(in srgb,currentColor 25%,transparent);background:#20292c}
+.search-results button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;text-align:left;border:0;border-radius:0;padding:8px 10px}.search-results .sprite{grid-row:span 2}.search-results small{font-size:10px;opacity:.7}
+.avatar-picker{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}.avatar-picker legend{font-weight:600;margin-bottom:6px;padding:0}
+.avatar-picker button{width:52px;height:52px;padding:0;display:grid;place-items:center;position:relative}.avatar-picker button.selected{border-color:#b9892f;box-shadow:0 0 0 1px #b9892f}
+.avatar-picker button.legendary{border-color:color-mix(in srgb,#b9892f 50%,transparent)}.avatar-picker button i{position:absolute;right:2px;bottom:0;font-style:normal;font-size:11px}
+@media(max-width:900px){.profile-grid{grid-template-columns:1fr}}
