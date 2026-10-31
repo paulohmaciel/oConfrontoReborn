@@ -25,7 +25,8 @@
     "start": "tsx backend/src/server.ts",
     "test:icons": "node --test scripts/import-icons.test.mjs",
     "levels:simulate": "tsx scripts/simulate-levels.ts",
-    "levels:calibrate": "tsx scripts/calibrate-monsters.ts"
+    "levels:calibrate": "tsx scripts/calibrate-monsters.ts",
+    "dev:market-demo": "tsx scripts/dev-market-demo.ts"
   },
   "dependencies": {
     "@prisma/client": "5.19.0",

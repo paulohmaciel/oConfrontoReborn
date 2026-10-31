@@ -43,6 +43,7 @@
 - [x] `npm run master:create` cria/redefine o login master (e-mail `mestre@localhost.dev`, senha temporária `Mestre-Temp-2026!`; `-- --aleatoria` gera outra; `-- --senha "..."` escolhe)
 - [ ] **CORRIGIR ANTES DE PUBLICAR (segurança):** a conta `mestre@localhost.dev` usa a senha TEMPORÁRIA `Mestre-Temp-2026!` (definida em `backend/prisma/create-master.ts`). Apagar a conta, remover a constante `TEMP_PASSWORD` e conferir que nenhuma conta de teste ficou no banco de produção
 - [ ] **Antes de publicar:** remover `DEV_QUICK_LOGIN` do `.env` e apagar a conta `mestre@localhost.dev`
+- [ ] **Antes de publicar:** apagar a conta de teste `vendedor-teste@example.invalid` (Mercador de Testes) e os anúncios dela, criados por `npm run dev:market-demo`
 
 - [x] Tema ESCURO como padrão; home em uma única moldura (capa + menu colado + boas-vindas + conteúdo) (2026-10-28)
 - [ ] Conferir se o que eu gravo na pasta chega mesmo (houve arquivos desatualizados no disco: `package.json`, `main.tsx`, `fire.css`); sempre comparar tamanhos após gravar
