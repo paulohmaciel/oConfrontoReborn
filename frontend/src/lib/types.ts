@@ -6,7 +6,10 @@ export type Battle={battleId:number;turnVersion:number;hp:number;maxHp:number;ma
 export type Listing={id:number;sellerId:number;expiresAt:string|null;quantity:number;upgradeTier:number;price:string;blueprint:Blueprint;seller:{name:string}};
 export type Task={id:number;title:string;requiredKills:number;minLevel:number;rewardExp:number;rewardGold:number;monster:Monster;playerTasks:{currentKills:number;isCompleted:boolean}[]};
 export type JourneyState={step:number;finished:boolean;vocationChosen:boolean;steps:{key:string;title:string;description:string;icon:string;target:number;gold:number;xp:number;action:string;index:number;current:number;claimed:boolean;active:boolean;ready:boolean}[];regions:{key:string;name:string;description:string;icon:string;minLevel:number;journeyStep:number;unlocked:boolean}[]};
-export type Journal={events:{id:number;kind:string;title:string;description:string;createdAt:string}[];nextBefore:number|null;achievements:{key:string;name:string;description:string;icon:string;unlockedAt:string|null}[];bestiary:(Monster&{wins:number;encounters:number})[];history:{id:number;createdAt:string;outcome:string;rewardGold:string;rewardExperience:number;rewardRecorded:boolean;monster:{name:string;spriteUrl:string}}[]};
+export type Memory={id:number;kind:string;title:string;description:string;createdAt:string};
+export type BattleRecord={id:number;createdAt:string;outcome:string;rewardGold:string;rewardExperience:number;rewardRecorded:boolean;monster:{name:string;spriteUrl:string}};
+// Memórias e combates vêm paginados (/journal/events e /battles).
+export type Journal={achievements:{key:string;name:string;description:string;icon:string;unlockedAt:string|null}[];bestiary:(Monster&{wins:number;encounters:number})[]};
 
 export type GameConfig={saleFeePercent:number;listingFeeGold:number;listingHours:number;npcBuyPercent:number;npcSellPercent:number;upgradePercent:number;promotionGold:number;presetLimit:number;xpPercent:number;goldPercent:number;safeUntilTier:number;breakFromTier:number;breakOnFailPercent:number;statsResetBaseGold:number;statsResetPerLevelSquared:number};
 export type Perform=(work:()=>Promise<unknown>,message?:string)=>Promise<void>;

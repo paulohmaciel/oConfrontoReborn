@@ -1,14 +1,18 @@
 import { Router } from 'express';
-import { asyncRoute } from '../core/http';
+import { asyncRoute, pageOf } from '../core/http';
 import { integer } from '../core/engine';
 import { createComment, createPost, deleteOwn, getPost, listPosts, markSolved, vote } from './forumService';
-import { decideTestimonial, deleteScrap, myCommunity, publicProfile, reportContent, requestFriend, respondFriend, searchCharacters, updateCommunityProfile, writeScrap, writeTestimonial } from './communityService';
+import { decideTestimonial, deleteScrap, myCommunity, profileList, publicProfile, reportContent, requestFriend, respondFriend, searchCharacters, updateCommunityProfile, writeScrap, writeTestimonial } from './communityService';
 
 export const communityRoutes = Router();
 const id = (v: unknown) => integer(Number(v));
 // Leituras: perfil público pelo nome (?as=<personagem que está olhando>) e busca de personagens.
 communityRoutes.get('/community/profiles/:name', asyncRoute(async (req, res) => {
   res.json(await publicProfile(res.locals.accountId, req.params.name, req.query.as ? id(req.query.as) : null));
+}));
+communityRoutes.get('/community/profiles/:name/:list', asyncRoute(async (req, res) => {
+  const { page, skip, take } = pageOf(req.query);
+  res.json(await profileList(res.locals.accountId, req.params.name, req.params.list, req.query.as ? id(req.query.as) : null, page, skip, take));
 }));
 communityRoutes.get('/community/search', asyncRoute(async (req, res) => { res.json(await searchCharacters(req.query.q)); }));
 communityRoutes.get('/characters/:id/community', asyncRoute(async (req, res) => { res.json(await myCommunity(res.locals.accountId, id(req.params.id))); }));

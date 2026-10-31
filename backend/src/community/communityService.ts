@@ -30,17 +30,20 @@ export async function publicProfile(accountId: number, name: string, viewerId: n
   if (viewer && !owner && !viewer.profileHideVisits)
     await prisma.profileVisit.upsert({ where: { profileId_visitorId: { profileId: p.id, visitorId: viewer.id } }, update: { visitedAt: new Date() }, create: { profileId: p.id, visitorId: viewer.id } });
   const friendWhere = { status: 'ACCEPTED', OR: [{ requesterId: p.id }, { addresseeId: p.id }] };
-  const [friendRows, friendCount, scraps, testimonials, relation, visitors] = await Promise.all([
-    prisma.friendship.findMany({ where: friendWhere, orderBy: { respondedAt: 'desc' }, take: 12, include: { requester: { select: card }, addressee: { select: card } } }),
+  // Primeira página de cada lista (10) e os totais; as demais páginas vêm de profileList.
+  const [friendRows, friendCount, scraps, testimonials, relation, visitors, scrapCount, testimonialCount] = await Promise.all([
+    prisma.friendship.findMany({ where: friendWhere, orderBy: { respondedAt: 'desc' }, take: 10, include: { requester: { select: card }, addressee: { select: card } } }),
     prisma.friendship.count({ where: friendWhere }),
-    prisma.profileScrap.findMany({ where: { profileId: p.id, deletedAt: null }, orderBy: { id: 'desc' }, take: 30, include: { author: { select: card } } }),
-    prisma.profileTestimonial.findMany({ where: { profileId: p.id, status: owner ? { in: ['APPROVED', 'PENDING'] } : 'APPROVED' }, orderBy: { id: 'desc' }, take: 30, include: { author: { select: card } } }),
+    prisma.profileScrap.findMany({ where: { profileId: p.id, deletedAt: null }, orderBy: { id: 'desc' }, take: 10, include: { author: { select: card } } }),
+    prisma.profileTestimonial.findMany({ where: { profileId: p.id, status: owner ? { in: ['APPROVED', 'PENDING'] } : 'APPROVED' }, orderBy: { id: 'desc' }, take: 10, include: { author: { select: card } } }),
     viewer && !owner ? prisma.friendship.findFirst({ where: { OR: [{ requesterId: viewer.id, addresseeId: p.id }, { requesterId: p.id, addresseeId: viewer.id }] } }) : null,
-    owner ? prisma.profileVisit.findMany({ where: { profileId: p.id }, orderBy: { visitedAt: 'desc' }, take: 12, include: { visitor: { select: card } } }) : [],
+    owner ? prisma.profileVisit.findMany({ where: { profileId: p.id }, orderBy: { visitedAt: 'desc' }, take: 10, include: { visitor: { select: card } } }) : [],
+    prisma.profileScrap.count({ where: { profileId: p.id, deletedAt: null } }),
+    prisma.profileTestimonial.count({ where: { profileId: p.id, status: 'APPROVED' } }),
   ]);
   const { accountId: profileAccount, ...profile } = p;
   return { profile, owner, sameAccount: profileAccount === accountId,
-    friends: friendRows.map(f => f.requesterId === p.id ? f.addressee : f.requester), friendCount,
+    friends: friendRows.map(f => f.requesterId === p.id ? f.addressee : f.requester), friendCount, scrapCount, testimonialCount,
     scraps: scraps.map(s => ({ id: s.id, text: s.text, createdAt: s.createdAt, author: s.author })),
     testimonials: testimonials.map(t => ({ id: t.id, text: t.text, status: t.status, createdAt: t.createdAt, author: t.author })),
     relation: relation ? { id: relation.id, status: relation.status, incoming: relation.addresseeId === viewer?.id } : null,
@@ -188,4 +191,33 @@ ${p.body}` })
     await tx.supportMessage.create({ data: { ticketId: ticket.id, authorAccountId: accountId, body: `Motivo: ${why}\n\nTexto denunciado (${label} #${contentId}, de ${item.author.name}):\n${item.text}` } });
     return { message: 'Denúncia enviada para a equipe. Obrigado.' };
   });
+}
+
+// Listas do perfil que crescem sem limite, em páginas de 10. Mesmas regras de visibilidade de publicProfile.
+export const profileLists = ['scraps', 'testimonials', 'friends', 'visitors'] as const;
+export async function profileList(accountId: number, name: string, list: unknown, viewerId: number | null, page: number, skip: number, take: number) {
+  if (!profileLists.includes(list as typeof profileLists[number])) throw new GameError(404, 'Lista desconhecida.');
+  const p = await byName(prisma, name);
+  const viewer = viewerId ? await prisma.character.findFirst({ where: { id: viewerId, accountId }, select: { id: true } }) : null;
+  const owner = !!viewer && viewer.id === p.id;
+  const out = <T>(items: T[], total: number) => ({ items, total, page, pages: Math.max(1, Math.ceil(total / take)) });
+  if (list === 'scraps') {
+    const where = { profileId: p.id, deletedAt: null };
+    const [rows, total] = await Promise.all([prisma.profileScrap.findMany({ where, orderBy: { id: 'desc' }, skip, take, include: { author: { select: card } } }), prisma.profileScrap.count({ where })]);
+    return out(rows.map(s => ({ id: s.id, text: s.text, createdAt: s.createdAt, author: s.author })), total);
+  }
+  if (list === 'testimonials') {
+    const where = { profileId: p.id, status: owner ? { in: ['APPROVED', 'PENDING'] } : 'APPROVED' };
+    const [rows, total] = await Promise.all([prisma.profileTestimonial.findMany({ where, orderBy: { id: 'desc' }, skip, take, include: { author: { select: card } } }), prisma.profileTestimonial.count({ where })]);
+    return out(rows.map(t => ({ id: t.id, text: t.text, status: t.status, createdAt: t.createdAt, author: t.author })), total);
+  }
+  if (list === 'friends') {
+    const where = { status: 'ACCEPTED', OR: [{ requesterId: p.id }, { addresseeId: p.id }] };
+    const [rows, total] = await Promise.all([prisma.friendship.findMany({ where, orderBy: { respondedAt: 'desc' }, skip, take, include: { requester: { select: card }, addressee: { select: card } } }), prisma.friendship.count({ where })]);
+    return out(rows.map(f => f.requesterId === p.id ? f.addressee : f.requester), total);
+  }
+  // Visitas: só o dono vê.
+  if (!owner) throw new GameError(403, 'Só o dono do perfil vê as visitas.');
+  const [rows, total] = await Promise.all([prisma.profileVisit.findMany({ where: { profileId: p.id }, orderBy: { visitedAt: 'desc' }, skip, take, include: { visitor: { select: card } } }), prisma.profileVisit.count({ where: { profileId: p.id } })]);
+  return out(rows.map(v => ({ visitedAt: v.visitedAt, visitor: v.visitor })), total);
 }
