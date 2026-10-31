@@ -1,6 +1,9 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-10-31-nomes', date: '2026-10-31', title: 'Nomes de habilidades do Cavaleiro', items: [
+    'Triplo hit agora se chama Golpe brutal, e Quinto hit virou Fúria berserker. O espólio dos monstros também ganhou nome em português nas telas.',
+  ] },
   { id: '2026-10-31-turnos', date: '2026-10-31', title: 'Combate: turno a turno, ataque × defesa', items: [
     'Cada turno aparece em dois cartões lado a lado: o seu golpe e o do monstro, com o dano em destaque, críticos, esquivas, golpes pesados e interrupções.',
     'Ver histórico completo mostra todos os turnos do combate e o total de dano causado, recebido, cura, críticos e esquivas.',
@@ -49,7 +52,7 @@ export const changelog: ChangelogEntry[] = [
     'Tarefas viraram Missões, cada uma com quem pede e a sua história. A cidade agora se chama Capriel, e a primeira região, Campos do Amanhecer.',
   ] },
   { id: '2026-10-30-ferreiro', date: '2026-10-30', title: 'Ferreiro: fabricar, reforjar e desmontar', items: [
-    'O Mercador vende equipamentos só até o nível 100. Acima disso, os itens vêm do Ferreiro e do loot dos monstros.',
+    'O Mercador vende equipamentos só até o nível 100. Acima disso, os itens vêm do Ferreiro e do espólio dos monstros.',
     'Fabricar cria um item com materiais e ouro; reforjar troca um item pelo de outro nível mantendo parte da melhoria; desmontar devolve materiais.',
     'Os materiais (do Minério de Ferro à Essência Demoníaca) caem dos monstros de cada faixa de nível; chefes sempre deixam algum.',
     'Atributos podem ser distribuídos de 10 em 10, de 100 em 100 ou de uma vez, e redistribuídos pagando ouro.',

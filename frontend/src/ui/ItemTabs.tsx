@@ -14,7 +14,7 @@ export type ItemCategory=typeof itemCategories[number]['key'];
 export const inCategory=(slot:string,key:string)=>!key||(itemCategories.find(c=>c.key===key)?.slots as readonly string[]|undefined)?.includes(slot)===true;
 export const slotsOf=(key:string)=>(itemCategories.find(c=>c.key===key)?.slots??[]) as readonly string[];
 // Filtro aceita uma aba (potions, armor…) ou um tipo exato vindo do equipamento (BACKPACK, HELMET…).
-export const slotLabels:Record<string,string>={WEAPON:'Armas',ARMOR:'Armaduras',HELMET:'Elmos',LEGS:'Pernas',BOOTS:'Botas',SHIELD:'Escudos',AMULET:'Amuletos',RING:'Anéis',AMMO:'Munição',BACKPACK:'Mochilas',CONSUMABLE:'Poções',LOOT:'Loot e materiais'};
+export const slotLabels:Record<string,string>={WEAPON:'Armas',ARMOR:'Armaduras',HELMET:'Elmos',LEGS:'Pernas',BOOTS:'Botas',SHIELD:'Escudos',AMULET:'Amuletos',RING:'Anéis',AMMO:'Munição',BACKPACK:'Mochilas',CONSUMABLE:'Poções',LOOT:'Espólios e materiais'};
 export const isCategory=(v:string)=>itemCategories.some(c=>c.key===v);
 export const slotParam=(v:string)=>isCategory(v)?slotsOf(v).join(','):v;
 export default function ItemTabs({value,onChange,counts}:{value:string;onChange:(key:string)=>void;counts?:Record<string,number>}){

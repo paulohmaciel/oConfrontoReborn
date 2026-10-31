@@ -36,7 +36,7 @@ export const settingDefs = {
   'forge.reforgePricePercent': { default: 40, min: 0, max: 500, label: 'Reforjar: ouro cobrado sobre o preço de loja do item novo', unit: '%', group: 'Ferreiro' },
   'forge.craftMaterials': { default: 5, min: 1, max: 100, label: 'Materiais da faixa para fabricar ou reforjar um item', unit: 'un.', group: 'Ferreiro' },
   'forge.salvageMaterials': { default: 2, min: 0, max: 100, label: 'Materiais devolvidos ao desmontar (+1 a cada 3 melhorias)', unit: 'un.', group: 'Ferreiro' },
-  'shop.maxEquipmentLevel': { default: 100, min: 1, max: 1000, label: 'O Mercador vende equipamentos até este nível (acima, só Ferreiro e loot)', unit: 'nível', group: 'Preços' },
+  'shop.maxEquipmentLevel': { default: 100, min: 1, max: 1000, label: 'O Mercador vende equipamentos até este nível (acima, só Ferreiro e espólio dos monstros)', unit: 'nível', group: 'Preços' },
   'stats.resetBaseGold': { default: 500, min: 0, max: 100_000_000, label: 'Redistribuir atributos: custo fixo', unit: 'ouro', group: 'Classes' },
   'stats.resetGoldPerLevelSquared': { default: 5, min: 0, max: 100_000, label: 'Redistribuir atributos: ouro × nível² (nível 100 = 50.000 com o padrão)', unit: 'ouro', group: 'Classes' },
   'group.energyCost': { default: 10, min: 0, max: 100, label: 'Caçada em grupo: energia gasta por participante', unit: 'energia', group: 'Caçada em grupo' },
