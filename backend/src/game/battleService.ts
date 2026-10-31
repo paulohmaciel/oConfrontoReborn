@@ -7,7 +7,8 @@ import { event, awardAchievements } from './adventureService';
 import { addItem, recordGold } from '../economy/economy';
 import { loadSettings } from '../core/settings';
 import { scaleInt } from '../../../shared/economy';
-import { vocationAllowed } from '../../../shared/adventure';
+import { vocationAllowed, skillCosts } from '../../../shared/adventure';
+import { defeatAdvice, type DefeatAdvice } from './defeatAdvice';
 const dice = (min: number, max: number) => randomInt(min, max + 1);
 
 export class BattleService {
@@ -87,13 +88,21 @@ export class BattleService {
         isFinished: result.status !== 'ONGOING', activeCharacterId: result.status === 'ONGOING' ? characterId : null,
         turnVersion: { increment: 1 }, outcome: result.status, lastLog: result.log,
         rewardGold:BigInt(gold),rewardExperience:xpGain,rewardRecorded:result.status!=='ONGOING' } });
+      let defeat: DefeatAdvice | null = null;
+      if (result.status === 'DEFEAT') {
+        const healthPotions = await tx.inventoryItem.aggregate({ where: { characterId, isEquipped: false, blueprint: { name: 'Health Potion' } }, _sum: { quantity: true } });
+        defeat = defeatAdvice({ heroLevel: c.level, monsterLevel: b.monster.level, monsterHp: result.monsterHp, monsterMaxHp: b.monster.hp,
+          statPoints: c.statPoints, isBoss: b.monster.isBoss, lastIntent: monsterIntent(b.monster, b.turnVersion).kind, lastAction: action,
+          monsterElement: b.monster.element, fireResistance: stats.fireResistance, healthPotions: healthPotions._sum.quantity ?? 0,
+          mana: c.mana, healCost: skillCosts(c.vocation).HEAL });
+      }
       if(result.status!=='ONGOING') {
         await event(tx,characterId,'BATTLE',`${result.status==='VICTORY'?'Vitória':result.status==='DEFEAT'?'Derrota':'Fuga'}: ${b.monster.name}`,
-          result.status==='VICTORY'?`+${xpGain} XP e +${gold} ouro. ${droppedItems.length} tipo(s) de item encontrado(s).`:result.log.join(' '));
+          result.status==='VICTORY'?`+${xpGain} XP e +${gold} ouro. ${droppedItems.length} tipo(s) de item encontrado(s).`:[...result.log,...(defeat?.reasons??[])].join(' '));
         if(result.status==='VICTORY')await awardAchievements(tx,characterId);
       }
       return { ...result, battleId, turnVersion: b.turnVersion+1, maxHp: c.maxHp+(level-c.level)*5, monsterMaxHp: b.monster.hp,
-        monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
+        monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), defeat, rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
     });
   }
 }

@@ -51,7 +51,7 @@
 
 ### Antes do beta
 - [ ] **[Astra 6]** Início guiado (~30 min): primeira arma melhorada, primeiro chefe, primeira venda
-- [ ] **[Astra 4]** Registro de derrota explicando o motivo + revanche com dica
+- [x] **[Astra 4]** Registro de derrota explicando o motivo + revanche com dica (2026-10-31: `game/defeatAdvice.ts`, motivos também vão para o Diário; botões Ir ao Templo → Revanche)
 - [ ] **[Astra 13]** Aviso de manutenção + histórico de atualizações (changelog no jogo)
 - [ ] **[Astra 12]** Opção "reduzir movimento", não depender só de cor para raridade/perigo (ícone + texto)
 - [ ] **[Astra 2]** Bloqueio de item favorito (contra venda, anúncio e Ferreiro)

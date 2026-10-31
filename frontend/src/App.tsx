@@ -88,7 +88,7 @@ export default function App(){
  {tab==='ledger'&&<LedgerPanel characterId={hero.id}/>}
  {tab==='support'&&<SupportPanel/>}
  {tab==='admin'&&staff&&<AdminPanel/>}
- {tab==='hunt'&&<HuntPanel hero={hero} state={journeyState} monsters={monsters} battle={battle} busy={busy} start={start} turn={turn} dismiss={()=>setBattle(null)}/>}
+ {tab==='hunt'&&<HuntPanel hero={hero} state={journeyState} monsters={monsters} battle={battle} busy={busy} start={start} turn={turn} goTemple={()=>setTab('temple')} dismiss={()=>setBattle(null)}/>}
  {tab==='bag'&&<BagPanel hero={hero} inventory={inventory} selected={selected} setSelected={setSelected} bagFilter={bagFilter} setBagFilter={setBagFilter} premiumActive={premiumActive} busy={busy} fighting={fighting} config={config} price={price} setPrice={setPrice} command={command} perform={perform} onApplyFilter={()=>{bagFilterRef.current=bagFilter;void perform(()=>refresh(hero.id,1),'');}} goPage={p=>void perform(()=>refresh(hero.id,p),'')}/>}
  {tab==='shop'&&<ShopPanel hero={hero} shop={shop} busy={busy} command={command}/>}
  {tab==='market'&&<MarketPanel hero={hero} market={market} setMarket={setMarket} config={config} busy={busy} perform={perform} command={command}/>}
