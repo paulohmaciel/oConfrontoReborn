@@ -171,6 +171,32 @@ adminRoutes.post('/admin/orders/:id/refund', need('orders.manage'), asyncRoute(a
   }));
 }));
 
+// ----- Avisos para todos os jogadores (manutenção, eventos) -----
+adminRoutes.get('/admin/notices', need('notices.manage'), asyncRoute(async (_req, res) => {
+  res.json(await prisma.gameNotice.findMany({ orderBy: { id: 'desc' }, take: 10 }));
+}));
+adminRoutes.post('/admin/notices', need('notices.manage'), asyncRoute(async (req, res) => {
+  const reason = reasonOf(req.body), kind = req.body?.kind === 'MAINTENANCE' ? 'MAINTENANCE' : 'INFO';
+  const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
+  if (message.length < 5 || message.length > 300) throw new GameError(400, 'O aviso deve ter de 5 a 300 caracteres.');
+  const hours = req.body?.hours === undefined || req.body?.hours === null || req.body?.hours === '' ? null : Number(req.body.hours);
+  if (hours !== null && (!Number.isInteger(hours) || hours < 1 || hours > 720)) throw new GameError(400, 'Duração inválida (1 a 720 horas, ou vazio para até encerrar).');
+  res.json(await transaction(async tx => {
+    const notice = await tx.gameNotice.create({ data: { kind, message, endsAt: hours ? new Date(Date.now() + hours * 3_600_000) : null, createdById: actor(res) } });
+    await audit(tx, actor(res), 'NOTICE_CREATE', 'NOTICE', notice.id, reason, { kind, message, hours });
+    return notice;
+  }));
+}));
+adminRoutes.post('/admin/notices/:id/end', need('notices.manage'), asyncRoute(async (req, res) => {
+  const reason = reasonOf(req.body), id = integer(Number(req.params.id));
+  res.json(await transaction(async tx => {
+    const changed = await tx.gameNotice.updateMany({ where: { id, endedAt: null }, data: { endedAt: new Date() } });
+    if (!changed.count) throw new GameError(404, 'Aviso não encontrado ou já encerrado.');
+    await audit(tx, actor(res), 'NOTICE_END', 'NOTICE', id, reason);
+    return { ok: true };
+  }));
+}));
+
 // ----- Economia -----
 adminRoutes.get('/admin/economy/reconcile', need('economy.read'), asyncRoute(async (_req, res) => { res.json({ drift: await goldDrift(prisma, 100), itemDrift: await itemDrift(prisma, 100) }); }));
 adminRoutes.get('/admin/settings', need('settings.read'), asyncRoute(async (_req, res) => {

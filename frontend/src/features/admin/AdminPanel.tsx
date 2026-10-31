@@ -16,15 +16,15 @@ const Msg=({error,ok}:{error:string;ok:string})=><>{error&&<div className="error
 export default function AdminPanel({onLeave}:{onLeave?:()=>void}) {
   const [me,setMe]=useState<Me|null>(null),[tab,setTab]=useState(''),[error,setError]=useState('');
   useEffect(()=>{api<Me>('/admin/me').then(m=>{setMe(m);setTab(first(m));}).catch(e=>setError(msg(e)));},[]);
-  const first=(m:Me)=>[['tickets.read','tickets'],['accounts.read','accounts'],['economy.read','economy'],['settings.read','settings'],['orders.read','orders'],['audit.read','audit']].find(([p])=>m.permissions.includes(p as Permission))?.[1]??'';
+  const first=(m:Me)=>[['tickets.read','tickets'],['accounts.read','accounts'],['economy.read','economy'],['settings.read','settings'],['orders.read','orders'],['notices.manage','notices'],['audit.read','audit']].find(([p])=>m.permissions.includes(p as Permission))?.[1]??'';
   if(error)return <section className="panel"><p className="error" role="alert">{error}</p></section>;
   if(!me)return <section className="panel"><p>Carregando…</p></section>;
   const has=(p:Permission)=>me.permissions.includes(p);
-  const tabs=[has('tickets.read')&&['tickets','Atendimento'],has('accounts.read')&&['accounts','Contas'],has('economy.read')&&['economy','Economia'],has('settings.read')&&['settings','Configurações'],has('orders.read')&&['orders','Pagamentos'],has('audit.read')&&['audit','Auditoria']].filter(Boolean) as string[][];
+  const tabs=[has('tickets.read')&&['tickets','Atendimento'],has('accounts.read')&&['accounts','Contas'],has('economy.read')&&['economy','Economia'],has('settings.read')&&['settings','Configurações'],has('orders.read')&&['orders','Pagamentos'],has('notices.manage')&&['notices','Avisos'],has('audit.read')&&['audit','Auditoria']].filter(Boolean) as string[][];
   return <><section className="panel"><div className="section-title"><h2>Painel da equipe</h2><span className="pill">{roleName[me.role]??me.role}</span></div>
     <div className="admin-bar" role="tablist">{tabs.map(([id,label])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?'active-chip':''} onClick={()=>setTab(id)}>{label}</button>)}</div>
     <p className="muted">Toda alteração exige um motivo e fica registrada na auditoria com seu nome.</p></section>
-    {tab==='tickets'&&<Tickets can={has('tickets.reply')}/>}{tab==='accounts'&&<Accounts has={has}/>}{tab==='economy'&&<Economy/>}{tab==='settings'&&<Settings canWrite={has('settings.write')}/>}{tab==='orders'&&<Orders canManage={has('orders.manage')}/>}{tab==='audit'&&<Audit/>}</>;
+    {tab==='tickets'&&<Tickets can={has('tickets.reply')}/>}{tab==='accounts'&&<Accounts has={has}/>}{tab==='economy'&&<Economy/>}{tab==='settings'&&<Settings canWrite={has('settings.write')}/>}{tab==='orders'&&<Orders canManage={has('orders.manage')}/>}{tab==='notices'&&<Notices/>}{tab==='audit'&&<Audit/>}</>;
 }
 
 type TicketRow={id:number;kind:string;subject:string;status:string;updatedAt:string;account:{email:string}};
@@ -119,4 +119,23 @@ function Audit() {
   useEffect(()=>{api<{entries:AuditRow[];nextBefore:number|null}>('/admin/audit').then(r=>{setRows(r.entries);setNext(r.nextBefore);}).catch(()=>{});},[]);
   async function more(){if(next===null)return;const r=await api<{entries:AuditRow[];nextBefore:number|null}>(`/admin/audit?before=${next}`);setRows([...rows,...r.entries]);setNext(r.nextBefore);}
   return <section className="panel"><div className="section-title"><h2>Auditoria</h2></div><table className="admin-table"><thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Alvo</th><th>Motivo</th></tr></thead><tbody><LimitedRows items={rows} cols={10} render={r=><tr key={r.id}><td>{when(r.createdAt)}</td><td>#{r.actorAccountId}</td><td>{r.action}</td><td>{r.targetType}{r.targetId?` #${r.targetId}`:''}</td><td>{r.reason}{r.details?<><br/><small>{JSON.stringify(r.details)}</small></>:null}</td></tr>}/></tbody></table>{next!==null&&<button onClick={()=>void more()}>Ver mais</button>}</section>;
+}
+
+type NoticeRow={id:number;kind:string;message:string;startsAt:string;endsAt:string|null;endedAt:string|null};
+// Avisos que aparecem no topo do jogo para todos (inclusive na tela de entrada). Manutenção não pode ser fechada pelo jogador.
+function Notices(){
+  const [rows,setRows]=useState<NoticeRow[]>([]),[kind,setKind]=useState('INFO'),[message,setMessage]=useState(''),[hours,setHours]=useState(''),[reason,setReason]=useState(''),a=useAct();
+  const load=()=>api<NoticeRow[]>('/admin/notices').then(setRows).catch(()=>{});
+  useEffect(()=>{void load();},[]);
+  const active=(n:NoticeRow)=>!n.endedAt&&(!n.endsAt||new Date(n.endsAt)>new Date());
+  return <section className="panel"><div className="section-title"><h2>Avisos para os jogadores</h2></div><Msg error={a.error} ok={a.ok}/>
+    <form className="ops-form" onSubmit={e=>{e.preventDefault();void a.run(async()=>{await api('/admin/notices',{kind,message,hours:hours||null,reason});setMessage('');setReason('');await load();},'Aviso publicado.');}}>
+      <label>Tipo<select value={kind} onChange={e=>setKind(e.target.value)}><option value="INFO">Aviso (o jogador pode fechar)</option><option value="MAINTENANCE">Manutenção (fica no topo até encerrar)</option></select></label>
+      <label>Mensagem ({message.length}/300)<textarea value={message} onChange={e=>setMessage(e.target.value)} minLength={5} maxLength={300} rows={3} required/></label>
+      <label>Duração em horas (vazio = até encerrar)<input inputMode="numeric" value={hours} onChange={e=>setHours(e.target.value.replace(/\D/g,''))}/></label>
+      <label>Motivo (fica na auditoria)<input value={reason} onChange={e=>setReason(e.target.value)} minLength={5} maxLength={500} required/></label>
+      <button className="primary" disabled={a.busy}>Publicar aviso</button></form>
+    <Limited items={rows} label="Ver mais" render={n=><div className="ledger-row" key={n.id}><span>{n.kind==='MAINTENANCE'?'Manutenção':'Aviso'} · {when(n.startsAt)}</span><span>{n.message}</span><b>{active(n)?'No ar':n.endedAt?'Encerrado':'Expirado'}</b>
+      {active(n)&&<button disabled={a.busy} onClick={()=>{const r=window.prompt('Motivo para encerrar o aviso (fica na auditoria):');if(r)void a.run(async()=>{await api(`/admin/notices/${n.id}/end`,{reason:r});await load();},'Aviso encerrado.');}}>Encerrar</button>}</div>}/>
+    {!rows.length&&<p className="empty">Nenhum aviso publicado ainda.</p>}</section>;
 }

@@ -747,3 +747,17 @@ model GroupBattleFighter {
   @@unique([battleId, characterId])
   @@index([characterId, rewarded])
 }
+
+// Avisos da equipe para todos os jogadores (manutenção, eventos). Aparecem também na tela de entrada.
+model GameNotice {
+  id          Int       @id @default(autoincrement())
+  kind        String    @default("INFO") @db.VarChar(12) // INFO | MAINTENANCE
+  message     String    @db.VarChar(300)
+  startsAt    DateTime  @default(now())
+  endsAt      DateTime?
+  endedAt     DateTime?
+  createdById Int
+  createdAt   DateTime  @default(now())
+
+  @@index([endedAt, startsAt])
+}
