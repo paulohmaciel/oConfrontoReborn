@@ -206,3 +206,4 @@
 :root[data-theme="light"] .turn-number .hit{color:#8a2a12}:root[data-theme="light"] .turn-number .heal{color:#2f6b2a}
 :root[data-theme="light"] .mini-bar{background:#e8d4a8}
 @media(max-width:760px){.turn-cards{grid-template-columns:1fr}.turn-vs{display:none}.turn-number{font-size:24px}}
+.turn-card.foe-side.down{opacity:.85;box-shadow:inset -4px 0 0 #6b6b6b}.turn-card.foe-side.down header img{filter:grayscale(1)}
