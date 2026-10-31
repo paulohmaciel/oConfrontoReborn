@@ -1,0 +1,39 @@
+# Sprites TibiaWiki
+
+O diretório `frontend/public/assets/tibia` contém 30 sprites GIF reais do catálogo atual, baixados do TibiaWiki BR e verificados por HTTP 200, MIME e assinatura do formato. O manifesto associa `name` ao `path` local e registra origem, hash SHA-256, data e tamanho. O jogo pode servir esses arquivos sem depender de hotlink ou da API em cada tela.
+
+Itens e monstros incluídos: Rat, Rotworm, Cyclops, Dragon, Dragon Lord, Demon, Demon Helmet, Magic Plate Armor, Golden Legs, Boots of Haste, Mastermind Shield, Magic Longsword, Fire Sword, Platinum Amulet, Ring of the Sky, Backpack, Gold Coin, Health Potion, Mana Potion, Sword, Wooden Shield, Leather Armor e Leather Helmet.
+
+## Importador
+
+Node 20+; nenhuma dependência adicional. O diretório de saída padrão é `frontend/public/assets/tibia`.
+
+```text
+node scripts/import-icons.mjs
+node scripts/import-icons.mjs --refresh
+node scripts/import-icons.mjs --all --limit 100
+```
+
+`--out CAMINHO` altera a pasta de saída. O primeiro comando verifica e reutiliza o cache completo; `--refresh` solicita metadados e imagens novas. O modo `--all` enumera o catálogo raster do wiki por `allimages`, em lotes de até 100 arquivos por execução por padrão (máximo configurável: 1000), com retomada em `import-state.json`. Executá-lo novamente continua de onde parou. Não baixa todos os arquivos sem limite em uma única execução e não altera os dados do jogo automaticamente. Fotografias ou mapas grandes acima de 2 MiB são ignorados; SVG não é baixado. Concorrência máxima de 2, timeout de 20 segundos, cache validado por SHA-256 e limite de 64 MiB de imagens salvas por execução.
+
+O manifesto grava `status: unavailable` e motivo quando um arquivo falha. A interface deve usar fallback local para esse estado. O importador não transforma arquivos ausentes em URLs inventadas nem executa conteúdo baixado.
+
+## Origem e verificação
+
+A API pública `https://www.tibiawiki.com.br/api.php` respondeu HTTP 403 com desafio Cloudflare em 28/10/2026. Não foi contornado. O catálogo inicial pôde ser obtido dos arquivos de imagem públicos do próprio domínio. Rat e Magic Plate Armor tiveram URLs confirmadas pelos links das páginas de arquivo; os demais nomes foram resolvidos pelo esquema de arquivos MediaWiki e aceitos apenas após validar a resposta de imagem. Isso está distinguido em `sourceMethod`: `wiki-file-page` ou `public-file-verified`. Futuras consultas à API registram `mediawiki-api` e seus metadados quando acessíveis.
+
+Uma correção importante em relação ao seed original: Magic Plate Armor usa `https://www.tibiawiki.com.br/images/3/31/Magic_Plate_Armor.gif`, não o caminho `/6/63/` fornecido antes.
+
+Fontes consultadas:
+
+- Rat: https://tibiawiki.com.br/index.php?stable=1&title=Arquivo:Rat.gif
+- Magic Plate Armor: https://www.tibiawiki.com.br/wiki/Arquivo:Magic_Plate_Armor.gif
+- Créditos: https://www.tibiawiki.com.br/wiki/MediaWiki:Copyright
+
+O aviso de copyright do wiki atribui as imagens à CipSoft GmbH; não foi encontrada uma licença livre para redistribuição geral. Preserve o crédito “Sprites do Tibia © CipSoft GmbH. Fonte: TibiaWiki BR” e os links de origem. O download não transfere os direitos sobre os sprites.
+
+Verificação executada: 23 downloads válidos, 0 falhas; três testes do importador aprovados (host/HTTPS, nomes de arquivo e rejeição de HTML disfarçado de imagem). O modo `--all` foi implementado, mas não executado, pois a API estava bloqueada.
+
+## Catálogo 0.4
+
+Adicionados Bow, Wand of Vortex, Snakebite Rod, Wolf, Orc, Minotaur e Ghoul. Todos os sete arquivos foram verificados por assinatura GIF, tamanho e SHA-256. A página Arquivo:Bow.gif redireciona para Guardcatcher.gif no wiki; o manifesto preserva Bow como nome usado pelo jogo e registra o arquivo canônico e seu alias. O Guardião da Pedreira é conteúdo desta adaptação e reutiliza o sprite Cyclops já verificado. Os créditos e limites de uso permanecem os mesmos.

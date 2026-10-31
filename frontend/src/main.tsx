@@ -1,0 +1,13 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import App from './App';
+import './styles/style.css';
+import './styles/theme-classic.css';
+import './styles/theme-toggle.css';
+import './styles/adventure.css';
+import './styles/operations.css';
+import './styles/fire.css';
+import './styles/cover.css';
+import { applyTheme, savedTheme } from './lib/theme';
+applyTheme(savedTheme(), false);
+createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "backend/**/*.ts",
+    "frontend/src/**/*.tsx",
+    "frontend/src/**/*.ts"
+  ]
+}

@@ -1,0 +1,50 @@
+import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { asyncRoute, authenticate, validPassword } from './auth';
+import { prisma, transaction } from './db';
+import { GameError } from './engine';
+import { hashPassword } from './password';
+import { consumeToken, sendPasswordReset, sendVerification } from './accountTokens';
+
+// Montado em /api/auth (já sob o limitador geral de autenticação).
+export const emailRouter = Router();
+const strict = rateLimit({ windowMs: 15 * 60_000, limit: 8, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas solicitações. Aguarde antes de tentar novamente.' } });
+const RESET_RESPONSE = { ok: true, message: 'Se o e-mail estiver cadastrado, enviaremos um link para redefinir a senha.' };
+
+emailRouter.post('/forgot-password', strict, asyncRoute(async (req, res) => {
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  if (email.length > 190 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new GameError(400, 'Informe um e-mail válido.');
+  const account = await prisma.account.findUnique({ where: { email }, select: { id: true } });
+  // Resposta idêntica exista a conta ou não; o envio não bloqueia a resposta.
+  if (account) void sendPasswordReset(account.id, email).catch(error => console.error('[e-mail] falha na redefinição:', error instanceof Error ? error.message : error));
+  res.json(RESET_RESPONSE);
+}));
+emailRouter.post('/reset-password', strict, asyncRoute(async (req, res) => {
+  if (!validPassword(req.body?.password)) throw new GameError(400, 'A senha deve ter de 10 a 128 caracteres.');
+  const hash = await hashPassword(req.body.password);
+  await transaction(async tx => {
+    const accountId = await consumeToken(tx, req.body?.token, 'RESET');
+    if (!accountId) throw new GameError(400, 'Link inválido ou expirado. Peça um novo.');
+    // Quem recebeu o link no e-mail prova que controla o endereço.
+    await tx.account.update({ where: { id: accountId }, data: { password: hash } });
+    await tx.account.updateMany({ where: { id: accountId, emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } });
+    await tx.session.deleteMany({ where: { accountId } });
+  });
+  res.json({ ok: true });
+}));
+emailRouter.post('/verify-email', strict, asyncRoute(async (req, res) => {
+  await transaction(async tx => {
+    const accountId = await consumeToken(tx, req.body?.token, 'VERIFY');
+    if (!accountId) throw new GameError(400, 'Link inválido ou expirado. Peça um novo.');
+    await tx.account.updateMany({ where: { id: accountId, emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } });
+  });
+  res.json({ ok: true });
+}));
+emailRouter.post('/resend-verification', authenticate, strict, asyncRoute(async (_req, res) => {
+  const account = await prisma.account.findUniqueOrThrow({ where: { id: res.locals.accountId }, select: { id: true, email: true, emailVerifiedAt: true } });
+  if (account.emailVerifiedAt) { res.json({ ok: true, message: 'Seu e-mail já está confirmado.' }); return; }
+  const recent = await prisma.accountToken.findFirst({ where: { accountId: account.id, kind: 'VERIFY', createdAt: { gt: new Date(Date.now() - 60_000) } } });
+  if (recent) throw new GameError(429, 'Aguarde um minuto antes de pedir outro e-mail.');
+  await sendVerification(account.id, account.email);
+  res.json({ ok: true, message: 'Enviamos um novo link de confirmação.' });
+}));

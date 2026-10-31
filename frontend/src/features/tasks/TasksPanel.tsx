@@ -1,0 +1,5 @@
+import type {Hero,Task,GameConfig,Cmd} from '../../lib/types';
+import Icon from '../../ui/GameIcon';
+export default function TasksPanel({hero,tasks,config,busy,fighting,command}:{hero:Hero;tasks:Task[];config:GameConfig|null;busy:boolean;fighting:boolean;command:Cmd}){
+  return <section className="panel"><div className="section-title"><h2>Diário de caçadas</h2><span>Uma recompensa por tarefa</span></div>{tasks.map(t=>{const p=t.playerTasks[0];return <div className="market-row" key={t.id}><Icon name={t.monster.name} size={40}/><div><h3>{t.title}</h3><p>{Math.min(p?.currentKills??0,t.requiredKills)}/{t.requiredKills} · Nv. {t.minLevel} · {Math.floor(t.rewardExp*(config?.xpPercent??100)/100)} XP + {Math.floor(t.rewardGold*(config?.goldPercent??100)/100)} gp</p></div><button disabled={busy||fighting||hero.level<t.minLevel||p?.isCompleted||(!!p&&p.currentKills<t.requiredKills)} onClick={()=>void command(`tasks/${t.id}/${p?'claim':'accept'}`)}>{p?.isCompleted?'Concluída':p?'Receber':'Aceitar'}</button></div>;})}</section>;
+}

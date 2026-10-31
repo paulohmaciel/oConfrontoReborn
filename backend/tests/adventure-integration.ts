@@ -1,0 +1,74 @@
+import 'dotenv/config';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {once} from 'node:events';
+import {prisma,transaction} from '../src/core/db';
+import {createApp} from '../src/server';
+import {hashPassword} from '../src/core/password';
+import {chooseVocation,claimJourney,journeyState} from '../src/game/adventureService';
+import {BattleService} from '../src/game/battleService';
+import {upgrade} from '../src/game/gameService';
+test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
+  assert.match(process.env.DATABASE_URL??'',/\/[^/?]*_test(?:\?|$)/);
+  const tag=randomUUID().slice(0,8),password='Adventure-test-2026!';
+  const a=await prisma.account.create({data:{email:`adventure-${tag}@example.invalid`,password:await hashPassword(password),characters:{create:{name:`Jornada ${tag}`,strength:100,hp:1000,maxHp:1000,energy:1000,maxEnergy:1000,mana:1000,maxMana:1000,goldInHand:10000n}}},include:{characters:true}});
+  const c=a.characters[0];
+  const oldSword=await prisma.itemBlueprint.findUniqueOrThrow({where:{name:'Sword'}});
+  const original=await prisma.inventoryItem.create({data:{characterId:c.id,blueprintId:oldSword.id,isEquipped:true,equippedSlot:'WEAPON'}});
+  const rat=await prisma.monster.findUniqueOrThrow({where:{name:'Rat'}}),boss=await prisma.monster.findUniqueOrThrow({where:{name:'Guardião da Pedreira'}});
+  const server=createApp().listen(0,'127.0.0.1');await once(server,'listening');const address=server.address();assert(address&&typeof address!=='string');
+  const base=`http://127.0.0.1:${address.port}/api`;let cookie='';
+  const request=(p:string,body?:unknown)=>fetch(base+p,{method:body===undefined?'GET':'POST',headers:{Cookie:cookie,Origin:process.env.APP_ORIGIN??'http://localhost:5173','X-Game-Client':'oconfronto','Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
+  async function winRat(){const b=await BattleService.start(a.id,c.id,rat.id);const result=await BattleService.turn(a.id,c.id,b.id,0,'ATTACK');assert.equal(result.status,'VICTORY');}
+  try {
+    const login=await request('/auth/login',{email:a.email,password});assert.equal(login.status,200);cookie=login.headers.get('set-cookie')!.split(';')[0];
+    await t.test('região bloqueada é validada pelo servidor',async()=>{await assert.rejects(()=>BattleService.start(a.id,c.id,boss.id),/Região bloqueada/);});
+    await t.test('vocação de personagem existente preserva os itens',async()=>{
+      await chooseVocation(a.id,c.id,'PALADIN');assert(await prisma.inventoryItem.findUnique({where:{id:original.id}}));
+      assert.equal((await prisma.character.findUniqueOrThrow({where:{id:c.id}})).vocation,'PALADIN');
+      await assert.rejects(()=>chooseVocation(a.id,c.id,'DRUID'),/já foi escolhida/);
+      await assert.rejects(()=>chooseVocation(a.id,c.id,'__proto__'),/quatro vocações/);
+    });
+    await t.test('recompensa inicial concorrente é concedida uma vez',async()=>{
+      const before=await prisma.character.findUniqueOrThrow({where:{id:c.id}});
+      await Promise.all([claimJourney(a.id,c.id,0),claimJourney(a.id,c.id,0)]);
+      assert.equal((await prisma.character.findUniqueOrThrow({where:{id:c.id}})).goldInHand,before.goldInHand+25n);
+      const health=await prisma.itemBlueprint.findUniqueOrThrow({where:{name:'Health Potion'}});
+      assert.equal((await prisma.inventoryItem.aggregate({where:{characterId:c.id,blueprintId:health.id},_sum:{quantity:true}}))._sum.quantity,2);
+    });
+    await t.test('não permite pular objetivos ou receber sem completar',async()=>{
+      await assert.rejects(()=>claimJourney(a.id,c.id,4),/desatualizada/);await assert.rejects(()=>claimJourney(a.id,c.id,1),/Complete o objetivo/);
+    });
+    await t.test('vitórias, melhoria e tarefa fazem a jornada avançar',async()=>{
+      await winRat();await winRat();await claimJourney(a.id,c.id,1);
+      await upgrade(a.id,c.id,original.id,0,randomUUID());await claimJourney(a.id,c.id,2);
+      const task=await prisma.taskBlueprint.findUniqueOrThrow({where:{title:'Caçada: Rat'}});
+      assert.equal((await request(`/characters/${c.id}/tasks/${task.id}/accept`,{})).status,200);
+      for(let i=0;i<5;i++)await winRat();
+      assert.equal((await request(`/characters/${c.id}/tasks/${task.id}/claim`,{})).status,200);
+      await claimJourney(a.id,c.id,3);
+      const state=await transaction(tx=>journeyState(tx,c.id));assert(state.regions.find(r=>r.key==='quarry')?.unlocked);
+    });
+    await t.test('chefe anuncia golpe e pode ser interrompido em combate persistido',async()=>{
+      await prisma.character.update({where:{id:c.id},data:{strength:10}});
+      const b=await BattleService.start(a.id,c.id,boss.id);
+      await BattleService.turn(a.id,c.id,b.id,0,'ATTACK');
+      const charge=await BattleService.turn(a.id,c.id,b.id,1,'ATTACK');assert.equal(charge.intent.kind,'HEAVY');
+      const interrupt=await BattleService.turn(a.id,c.id,b.id,2,'INTERRUPT');assert.equal(interrupt.received,0);assert.match(interrupt.log.join(' '),/interrompeu/);
+      let version=3;for(let i=0;i<20;i++){const r=await BattleService.turn(a.id,c.id,b.id,version++,'ATTACK');if(r.status==='VICTORY')break;}
+      assert.equal((await prisma.battle.findUniqueOrThrow({where:{id:b.id}})).outcome,'VICTORY');
+    });
+    await t.test('jornada final libera ruínas e reenvio não duplica ouro',async()=>{
+      await claimJourney(a.id,c.id,4);const before=await prisma.character.findUniqueOrThrow({where:{id:c.id}});
+      await claimJourney(a.id,c.id,4);assert.equal((await prisma.character.findUniqueOrThrow({where:{id:c.id}})).goldInHand,before.goldInHand);
+      const state=await transaction(tx=>journeyState(tx,c.id));assert(state.finished);assert(state.regions.find(r=>r.key==='ruins')?.unlocked);
+    });
+    await t.test('diário retorna conquistas, bestiário e histórico real',async()=>{
+      const response=await request(`/characters/${c.id}/journal`);assert.equal(response.status,200);const j=await response.json();
+      assert(j.events.length>0);assert(j.achievements.find((a:any)=>a.key==='boss-slayer')?.unlockedAt);
+      assert.equal(j.bestiary.find((m:any)=>m.id===boss.id)?.wins,1);assert(j.history.some((b:any)=>b.rewardRecorded&&BigInt(b.rewardGold)>0));
+      assert.equal((await request(`/characters/${c.id+999999}/journal`)).status,404);
+    });
+  } finally {await new Promise<void>(r=>server.close(()=>r()));await prisma.$disconnect();}
+});

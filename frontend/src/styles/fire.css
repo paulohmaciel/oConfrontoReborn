@@ -1,0 +1,7 @@
+/* Efeito do +10: moldura de fogo (arte própria do projeto) em volta do quadrado do ícone.
+   A moldura é maior que o ícone: o "buraco" dela coincide com o quadrado do item e as chamas saem pelas bordas.
+   Medidas do buraco na imagem 320×320: x 77–244, y 104–263. Com "reduzir movimento", usa o primeiro quadro (parado). */
+.fire-icon{position:relative;display:inline-block;flex-shrink:0;line-height:0}
+.fire-icon>.sprite{position:relative;z-index:1}
+.fire-icon::after{content:'';position:absolute;left:-46.1%;top:-65.4%;width:191.6%;height:201.3%;background:url(/assets/fx/fire-frame.gif) 0 0/100% 100% no-repeat;pointer-events:none;z-index:2}
+@media (prefers-reduced-motion:reduce){.fire-icon::after{background-image:url(/assets/fx/fire-frame-static.png)}}

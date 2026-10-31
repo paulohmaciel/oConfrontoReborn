@@ -1,0 +1,51 @@
+{
+  "name": "oconfronto-jogo",
+  "private": true,
+  "scripts": {
+    "dev": "tsx backend/src/server.ts",
+    "web": "vite --config frontend/vite.config.ts",
+    "generate": "prisma generate --schema backend/prisma/schema.prisma",
+    "db:deploy": "prisma migrate deploy --schema backend/prisma/schema.prisma",
+    "seed": "tsx backend/prisma/seed.ts",
+    "master:create": "tsx backend/prisma/create-master.ts",
+    "admin:role": "tsx backend/prisma/grant-role.ts",
+    "check": "tsc --noEmit",
+    "build": "vite build --config frontend/vite.config.ts",
+    "test": "tsx --test backend/src/core/engine.test.ts backend/src/core/password.test.ts backend/src/game/adventure.test.ts backend/src/economy/economy.test.ts backend/src/premium/premium.test.ts backend/src/core/monitor.test.ts",
+    "test:integration": "tsx --test backend/tests/integration.ts backend/tests/adventure-integration.ts backend/tests/operations-integration.ts",
+    "backup": "node scripts/backup.mjs",
+    "backup:verify": "node scripts/backup-verify.mjs",
+    "economy:reconcile": "tsx backend/prisma/reconcile.ts",
+    "economy:opening": "tsx backend/prisma/opening-balance.ts",
+    "check:drawers": "node scripts/check-drawers.mjs",
+    "assets:audit": "node scripts/audit-assets.mjs",
+    "forge:simulate": "tsx scripts/simulate-forge.ts",
+    "mp:sim": "node scripts/mp-webhook-sim.mjs",
+    "icons": "node scripts/import-icons.mjs",
+    "start": "tsx backend/src/server.ts",
+    "test:icons": "node --test scripts/import-icons.test.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "5.19.0",
+    "express": "4.22.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "dotenv": "^16.6.1",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.21",
+    "@types/node": "20.14.15",
+    "@types/react": "18.3.3",
+    "prisma": "5.19.0",
+    "tsx": "4.23.15",
+    "typescript": "5.5.4",
+    "@types/react-dom": "18.3.0",
+    "vite": "^6.4.1",
+    "@vitejs/plugin-react": "^4.7.0",
+    "tailwindcss": "^4.1.18",
+    "@tailwindcss/vite": "^4.1.18"
+  },
+  "version": "0.5.0"
+}

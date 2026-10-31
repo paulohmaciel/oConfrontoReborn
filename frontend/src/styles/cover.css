@@ -1,0 +1,9 @@
+/* Capa com a mesma largura do bloco texto + login (1130px), com borda arredondada, acima do layout original de entrada. */
+.cover-hero{position:relative;width:calc(100% - 120px);max-width:1130px;margin:28px auto 0;aspect-ratio:2170/725;overflow:hidden;line-height:0;background:#0d0a0c;border:2px solid #7a5a33;border-radius:16px;box-shadow:0 14px 36px #0005}
+.cover-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.cover-hero+.login-shell{min-height:auto;padding-top:36px;padding-bottom:56px}
+@media(max-width:760px){.cover-hero{width:calc(100% - 40px);margin-top:14px;border-radius:12px}.cover-hero+.login-shell{padding-top:22px}}
+/* Tema claro: um único fundo para a página toda (o <html> tinha outra cor e aparecia como faixa no topo/rodapé). */
+html:root[data-theme="light"]{background:radial-gradient(ellipse at 20% 40%,#f4e2bd88,transparent 70%) fixed,#ddc89c}
+:where(:root[data-theme="light"]) body{background:transparent;min-height:100vh}
+:where(:root[data-theme="light"]) .cover-hero+.login-shell{background:none}

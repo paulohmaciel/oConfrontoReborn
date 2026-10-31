@@ -1,0 +1,21 @@
+# Orientações deste projeto
+
+- Stack oficial: Node.js + TypeScript + Express + Prisma + MySQL, frontend React + Tailwind. Execução local no Laragon; não migrar para Laravel.
+- Preferência visual do usuário: oferecer os dois temas com seletor. Modo claro = amarelo/pergaminho do original (#ddc89c, #f4e2bd, #633113, #b9892f). Modo escuro = estética verde inicial de style.css. ESCURO é o padrão inicial (decisão do dono em 2026-10-28; o claro continua disponível pelo seletor); respeitar escolha salva em localStorage e aplicar antes da renderização. Regras claras em theme-classic.css são limitadas a :root[data-theme="light"].
+- Preferência expressa do usuário: usar ícones e sprites do TibiaWiki em toda a interface. Não substituir o catálogo por emojis ou imagens genéricas. Todos os itens/monstros novos devem ter sprite do wiki verificado ou alternativa identificada como indisponível.
+- Registrar os assets em frontend/public/assets/tibia/manifest.json, com origem e SHA-256. Usar o importador e preservar créditos TibiaWiki/CipSoft; não inventar caminhos de arquivos nem contornar bloqueios do site.
+- Não sobrescrever .env, dados do jogador ou bases existentes. Migrações precisam preservar dados; a migração incluída é apenas inicial.
+- Toda mutação usa o lock/transação de Character e valida a conta autenticada. Dinheiro/XP devem permanecer BigInt no servidor e strings no JSON.
+- Ao alterar combate/economia, rodar TypeScript, testes unitários e cenários pertinentes no MySQL de testes. Testes de integração somente em base dedicada com sufixo _test.
+- Executar build do frontend após alterações em interface/manifesto. Manter os comandos de instalação em LEIA-ME.md atualizados.
+- Vocações, regiões e objetivos vêm de shared/adventure.ts. Estatísticas devem usar combatStats.ts no servidor; não duplicar fórmulas na interface.
+- A versão 0.4 usa migração aditiva. Preservar escolha de vocação, etapas recebidas, conquistas e eventos; não recalcular/reconceder recompensas durante GET ou seed.
+- Versão 0.5: todo ouro e item que muda de dono passa por `addGold`/`recordGold`/`addItem`/`recordItem` (`backend/src/economy/economy.ts`) na mesma transação, depois de `lockCharacter`. Não faça `goldInHand: { increment/decrement }` direto em serviços novos. Saldo negativo deve desfazer a transação.
+- Preços, taxas e recompensas vêm de `loadSettings` (`shared/economy.ts` define chaves, padrões e limites); nunca fixe esses números em serviços ou na interface.
+- Cargos (`Account.role`) só mudam por `npm run admin:role`. Rotas `/api/admin/*` exigem permissão (`shared/permissions.ts`), motivo e registro em `AdminAuditLog` na mesma transação.
+- Premium nunca altera regras de combate, XP, ouro ou drops. O acesso só é concedido pelo servidor, após validar a assinatura do webhook e consultar o pagamento no Mercado Pago; eventos repetidos devem ser idempotentes.
+- Não adicione dependências npm sem atualizar `package-lock.json` (o instalador usa `npm ci`).
+- Migrações continuam aditivas. A 0.5 é `202610280003_economy_admin_premium`.
+- Gavetas (0.5.1): o código é organizado em pastas por assunto (`GAVETAS.md`). Antes de mexer, leia a `GAVETA.md` da pasta. Servidor: `core` → `economy` → `premium` → `game` → `account` → `admin` → `server.ts` (só importa gavetas de baixo). Tela: `lib` → `ui` → `features/*` → `App.tsx`. Rode `npm run check:drawers`. Não crie arquivos soltos em `backend/src/` nem `frontend/src/`.
+
+- **Exceção local (só desenvolvimento):** `POST /api/auth/dev-login` cria/entra na conta `mestre@localhost.dev` (ADMIN, senha aleatória desconhecida) SOMENTE com `DEV_QUICK_LOGIN=1`, `NODE_ENV != production` e pedido vindo do loopback sem proxy. Nunca ligar em servidor público; remover do `.env` antes de publicar.
