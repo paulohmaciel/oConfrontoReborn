@@ -32,3 +32,25 @@
 .forge-cost{font-size:11px;opacity:.9}.forge-cost.short{color:#c4613a;opacity:1}
 .forge-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin:12px 0}
 .forge-subtitle{margin:16px 0 4px;font-size:14px}
+
+/* Radar de atributos (Atributos). Cores das séries validadas pelo dataviz/validate_palette.js; tema claro em theme-classic.css. */
+.attr-radar{--radar-surface:#20292c;--radar-you:#3987e5;--radar-typical:#d95926;--radar-grid:color-mix(in srgb,currentColor 16%,transparent);position:relative;display:grid;gap:12px;justify-items:center}
+.attr-radar svg{width:100%;max-width:360px;height:auto;overflow:visible}
+.attr-radar .ring{fill:none;stroke:var(--radar-grid);stroke-width:1}
+.attr-radar .spoke{stroke:var(--radar-grid);stroke-width:1}
+.attr-radar .series{fill:none;stroke-width:2;stroke-linejoin:round}
+.attr-radar .series.you{stroke:var(--radar-you);fill:color-mix(in srgb,var(--radar-you) 16%,transparent)}
+.attr-radar .series.typical{stroke:var(--radar-typical);stroke-dasharray:6 4}
+.attr-radar .dot{stroke:var(--radar-surface);stroke-width:2}.attr-radar .dot.you{fill:var(--radar-you)}.attr-radar .dot.typical{fill:var(--radar-typical)}
+.attr-radar .axis-label{fill:currentColor;font-size:12px;font-weight:600}
+.attr-radar .hit{fill:transparent;cursor:pointer;outline:none}.attr-radar .hit:focus-visible{stroke:currentColor;stroke-width:1.5}
+.radar-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;font-size:12px}
+.radar-legend span,.radar-tip span{display:inline-flex;align-items:center;gap:6px}
+.attr-radar .swatch{display:inline-block;width:16px;height:0;border-top:3px solid var(--radar-you);border-radius:2px}
+.attr-radar .swatch.typical{border-top:3px dashed var(--radar-typical)}
+.radar-tip{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;justify-content:center;padding:8px 12px;border-radius:8px;font-size:12px;border:1px solid color-mix(in srgb,currentColor 22%,transparent);background:color-mix(in srgb,currentColor 6%,transparent)}
+.radar-table{width:100%;max-width:420px;border-collapse:collapse;font-size:13px}
+.radar-table th,.radar-table td{padding:7px 8px;border-bottom:1px solid color-mix(in srgb,currentColor 14%,transparent);text-align:right;font-variant-numeric:tabular-nums}
+.radar-table th[scope=row],.radar-table thead th:first-child{text-align:left}.radar-table thead th{font-size:11px;letter-spacing:.5px;text-transform:uppercase;opacity:.75}
+.attr-radar>.muted{max-width:460px;text-align:center}
+.stats-page{display:grid;gap:18px}
