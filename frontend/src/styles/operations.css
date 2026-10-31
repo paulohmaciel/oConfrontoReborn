@@ -152,3 +152,12 @@
 :root[data-theme="light"] .gbar{background:#e8d4a8;border-color:#b9892f}
 :root[data-theme="light"] .intent.warning{color:#8a3d0c}
 @media(max-width:760px){.group-intro>.sprite,.group-intro>img{display:none}.party-grid,.action-grid{grid-template-columns:1fr}}
+/* Avisos da equipe e Novidades (features/news) */
+.notice-stack{display:grid;gap:8px;margin:0 0 16px}
+.game-notice{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #3b5646;border-radius:6px;background:#1c2a25;font-size:13px}
+.game-notice p{margin:0;flex:1}.game-notice.maintenance{background:#3a2a17;border-color:#9a6a2a}.game-notice.news{background:#1d2630;border-color:#3d5568}
+.changelog{display:grid;gap:12px}.changelog-entry{padding:12px 14px;border:1px solid #2f4a3e;border-radius:6px}.changelog-entry h3{margin:4px 0 6px}.changelog-entry ul{margin:0;padding-left:18px;font-size:13px}.changelog-entry li{margin:3px 0}
+:root[data-theme="light"] .game-notice{background:#f4e2bd;border-color:#b9892f;color:#3d2410}
+:root[data-theme="light"] .game-notice.maintenance{background:#ecc98a;border-color:#8a3d0c}
+:root[data-theme="light"] .game-notice.news{background:#efe0bd;border-color:#9a7a3a}
+:root[data-theme="light"] .changelog-entry{border-color:#b9892f;background:#f4e2bd}

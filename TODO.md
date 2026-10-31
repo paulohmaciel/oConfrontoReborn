@@ -54,11 +54,11 @@
 ### Antes do beta
 - [ ] **[Astra 6]** Início guiado (~30 min): primeira arma melhorada, primeiro chefe, primeira venda
 - [x] **[Astra 4]** Registro de derrota explicando o motivo + revanche com dica (2026-10-31: `game/defeatAdvice.ts`, motivos também vão para o Diário; botões Ir ao Templo → Revanche)
-- [ ] **[Astra 13]** Aviso de manutenção + histórico de atualizações (changelog no jogo)
+- [x] **[Astra 13]** Aviso de manutenção + histórico de atualizações: página Novidades (shared/changelog.ts) e avisos da equipe no topo, inclusive na entrada (notices.manage, motivo e auditoria; migração 202611010002_game_notices) (2026-10-31)
 - [ ] **[Astra 12]** Opção "reduzir movimento", não depender só de cor para raridade/perigo (ícone + texto)
 - [x] **[Astra 2]** Bloqueio de item favorito (contra venda, anúncio, Ferreiro e melhoria que pode quebrar sem Pedra); desfavoritar não exige Premium (2026-10-31)
 - [ ] **[Astra 7]** Indicadores de ouro criado × consumido × acumulado (painel admin)
-- [ ] Aviso de mudança do Ferreiro aos jogadores (changelog)
+- [x] Aviso de mudança do Ferreiro aos jogadores (entrada em Novidades)
 - [ ] Mensagem/limite contra cliques repetidos conferidos em todas as telas novas
 - [ ] SMTP real para e-mails (hoje só log)
 - [ ] Métricas de onboarding/retenção (tempo até 1ª conquista, motivo de derrota, abandono após quebra)
