@@ -20,7 +20,13 @@ export const items: CatalogItem[] = [
   item('Mastermind Shield', 'SHIELD', 30, 0, 37, 0, 50000, { fireResistance: 20 }), item('Magic Longsword', 'WEAPON', 50, 55, 40, 0, 150000),
   item('Fire Sword', 'WEAPON', 15, 35, 20, 0, 4000, { criticalChance: 2 }), item('Platinum Amulet', 'AMULET', 10, 0, 0, 2, 2500, { fireResistance: 15 }),
   item('Ring of the Sky', 'RING', 20, 0, 0, 1, 30000, { criticalChance: 8 }), item('Health Potion', 'CONSUMABLE', 1, 0, 0, 0, 50),
-  item('Mana Potion', 'CONSUMABLE', 1, 0, 0, 0, 60), item('Pedra de Proteção', 'LOOT', 1, 0, 0, 0, 0), item('Gold Coin', 'LOOT', 1, 0, 0, 0, 0),
+  item('Mana Potion', 'CONSUMABLE', 1, 0, 0, 0, 60),
+  // Poções por faixa (efeito em shared/potions.ts; o nível mínimo aqui é o mesmo de lá).
+  item('Strong Health Potion', 'CONSUMABLE', 50, 0, 0, 0, 200), item('Great Health Potion', 'CONSUMABLE', 100, 0, 0, 0, 450),
+  item('Ultimate Health Potion', 'CONSUMABLE', 250, 0, 0, 0, 1000), item('Supreme Health Potion', 'CONSUMABLE', 450, 0, 0, 0, 2500),
+  item('Strong Mana Potion', 'CONSUMABLE', 50, 0, 0, 0, 180), item('Great Mana Potion', 'CONSUMABLE', 100, 0, 0, 0, 400),
+  item('Ultimate Mana Potion', 'CONSUMABLE', 250, 0, 0, 0, 900),
+  item('Great Spirit Potion', 'CONSUMABLE', 100, 0, 0, 0, 600), item('Ultimate Spirit Potion', 'CONSUMABLE', 250, 0, 0, 0, 1500), item('Pedra de Proteção', 'LOOT', 1, 0, 0, 0, 0), item('Gold Coin', 'LOOT', 1, 0, 0, 0, 0),
   item('Bow', 'WEAPON', 1, 12, 0, 0, 80, { criticalChance: 3, speed: 3 }), item('Wand of Vortex', 'WEAPON', 1, 0, 0, 0, 80, { magicAttack: 12 }),
   item('Snakebite Rod', 'WEAPON', 1, 0, 0, 0, 80, { magicAttack: 10 }),
   // Fase 1 (níveis até 100). Armas novas têm vocação para dar identidade a cada classe.
