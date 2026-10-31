@@ -63,3 +63,9 @@ test('catálogo: todo monstro está numa região que existe e abre antes do nív
   assert.equal(new Set(items.map(i=>i.name)).size,items.length,'nomes de item repetidos');
   for(const i of items)if(i.vocations)for(const v of i.vocations.split(','))assert(v in vocations,`${i.name}: vocação ${v} inválida`);
 });
+test('missões: todo monstro do catálogo tem nome, quem pede e história próprios, sem nomes repetidos',async()=>{
+  const {missionFor}=await import('../../../shared/missions');
+  const all=monsters.map(x=>({name:x.name,...missionFor(x.name)}));
+  for(const x of all){assert.notEqual(x.giver,'Mural de missões de Capriel',`${x.name} caiu na história genérica`);assert(x.story.length>40,`${x.name}: história curta`);assert(!/thais/i.test(x.story+x.title+x.giver),`${x.name} ainda cita Thais`);}
+  assert.equal(new Set(all.map(x=>x.title)).size,all.length,'títulos de missão repetidos');
+});

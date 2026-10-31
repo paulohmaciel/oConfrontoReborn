@@ -36,7 +36,7 @@ export function skillLabels(value: string) {
     HEAL: 'Curar', DEFEND_SHIELD: 'Defender', INTERRUPT: 'Interromper', FLEE: 'Fugir' };
 }
 export const regions = [
-  { key: 'outskirts', name: 'Arredores de Thais', icon: 'Rat', minLevel: 1, journeyStep: 0, description: 'Campos e túneis próximos à cidade. O lugar ideal para seus primeiros encontros.' },
+  { key: 'outskirts', name: 'Campos do Amanhecer', icon: 'Rat', minLevel: 1, journeyStep: 0, description: 'Campos e túneis próximos à cidade. O lugar ideal para seus primeiros encontros.' },
   { key: 'quarry', name: 'Pedreira dos Gigantes', icon: 'Cyclops', minLevel: 2, journeyStep: 4, description: 'Escavações antigas dominadas por gigantes. Prove seu valor contra o guardião.' },
   { key: 'ruins', name: 'Ruínas Flamejantes', icon: 'Dragon', minLevel: 5, journeyStep: 5, description: 'Uma fortaleza esquecida. Leve proteção contra fogo e observe os chefes.' },
   { key: 'orc_camp', name: 'Acampamento Orc', icon: 'Orc Leader', minLevel: 15, journeyStep: 5, description: 'Tendas, paliçadas e guerreiras do norte. O Líder Orc comanda tudo lá do alto.' },
@@ -59,7 +59,7 @@ export const journey = [
   { key: 'vocation', title: 'Encontre sua vocação', description: 'Escolha como você quer lutar. Sua escolha será permanente nesta etapa.', icon: 'Sword', target: 1, gold: 25, xp: 0, action: 'vocation' },
   { key: 'victories', title: 'Primeiros confrontos', description: 'Derrote dois Rats nos arredores e aprenda a controlar os turnos.', icon: 'Rat', target: 2, gold: 50, xp: 50, action: 'hunt' },
   { key: 'upgrade', title: 'Prepare seu equipamento', description: 'Visite o Ferreiro e melhore um equipamento para +1.', icon: 'Magic Longsword', target: 1, gold: 50, xp: 50, action: 'forge' },
-  { key: 'task', title: 'Um trabalho bem-feito', description: 'Complete uma tarefa e receba sua recompensa. Depois, siga para a pedreira.', icon: 'Rotworm', target: 1, gold: 75, xp: 75, action: 'tasks' },
+  { key: 'task', title: 'Um trabalho bem-feito', description: 'Complete uma missão e receba sua recompensa. Depois, siga para a pedreira.', icon: 'Rotworm', target: 1, gold: 75, xp: 75, action: 'tasks' },
   { key: 'boss', title: 'O guardião da pedreira', description: 'Derrote o Guardião da Pedreira. Defenda ou interrompa seu golpe anunciado.', icon: 'Cyclops', target: 1, gold: 150, xp: 150, action: 'hunt' },
 ] as const;
 export const achievementDefinitions = [
