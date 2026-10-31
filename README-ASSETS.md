@@ -18,6 +18,10 @@ node scripts/import-icons.mjs --all --limit 100
 
 O manifesto grava `status: unavailable` e motivo quando um arquivo falha. A interface deve usar fallback local para esse estado. O importador não transforma arquivos ausentes em URLs inventadas nem executa conteúdo baixado.
 
+## Ícones dos locais de caça (arte própria)
+
+Os 16 ícones em `frontend/public/assets/regions/*.svg` foram desenhados para o projeto (não vêm do TibiaWiki), a pedido do dono. São gerados por `node scripts/region-icons.mjs`; para ajustar um desenho, edite o script e rode de novo. Se um ícone não carregar, a tela usa o sprite do TibiaWiki da região como reserva.
+
 ## Materiais do Ferreiro (2026-10-31)
 
 Importados com `node scripts/import-icons.mjs --verified-sources scripts/sprites-materiais.json`: Iron Ore, Small Ruby, Small Sapphire, Small Emerald, Small Diamond, Gold Ingot, Soul Orb, Demonic Essence (usados), além de Small Amethyst e Small Topaz (reserva). Draconian Steel e Hell Steel não responderam com imagem nesse nome de arquivo e ficaram como `unavailable` no manifesto; nada foi contornado.

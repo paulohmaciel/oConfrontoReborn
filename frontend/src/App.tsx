@@ -3,7 +3,7 @@ import {api,ApiError} from './lib/api';
 import {fmt} from './lib/format';
 import ThemeToggle from './ui/ThemeToggle';
 import Icon from './ui/GameIcon';
-import {tabs,adminTab,type Tab} from './lib/tabs';
+import {tabs,adminTab,pathForTab,tabFromPath,type Tab} from './lib/tabs';
 import HuntPanel from './features/adventure/HuntPanel';
 import {JourneyPanel,JournalPanel} from './features/adventure/AdventurePanels';
 import {type BaseVocation} from '../../shared/adventure';
@@ -28,7 +28,7 @@ import AdminPanel from './features/admin/AdminPanel';
 import type {Hero,Item,Monster,Battle,Blueprint,Listing,Task,JourneyState,GameConfig} from './lib/types';
 export default function App(){
  const [signed,setSigned]=useState(false),[checking,setChecking]=useState(true),[register,setRegister]=useState(false);
- const [hero,setHero]=useState<Hero|null>(null),[tab,setTab]=useState<Tab>('journey'),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState('');
+ const [hero,setHero]=useState<Hero|null>(null),[tab,setTab]=useState<Tab>(()=>tabFromPath(location.pathname)??'journey'),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState('');
  const [monsters,setMonsters]=useState<Monster[]>([]),[shop,setShop]=useState<Blueprint[]>([]),[inventory,setInventory]=useState<{items:Item[];total:number;page:number}>({items:[],total:0,page:1});
  const [market,setMarket]=useState<Listing[]>([]),[tasks,setTasks]=useState<Task[]>([]),[battle,setBattle]=useState<Battle|null>(null),[selected,setSelected]=useState<Item|null>(null),[price,setPrice]=useState('100'),[search,setSearch]=useState('');
  const [atlasSearch,setAtlasSearch]=useState('');
@@ -37,6 +37,12 @@ export default function App(){
  const [authView,setAuthView]=useState<'form'|'forgot'|'reset'>(()=>new URLSearchParams(location.search).has('redefinir')?'reset':'form'),[resetToken]=useState(()=>new URLSearchParams(location.search).get('redefinir')??''),[landing,setLanding]=useState('');
  const [bagFilter,setBagFilter]=useState({slot:'',q:'',fav:false}),bagFilterRef=useRef(bagFilter);
  const [menuOpen,setMenuOpen]=useState(false);
+ // A aba vive na URL: trocar de aba grava o endereço; voltar/avançar do navegador troca a aba.
+ useEffect(()=>{const path=pathForTab(tab);if(location.pathname===path)return;
+  // Endereço desconhecido (ex.: /xyz) é corrigido sem criar entrada no histórico.
+  if(tabFromPath(location.pathname)===null)history.replaceState(null,'',path);else history.pushState(null,'',path);},[tab]);
+ useEffect(()=>{const back=()=>setTab(tabFromPath(location.pathname)??'journey');window.addEventListener('popstate',back);return()=>window.removeEventListener('popstate',back);},[]);
+ useEffect(()=>{const label=[...tabs,adminTab].find(t=>t[0]===tab)?.[1];document.title=label&&tab!=='journey'?`${label} · O Confronto`:'O Confronto · Crônicas de um aventureiro';},[tab]);
  const bagPage=useRef(1); const lock=useRef(false);const heroId=useRef<number|null>(null);
  const notifyError=(e:unknown)=>{setError(e instanceof Error?e.message:'Ocorreu um erro.');if(e instanceof ApiError&&e.status===401){setSigned(false);setHero(null);heroId.current=null;}};
  async function refresh(id:number,page=1){
