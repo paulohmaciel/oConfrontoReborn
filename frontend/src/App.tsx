@@ -22,7 +22,7 @@ import StatsPanel from './features/hero/StatsPanel';
 import BagPanel from './features/inventory/BagPanel';
 import EquipmentPanel from './features/inventory/EquipmentPanel';
 import ShopPanel from './features/shop/ShopPanel';
-import MarketPanel,{type MarketPage} from './features/market/MarketPanel';
+import MarketPanel,{marketQuery,type MarketPage} from './features/market/MarketPanel';
 import ForgePanel from './features/forge/ForgePanel';
 import TasksPanel from './features/tasks/TasksPanel';
 import AtlasPanel from './features/atlas/AtlasPanel';
@@ -82,7 +82,7 @@ export default function App(){
    if(tab==='tasks')api<Task[]>(`/characters/${id}/tasks`).then(setTasks).catch(notifyError);
  },[tab,signed]);
  async function perform(work:()=>Promise<unknown>,message='Ação concluída.'){if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{const result=await work();const serverMessage=result&&typeof result==='object'&&'message' in result&&typeof result.message==='string'?result.message:'';setNotice(typeof result==='string'&&result?result:serverMessage||message);setSelected(null);if(heroId.current)await refresh(heroId.current,bagPage.current);
-  if(tab==='market')setMarket(await api<Page<Listing>>(`/market?page=${market.page}${market.q?`&q=${encodeURIComponent(market.q)}`:''}`));if(tab==='tasks'&&heroId.current)setTasks(await api<Task[]>(`/characters/${heroId.current}/tasks`));
+  if(tab==='market'&&heroId.current)setMarket({...await api<Page<Listing>>(`/market?page=${market.page}${marketQuery(market.filters,hero?.level??1)}`),filters:market.filters});if(tab==='tasks'&&heroId.current)setTasks(await api<Task[]>(`/characters/${heroId.current}/tasks`));
  }catch(e){notifyError(e);if(heroId.current)await refresh(heroId.current,bagPage.current).catch(()=>{});}finally{lock.current=false;setBusy(false);}}
  const command=(action:string,body:unknown={})=>perform(()=>api(`/characters/${heroId.current}/${action}`,body,crypto.randomUUID()));
  async function authenticateDev(){await perform(async()=>{await api('/auth/dev-login',{});await enter();},'Bem-vindo, Mestre.');}
