@@ -161,7 +161,8 @@
 :root[data-theme="light"] .game-notice.maintenance{background:#ecc98a;border-color:#8a3d0c}
 :root[data-theme="light"] .game-notice.news{background:#efe0bd;border-color:#9a7a3a}
 :root[data-theme="light"] .changelog-entry{border-color:#b9892f;background:#f4e2bd}
-/* "Menos movimento" (botão ao lado do tema; sem escolha salva, segue o sistema) */
+.settings-panel .settings-option{grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:12px 0;border-top:1px solid #ffffff14}.settings-panel .settings-option small{display:block;margin-top:4px;line-height:1.4}@media(max-width:640px){.settings-panel .settings-option{grid-template-columns:1fr}}
+/* "Menos movimento" (opção Animações em Configurações; sem escolha salva, segue o sistema) */
 :root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 :root[data-motion="reduce"] .fire-icon::after{background-image:url(/assets/fx/fire-frame-static.png)!important}
 /* Brilho por faixa de melhoria (ui/GameIcon): +7/+8 discreto, +9 forte; +10 usa o fogo de fire.css. Sem movimento: brilho parado. */

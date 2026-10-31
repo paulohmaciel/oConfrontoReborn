@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-10-31-configuracoes', date: '2026-10-31', title: 'Menu Configurações', items: [
+    'Nova aba Configurações (no grupo Conta): tema claro ou escuro e animações ligadas ou desligadas, com a explicação do que cada escolha muda.',
+    'O botão "Menos movimento" saiu do cabeçalho; agora é a opção Animações em Configurações.',
+  ] },
   { id: '2026-10-31-duelo', date: '2026-10-31', title: 'Duelo entre amigos', items: [
     'Nova aba Duelo: desafie um amigo do seu nível (até 10% de diferença) para um duelo de honra. Os dois escolhem em segredo o golpe de cada rodada; quem tem mais agilidade age primeiro.',
     'Nada se perde: vida, mana, ouro, XP e itens ficam iguais. Só vitórias e derrotas entram no registro, com sequência, histórico e o ranking de Honra por classe.',
