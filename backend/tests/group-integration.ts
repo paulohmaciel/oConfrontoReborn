@@ -27,7 +27,8 @@ test('MySQL: caçada em grupo com amigos', async t => {
 
   await t.test('só a partir do nível 100, e só amigos do líder entram', async () => {
     await assert.rejects(() => createParty(young.a, young.c, 'serra'), /nível 100/);
-    await assert.rejects(() => createParty(knight.a, knight.c, 'dragao'), /indisponível/);
+    await assert.rejects(() => createParty(knight.a, knight.c, 'dragao'), /nível 550/);
+    await assert.rejects(() => createParty(knight.a, knight.c, 'inexistente'), /indisponível/);
     await createParty(knight.a, knight.c, 'serra');
     await assert.rejects(() => createParty(knight.a, knight.c, 'serra'), /já está num grupo/);
     await assert.rejects(() => inviteFriend(knight.a, knight.c, stranger.name), /seu amigo/);
@@ -118,5 +119,39 @@ test('MySQL: caçada em grupo com amigos', async t => {
     assert.equal(s.party, null);
     await createParty(paladin.a, paladin.c, 'serra');
     await leaveParty(paladin.a, paladin.c);
+  });
+
+  await t.test('dragão: o grupo vota o destino, que vai para o Diário, e as quatro marcas viram conquista', async () => {
+    await prisma.character.updateMany({ where: { id: { in: [knight.c, paladin.c] } }, data: { level: 600, energy: 100, hp: 5000, mana: 2000 } });
+    await createParty(knight.a, knight.c, 'dragao');
+    await inviteFriend(knight.a, knight.c, paladin.name);
+    await answerInvite(paladin.a, paladin.c, (await groupState(paladin.a, paladin.c, '')).invites[0].id, true);
+    const id = (await startGroupHunt(knight.a, knight.c)).battleId;
+    const view = (await groupState(knight.a, knight.c, '')).battle!;
+    assert.equal(view.mechanic, 'dragon'); assert.equal(view.counters, 4); assert.equal(view.phase, 'FIGHT');
+    await assert.rejects(() => chooseGroupAction(knight.a, knight.c, id, 1, 'SLAY'), /não é da sua vocação/);
+    // Vitórias anteriores nas outras três caçadas (para a conquista das quatro marcas).
+    const party = await prisma.huntParty.findFirstOrThrow({ where: { leaderId: knight.c, status: 'FIGHTING' } });
+    for (const huntKey of ['floresta', 'lago']) {
+      const old = await prisma.groupBattle.create({ data: { partyId: party.id, huntKey, bossHp: 0, bossMaxHp: 1, state: {}, deadlineAt: new Date(), isFinished: true, outcome: 'VICTORY' } });
+      await prisma.groupBattleFighter.create({ data: { battleId: old.id, characterId: knight.c, vocation: 'KNIGHT', hp: 1, maxHp: 1, mana: 0, maxMana: 0 } });
+    }
+    // Leva o dragão até a escolha: só dá para votar.
+    const b = await prisma.groupBattle.findUniqueOrThrow({ where: { id } });
+    await prisma.groupBattle.update({ where: { id }, data: { state: { ...(b.state as object), phase: 'CHOICE', counters: 0 } } });
+    assert.deepEqual((await groupState(knight.a, knight.c, '')).battle!.fighters.find(f => f.characterId === knight.c)!.actions, ['SLAY', 'SLEEP']);
+    await assert.rejects(() => chooseGroupAction(knight.a, knight.c, id, 1, 'ATTACK'), /vota/);
+    await chooseGroupAction(knight.a, knight.c, id, 1, 'SLAY');
+    await chooseGroupAction(paladin.a, paladin.c, id, 1, 'SLEEP');
+    const end = await prisma.groupBattle.findUniqueOrThrow({ where: { id } });
+    assert.equal(end.outcome, 'VICTORY'); assert.equal((end.state as { choice: string }).choice, 'SLEEP', 'empate = fazer dormir');
+    for (const h of [knight, paladin]) {
+      const diary = await prisma.adventureEvent.findFirstOrThrow({ where: { characterId: h.c, kind: 'GROUP' }, orderBy: { id: 'desc' } });
+      assert.match(diary.description, /voltar a dormir/);
+      assert(await prisma.characterAchievement.findUnique({ where: { characterId_key: { characterId: h.c, key: 'group-hunter' } } }));
+    }
+    assert(await prisma.characterAchievement.findUnique({ where: { characterId_key: { characterId: knight.c, key: 'four-marks' } } }));
+    assert.equal(await prisma.characterAchievement.findUnique({ where: { characterId_key: { characterId: paladin.c, key: 'four-marks' } } }), null);
+    await leaveParty(knight.a, knight.c);
   });
 });

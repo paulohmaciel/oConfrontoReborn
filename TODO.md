@@ -110,7 +110,7 @@
 - [x] Regra do site: nenhuma lista com mais de 10 itens de uma vez ("Ver mais" e/ou busca) — `ui/ShowMore.tsx` (Limited, LimitedRows) em todas as telas; Missões em 10 faixas de nível com drill-down e busca; Mercador com busca; regiões ordenadas (liberadas mais altas primeiro); mochila com 10 por página (2026-10-31)
 - [x] Páginas numeradas (Anterior 1 … 4 5 6 … N Próxima) no servidor para o que cresce com os jogadores: mercado (com busca), extrato, histórico do mercado, atendimentos, combates e memórias do diário, recados, depoimentos, amigos, visitas, fórum e mochila (2026-10-31)
 - [x] Caçada em grupo, fase 1 (/cacada-em-grupo): nível 100+, grupo de 2 a 4 amigos, convites, rodadas com prazo (quem não escolhe defende), ações por vocação (Segurar, Mirar, Curar o grupo, Quebrar selo), 1ª caçada "Fera da Serra Vermelha" com o laço, recompensas por loadSettings (group.*) com limite semanal; migração `202611010001_group_hunt`; `npm run group:simulate` (2026-10-31)
-- [ ] Caçada em grupo, fase 2: Floresta Oca, Lago Cinzento e o Dragão (com a escolha final gravada no Diário)
+- [x] Caçada em grupo, fase 2: Floresta Oca (encantamento: metade do dano até o Feiticeiro desfazer; bônus), Lago Cinzento (névoa com ilusões que a mira e a luz vencem + veneno que o Druida corta) e o Dragão (selos que o deixam furioso; com 25% de vida o grupo vota derrotar ou fazer dormir, gravado no Diário); conquistas "Ninguém caça sozinho" e "As Quatro Marcas" (2026-10-31)
 - [ ] Caçada em grupo com amigos a partir de um nível — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
 
 ### Depois de validar o jogo
