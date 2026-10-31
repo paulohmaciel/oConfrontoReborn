@@ -9,7 +9,7 @@ function Meter({label,value,max,kind='hp'}:{label:string;value:number;max:number
 function XpMeter({hero}:{hero:Hero}){
   const max=hero.level>=MAX_LEVEL,start=expForLevel(hero.level),next=expForLevel(hero.level+1),xp=BigInt(hero.experience);
   const done=max?1:Math.min(1,Math.max(0,Number((xp-start)*10000n/(next-start))/10000));
-  const left=max?0n:next-xp;
+  const left=max||xp>=next?0n:next-xp;
   return <div className="xp-meter"><div className="xp"><span>Nível {hero.level}{max?'':` → ${hero.level+1}`}</span><b>{max?'Nível máximo':`${(done*100).toFixed(1).replace('.',',')}%`}</b></div>
     <progress className="xp-bar" aria-label={max?'Nível máximo':`Experiência do nível ${hero.level}: ${(done*100).toFixed(1)}%`} max={1} value={done}/>
     <small className="xp-detail">{fmt(hero.experience)} XP{max?'':` · faltam ${fmt(left.toString())}`}</small></div>;

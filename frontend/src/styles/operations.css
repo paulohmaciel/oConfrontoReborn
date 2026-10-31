@@ -103,3 +103,22 @@
 .avatar-picker button{width:52px;height:52px;padding:0;display:grid;place-items:center;position:relative}.avatar-picker button.selected{border-color:#b9892f;box-shadow:0 0 0 1px #b9892f}
 .avatar-picker button.legendary{border-color:color-mix(in srgb,#b9892f 50%,transparent)}.avatar-picker button i{position:absolute;right:2px;bottom:0;font-style:normal;font-size:11px}
 @media(max-width:900px){.profile-grid{grid-template-columns:1fr}}
+
+/* "Ver mais" (regra do site: no máximo 10 itens por vez). */
+.show-more{display:block;width:100%;margin-top:12px;border-style:dashed}
+
+/* Fórum estilo Reddit. */
+.forum{display:grid;gap:16px}.forum-head .section-title{margin-bottom:12px}
+.forum-cats,.forum-tools>div{display:flex;flex-wrap:wrap;gap:6px}.forum-cats button{display:inline-flex;align-items:center;gap:6px;min-height:36px}
+.forum-tools{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-top:10px}.forum-tools input{flex:1 1 200px;max-width:320px}
+.thread{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:12px 0;border-bottom:1px solid color-mix(in srgb,currentColor 14%,transparent)}.thread.open{border:0}
+.votes{display:grid;justify-items:center;gap:2px;min-width:36px}.votes b{font-size:13px;font-variant-numeric:tabular-nums}
+.votes button{padding:2px 8px;font-size:11px;background:transparent;border-color:transparent}.votes button.up.on{color:#e07a2e;border-color:#e07a2e}.votes button.down.on{color:#5b8de0;border-color:#5b8de0}
+.thread-body{min-width:0;display:grid;gap:4px}.thread-title{background:none;border:0;padding:0;text-align:left;font-size:15px;font-weight:600;color:inherit}.thread-title:hover{text-decoration:underline}
+.thread-heading{font-family:Georgia,serif;font-size:22px;font-weight:400}
+.thread-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;opacity:.85}.pill.solved{border-color:#2f8f4e;color:#2f8f4e}
+.who{display:inline-flex;align-items:center;gap:4px}
+.comment{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:12px 0;border-bottom:1px solid color-mix(in srgb,currentColor 12%,transparent)}
+.comment.reply{margin-left:8px;padding-left:10px;border-left:2px solid color-mix(in srgb,currentColor 18%,transparent);border-bottom:0}
+.comment.solved>.comment-body{border-left:3px solid #2f8f4e;padding-left:10px}.comment-body{min-width:0}
+.forum-new,.forum-comment-form{max-width:none}.forum-new textarea,.forum-comment-form textarea{width:100%}
