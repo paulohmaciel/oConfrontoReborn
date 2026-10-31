@@ -70,6 +70,7 @@ export async function claimJourney(accountId:number,characterId:number,expectedS
     await event(tx,characterId,'JOURNEY',step.title,`Etapa concluída. +${step.xp} XP e +${step.gold} ouro.`);
     if(expectedStep===3)await event(tx,characterId,'REGION','A pedreira está aberta','Você recebeu autorização para explorar a Pedreira dos Gigantes.');
     await awardAchievements(tx,characterId);
-    return {message:`Etapa concluída! +${step.xp} XP e +${step.gold} ouro.`};
+    const gains=[step.xp>0&&`+${step.xp} XP`,step.gold>0&&`+${step.gold} ouro`,expectedStep===0&&'2 poções de vida e 1 de mana'].filter(Boolean).join(', ');
+    return {message:`Etapa concluída!${gains?` Você recebeu ${gains}.`:''}${level>c.level?` Subiu para o nível ${level}!`:''}`};
   });
 }

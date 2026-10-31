@@ -45,7 +45,7 @@ export class BattleService {
     const action = parseAction(rawAction);
     return transaction(async tx => {
       const c = await lockCharacter(tx, accountId, characterId);
-      const b = await tx.battle.findFirst({ where: { id: battleId, characterId }, include: { monster: { include: { loots: true } } } });
+      const b = await tx.battle.findFirst({ where: { id: battleId, characterId }, include: { monster: { include: { loots: { include: { blueprint: { select: { name: true } } } } } } } });
       if (!b) throw new GameError(404, 'Batalha não encontrada.');
       if (b.isFinished || b.turnVersion !== expectedTurn) throw new GameError(409, 'Turno desatualizado ou batalha encerrada.');
       const equipment = await tx.inventoryItem.findMany({ where: { characterId, isEquipped: true }, include: { blueprint: true } });
@@ -60,7 +60,7 @@ export class BattleService {
         ...stats,agility:c.agility,vocation:c.vocation },
         { hp: b.monsterHp, attack: b.monster.attack, defense: b.monster.defense,isBoss:b.monster.isBoss,turn:b.turnVersion,element:b.monster.element }, action, dice);
       let experience = c.experience, level = c.level, gold = 0, xpGain = 0;
-      const droppedItems: { blueprintId: number; quantity: number }[] = [];
+      const droppedItems: { blueprintId: number; quantity: number; name: string }[] = [];
       if (result.status === 'VICTORY') {
         if (b.monster.experience < 0 || b.monster.goldMin < 0 || b.monster.goldMax < b.monster.goldMin)
           throw new GameError(409, 'Recompensa do monstro inválida.');
@@ -73,7 +73,7 @@ export class BattleService {
           if (loot.dropChance < 0 || loot.dropChance > 1 || !Number.isFinite(loot.dropChance) || loot.maxAmount < 1)
             throw new GameError(409, 'Tabela de loot inválida. Use probabilidades entre 0 e 1.');
           if (dice(1, 1000000) <= Math.floor(loot.dropChance * 1000000)) {
-            const drop = { blueprintId: loot.blueprintId, quantity: dice(1, loot.maxAmount) };
+            const drop = { blueprintId: loot.blueprintId, quantity: dice(1, loot.maxAmount), name: loot.blueprint.name };
             await addItem(tx, characterId, drop.blueprintId, drop.quantity, 'LOOT', { type: 'battle', id: battleId });
             droppedItems.push(drop);
           }
@@ -93,7 +93,7 @@ export class BattleService {
         if(result.status==='VICTORY')await awardAchievements(tx,characterId);
       }
       return { ...result, battleId, turnVersion: b.turnVersion+1, maxHp: c.maxHp+(level-c.level)*5, monsterMaxHp: b.monster.hp,
-        monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), rewards: { gold: String(gold), experience: experience.toString(), level, droppedItems } };
+        monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
     });
   }
 }
