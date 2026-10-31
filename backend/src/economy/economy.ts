@@ -7,6 +7,10 @@ export interface Ref { type: string; id: number }
 const STACKABLE = ['LOOT', 'CONSUMABLE'];
 export const isStackable = (slot: string) => STACKABLE.includes(slot);
 
+// Favorito é protegido contra perda: venda ao NPC, anúncio, Ferreiro e melhoria que pode quebrar.
+export function assertNotFavorite(item: { favorite: boolean }, what: string) {
+  if (item.favorite) throw new GameError(409, `Este item é favorito e está protegido. Tire a estrela na mochila para ${what}.`);
+}
 // Toda alteração de ouro passa por aqui, na mesma transação da operação, e deixa um registro auditável.
 // Executar depois de lockCharacter. Saldo negativo desfaz a transação inteira.
 export async function addGold(tx: Tx, characterId: number, delta: bigint, reason: GoldReason, ref?: Ref) {

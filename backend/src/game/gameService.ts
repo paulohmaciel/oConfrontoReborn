@@ -4,7 +4,7 @@ import { transaction, lockCharacter } from '../core/db';
 import { GameError, integer } from '../core/engine';
 import { parseStat, upgradePrice } from './gameRules';
 import {event,awardAchievements} from './adventureService';
-import { addGold, recordItem } from '../economy/economy';
+import { addGold, assertNotFavorite, recordItem } from '../economy/economy';
 import { loadSettings } from '../core/settings';
 import { randomInt } from 'node:crypto';
 import { makeRare, retireRare, RARE_TIER } from '../economy/rare';
@@ -95,6 +95,7 @@ export async function sellNpc(accountId: number, characterId: number, itemId: nu
     if (!item) throw new GameError(404, 'Item não encontrado.');
     if (item.isEquipped || item.equippedSlot !== null || item.quantity < 1 || item.blueprint.npcPrice < 1)
       throw new GameError(409, 'Item indisponível para venda. Desequipe-o primeiro.');
+    assertNotFavorite(item, 'vender');
     // O NPC paga só o preço-base: a melhoria se perderia. Quem quer valorizar o item deve anunciá-lo no mercado.
     if (item.upgradeTier > 0 && !confirmUpgraded)
       throw new GameError(409, `Este item está melhorado (+${item.upgradeTier}). O NPC paga só o preço-base e a melhoria se perde. Anuncie no mercado para vendê-lo por mais.`);
@@ -128,6 +129,8 @@ export async function upgrade(accountId: number, characterId: number, itemId: nu
       // O ouro é gasto de qualquer jeito; o resultado (sucesso, falha ou quebra) é decidido aqui, no servidor.
       await addGold(tx, characterId, -cost, 'UPGRADE', { type: 'item', id: itemId });
       const rules = { safeUntilTier: settings['upgrade.safeUntilTier'], breakFromTier: settings['upgrade.breakFromTier'], breakOnFailPercent: settings['upgrade.breakOnFailPercent'] };
+      // Favorito só tenta melhoria que pode quebrar com Pedra de Proteção.
+      if (item.favorite && !stone && item.upgradeTier >= rules.breakFromTier && rules.breakOnFailPercent > 0) assertNotFavorite(item, 'arriscar uma melhoria que pode quebrar (ou use uma Pedra de Proteção)');
       const rolled: UpgradeOutcome = resolveUpgrade(item.upgradeTier, rules, randomInt(1, 101), randomInt(1, 101));
       // A pedra só é consumida quando realmente evitou a quebra.
       let outcome: UpgradeResult = rolled;

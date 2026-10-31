@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { prisma, transaction, lockCharacter, lockCharacterAny } from '../core/db';
 import { GameError, integer } from '../core/engine';
 import { once } from '../core/operations';
-import { addGold, addItem, recordItem } from './economy';
+import { addGold, addItem, assertNotFavorite, recordItem } from './economy';
 import { loadSettings } from '../core/settings';
 import { saleFee } from '../../../shared/economy';
 const MAX_GOLD = 1000000000000n;
@@ -28,6 +28,7 @@ export async function listItem(accountId: number, characterId: number, itemId: n
       const item = await tx.inventoryItem.findFirst({ where: { id: itemId, characterId } });
       if (!item) throw new GameError(404, 'Item não encontrado.');
       if (item.isEquipped || item.equippedSlot || item.quantity < 1) throw new GameError(409, 'Desequipe o item primeiro.');
+      assertNotFavorite(item, 'anunciar');
       if (await tx.marketListing.count({ where: { sellerId: characterId, status: 'OPEN' } }) >= MAX_OPEN_LISTINGS) throw new GameError(409, `Limite de ${MAX_OPEN_LISTINGS} anúncios abertos.`);
       const settings = await loadSettings(tx), listingFee = BigInt(settings['market.listingFeeGold']);
       if (c.goldInHand < listingFee) throw new GameError(409, `Ouro insuficiente para a taxa de anúncio (${listingFee}).`);
