@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-10-31-turnos', date: '2026-10-31', title: 'Combate: turno a turno, ataque × defesa', items: [
+    'Cada turno aparece em dois cartões lado a lado: o seu golpe e o do monstro, com o dano em destaque, críticos, esquivas, golpes pesados e interrupções.',
+    'Ver histórico completo mostra todos os turnos do combate e o total de dano causado, recebido, cura, críticos e esquivas.',
+  ] },
   { id: '2026-10-31-pocoes', date: '2026-10-31', title: 'Poções para todos os níveis e lojas separadas por tipo', items: [
     'Novas poções do TibiaWiki: Strong, Great, Ultimate e Supreme Health Potion; Strong, Great e Ultimate Mana Potion; Great e Ultimate Spirit Potion (vida e mana).',
     'Cada poção cura um valor fixo mais uma parte da sua vida/mana máxima, e as mais fortes pedem nível mínimo. Monstros de cada faixa deixam as poções do seu nível.',

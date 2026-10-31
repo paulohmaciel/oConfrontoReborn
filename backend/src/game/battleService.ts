@@ -1,6 +1,7 @@
 import { randomInt } from 'node:crypto';
+import type { Prisma } from '@prisma/client';
 import { transaction, lockCharacter } from '../core/db';
-import { GameError, integer, parseAction, resolveTurn, monsterIntent } from '../core/engine';
+import { GameError, integer, parseAction, resolveTurn, monsterIntent, type FoeMove } from '../core/engine';
 import { gainExperience } from './gameRules';
 import { levelGains } from '../../../shared/progression';
 import { combatStats } from './combatStats';
@@ -14,6 +15,15 @@ import { defeatAdvice, type DefeatAdvice } from './defeatAdvice';
 import { inGroupBattle } from './groupHuntService';
 import { healthPotionNames } from '../../../shared/potions';
 const dice = (min: number, max: number) => randomInt(min, max + 1);
+// Histórico do combate, turno a turno, guardado no próprio lastLog (JSON). Formato antigo: só a lista de frases do último turno.
+export interface TurnRecord { turn: number; action: string; dealt: number; crit: boolean; healed: number; received: number; dodged: boolean; foe: FoeMove; heavy: boolean; hp: number; maxHp: number; monsterHp: number; monsterMaxHp: number }
+type StoredLog = { log: string[]; turns: TurnRecord[] };
+const MAX_TURNS_KEPT = 200;
+function readLog(value: unknown): StoredLog {
+  if (Array.isArray(value)) return { log: value as string[], turns: [] };
+  const v = value as Partial<StoredLog> | null;
+  return { log: v?.log ?? [], turns: v?.turns ?? [] };
+}
 
 export class BattleService {
   static async start(accountId: number, characterId: number, monsterId: number) {
@@ -42,7 +52,7 @@ export class BattleService {
       if (!b) throw new GameError(404, 'Batalha não encontrada.');
       return { battleId: b.id, turnVersion: b.turnVersion, hp: c.hp, maxHp: c.maxHp, mana: c.mana,
         monsterHp: b.monsterHp, monsterMaxHp: b.monster.hp, monsterName: b.monster.name,
-        monsterSprite: b.monster.spriteUrl, status: b.outcome, log: (b.lastLog ?? []) as string[],isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion) };
+        monsterSprite: b.monster.spriteUrl, status: b.outcome, log: readLog(b.lastLog).log, turns: readLog(b.lastLog).turns,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion) };
     });
   }
 
@@ -85,11 +95,15 @@ export class BattleService {
         await tx.characterTask.updateMany({ where: { characterId, isCompleted: false, task: { monsterId: b.monsterId } }, data: { currentKills: { increment: 1 } } });
       }
       const { experience, level, data: levelData } = gainExperience(c, xpGain);
+      const stored = readLog(b.lastLog), heavy = monsterIntent(b.monster, b.turnVersion).kind === 'HEAVY';
+      const record: TurnRecord = { turn: b.turnVersion + 1, action, dealt: result.dealt, crit: result.crit, healed: result.healed, received: result.received, dodged: result.dodged,
+        foe: result.foe, heavy, hp: result.hp, maxHp: c.maxHp, monsterHp: result.monsterHp, monsterMaxHp: b.monster.hp };
+      const turns = [...stored.turns, record].slice(-MAX_TURNS_KEPT);
       await tx.character.update({ where: { id: characterId }, data: { hp: result.hp, mana: result.mana, ...levelData, goldInHand: { increment: BigInt(gold) } } });
       if (gold > 0) await recordGold(tx, characterId, BigInt(gold), c.goldInHand + BigInt(gold), 'MONSTER', { type: 'battle', id: battleId });
       await tx.battle.update({ where: { id: battleId }, data: { monsterHp: result.monsterHp,
         isFinished: result.status !== 'ONGOING', activeCharacterId: result.status === 'ONGOING' ? characterId : null,
-        turnVersion: { increment: 1 }, outcome: result.status, lastLog: result.log,
+        turnVersion: { increment: 1 }, outcome: result.status, lastLog: { log: result.log, turns } as unknown as Prisma.InputJsonValue,
         rewardGold:BigInt(gold),rewardExperience:xpGain,rewardRecorded:result.status!=='ONGOING' } });
       let defeat: DefeatAdvice | null = null;
       if (result.status === 'DEFEAT') {
@@ -104,7 +118,7 @@ export class BattleService {
           result.status==='VICTORY'?`+${xpGain} XP e +${gold} ouro. ${droppedItems.length} tipo(s) de item encontrado(s).`:[...result.log,...(defeat?.reasons??[])].join(' '));
         if(result.status==='VICTORY')await awardAchievements(tx,characterId);
       }
-      return { ...result, battleId, turnVersion: b.turnVersion+1, maxHp: c.maxHp+(level-c.level)*levelGains.hp, monsterMaxHp: b.monster.hp,
+      return { ...result, turns, battleId, turnVersion: b.turnVersion+1, maxHp: c.maxHp+(level-c.level)*levelGains.hp, monsterMaxHp: b.monster.hp,
         monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), defeat, rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
     });
   }
