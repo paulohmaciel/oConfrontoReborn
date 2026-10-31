@@ -9,11 +9,12 @@ export function event(tx:Tx,characterId:number,kind:string,title:string,descript
   return tx.adventureEvent.create({data:{characterId,kind,title,description}});
 }
 export async function awardAchievements(tx:Tx,characterId:number) {
-  const [wins,bosses,upgraded,c]=await Promise.all([
+  const [wins,bosses,upgraded,c,groupWins]=await Promise.all([
     tx.battle.count({where:{characterId,outcome:'VICTORY'}}),tx.battle.count({where:{characterId,outcome:'VICTORY',monster:{isBoss:true}}}),
-    tx.inventoryItem.count({where:{characterId,upgradeTier:{gte:1}}}),tx.character.findUniqueOrThrow({where:{id:characterId}})
+    tx.inventoryItem.count({where:{characterId,upgradeTier:{gte:1}}}),tx.character.findUniqueOrThrow({where:{id:characterId}}),
+    tx.groupBattle.findMany({where:{outcome:'VICTORY',fighters:{some:{characterId}}},distinct:['huntKey'],select:{huntKey:true}})
   ]);
-  const conditions:Record<string,boolean>={'first-victory':wins>=1,hunter:wins>=10,blacksmith:upgraded>0,explorer:c.journeyStep>=4,'boss-slayer':bosses>0};
+  const conditions:Record<string,boolean>={'first-victory':wins>=1,hunter:wins>=10,blacksmith:upgraded>0,explorer:c.journeyStep>=4,'boss-slayer':bosses>0,'group-hunter':groupWins.length>0,'four-marks':groupWins.length>=4};
   for(const def of achievementDefinitions) {
     if(!conditions[def.key])continue;
     if(await tx.characterAchievement.findUnique({where:{characterId_key:{characterId,key:def.key}}}))continue;

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { asyncRoute } from '../core/http';
-import { authenticate, validPassword } from './auth';
+import { authenticate, validPassword, MASTER_EMAIL } from './auth';
 import { prisma, transaction } from '../core/db';
 import { GameError } from '../core/engine';
 import { hashPassword } from '../core/password';
@@ -11,13 +11,17 @@ import { consumeToken, sendPasswordReset, sendVerification } from './accountToke
 export const emailRouter = Router();
 const strict = rateLimit({ windowMs: 15 * 60_000, limit: 8, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas solicitações. Aguarde antes de tentar novamente.' } });
 const RESET_RESPONSE = { ok: true, message: 'Se o e-mail estiver cadastrado, enviaremos um link para redefinir a senha.' };
+const RESET_INTERVAL_MS = 60_000;
 
 emailRouter.post('/forgot-password', strict, asyncRoute(async (req, res) => {
   const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
   if (email.length > 190 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new GameError(400, 'Informe um e-mail válido.');
-  const account = await prisma.account.findUnique({ where: { email }, select: { id: true } });
-  // Resposta idêntica exista a conta ou não; o envio não bloqueia a resposta.
-  if (account) void sendPasswordReset(account.id, email).catch(error => console.error('[e-mail] falha na redefinição:', error instanceof Error ? error.message : error));
+  // A conta de desenvolvimento nunca recebe link de redefinição (o domínio dela não é nosso).
+  const account = email === MASTER_EMAIL ? null : await prisma.account.findUnique({ where: { email }, select: { id: true } });
+  // Intervalo por conta: um pedido por minuto. Assim ninguém inunda a caixa da vítima nem invalida o link que ela acabou de receber.
+  const recent = account ? await prisma.accountToken.findFirst({ where: { accountId: account.id, kind: 'RESET', usedAt: null, createdAt: { gt: new Date(Date.now() - RESET_INTERVAL_MS) } }, select: { tokenHash: true } }) : null;
+  // Resposta idêntica exista a conta ou não (e tenha ou não pedido há pouco); o envio não bloqueia a resposta.
+  if (account && !recent) void sendPasswordReset(account.id, email).catch(error => console.error('[e-mail] falha na redefinição:', error instanceof Error ? error.message : error));
   res.json(RESET_RESPONSE);
 }));
 emailRouter.post('/reset-password', strict, asyncRoute(async (req, res) => {

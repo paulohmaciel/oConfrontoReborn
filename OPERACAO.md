@@ -27,7 +27,7 @@ Já implementado no código:
 - Helmet com CSP; corpo JSON limitado a 16 kb.
 
 A fazer antes de abrir ao público (depende de você, não do código):
-- [ ] HTTPS atrás de proxy reverso, com `TRUST_PROXY` e `NODE_ENV=production`; `.env` fora do repositório.
+- [ ] HTTPS atrás de proxy reverso, com `TRUST_PROXY=1` (somente com proxy na frente e `HOST=127.0.0.1`) e `npm run start:prod`; `.env` fora do repositório, sem `DEV_QUICK_LOGIN`.
 - [ ] Usuário MySQL exclusivo, sem acesso de rede externa.
 - [ ] Rodar `npm audit` e manter dependências atualizadas.
 - [ ] Teste real no sandbox do Mercado Pago (pagamento, duplicidade, reembolso).

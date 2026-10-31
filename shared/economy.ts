@@ -42,7 +42,7 @@ export const settingDefs = {
   'group.energyCost': { default: 10, min: 0, max: 100, label: 'Caçada em grupo: energia gasta por participante', unit: 'energia', group: 'Caçada em grupo' },
   'group.roundSeconds': { default: 60, min: 15, max: 600, label: 'Caçada em grupo: prazo de cada rodada (quem não escolher, defende)', unit: 's', group: 'Caçada em grupo' },
   'group.rewardPercent': { default: 100, min: 10, max: 500, label: 'Caçada em grupo: XP e ouro da fera para cada participante', unit: '%', group: 'Caçada em grupo' },
-  'group.freedBonusPercent': { default: 25, min: 0, max: 200, label: 'Caçada em grupo: bônus se o grupo libertar a fera do laço', unit: '%', group: 'Caçada em grupo' },
+  'group.freedBonusPercent': { default: 25, min: 0, max: 200, label: 'Caçada em grupo: bônus ao cumprir o objetivo da caçada (libertar a fera, desfazer o encantamento)', unit: '%', group: 'Caçada em grupo' },
   'group.materials': { default: 3, min: 0, max: 100, label: 'Caçada em grupo: materiais do Ferreiro por participante', unit: 'un.', group: 'Caçada em grupo' },
   'group.weeklyRewards': { default: 3, min: 1, max: 50, label: 'Caçada em grupo: vitórias com recompensa por caçada a cada 7 dias', unit: '', group: 'Caçada em grupo' },
   'class.promotionGold': { default: 5000, min: 0, max: 100_000_000, label: 'Custo da promoção de classe', unit: 'ouro', group: 'Classes' },
