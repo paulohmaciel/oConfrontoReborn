@@ -67,9 +67,9 @@ test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
     });
     await t.test('diário retorna conquistas, bestiário e histórico real',async()=>{
       const response=await request(`/characters/${c.id}/journal`);assert.equal(response.status,200);const j=await response.json();
-      assert(j.events.length>0);assert(j.achievements.find((a:any)=>a.key==='boss-slayer')?.unlockedAt);
-      assert.equal(j.bestiary.find((m:any)=>m.id===boss.id)?.wins,1);assert(j.history.some((b:any)=>b.rewardRecorded&&BigInt(b.rewardGold)>0));
-      assert.equal((await request(`/characters/${c.id+999999}/journal`)).status,404);
+      const ev=await (await request(`/characters/${c.id}/journal/events`)).json();assert(ev.items.length>0&&ev.total>=ev.items.length);assert(j.achievements.find((a:any)=>a.key==='boss-slayer')?.unlockedAt);
+      assert.equal(j.bestiary.find((m:any)=>m.id===boss.id)?.wins,1);const h=await (await request(`/characters/${c.id}/battles`)).json();assert(h.items.some((b:any)=>b.rewardRecorded&&BigInt(b.rewardGold)>0));
+      assert.equal((await request(`/characters/${c.id+999999}/journal`)).status,404);assert.equal((await request(`/characters/${c.id+999999}/battles`)).status,404);
     });
   } finally {await new Promise<void>(r=>server.close(()=>r()));await prisma.$disconnect();}
 });

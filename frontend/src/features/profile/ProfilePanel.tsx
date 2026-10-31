@@ -3,21 +3,24 @@ import {api} from '../../lib/api';
 import type {Hero,Perform} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
 import {Limited} from '../../ui/ShowMore';
+import {Pager,usePaged} from '../../ui/Pager';
 import {classLabel} from '../../../../shared/adventure';
 import {titleName} from '../../../../shared/premium';
 import {freeAvatars,premiumAvatars,limits} from '../../../../shared/community';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
-type Profile={profile:Card&{profileTitle:string|null;profileFrame:string|null;profileAbout:string|null;profileBio:string|null};owner:boolean;sameAccount:boolean;friends:Card[];friendCount:number;
-  scraps:{id:number;text:string;createdAt:string;author:Card}[];testimonials:{id:number;text:string;status:string;createdAt:string;author:Card}[];
-  relation:{id:number;status:string;incoming:boolean}|null;visitors:{visitedAt:string;visitor:Card}[]};
+type Profile={profile:Card&{profileTitle:string|null;profileFrame:string|null;profileAbout:string|null;profileBio:string|null};owner:boolean;sameAccount:boolean;friendCount:number;scrapCount:number;testimonialCount:number;
+  relation:{id:number;status:string;incoming:boolean}|null};
+type Scrap={id:number;text:string;createdAt:string;author:Card};type Testimonial=Scrap&{status:string};type Visit={visitedAt:string;visitor:Card};
 type Mine={id:number;profileAvatar:string|null;profileAbout:string|null;profileHideVisits:boolean;premium:boolean;aboutLimit:number;incoming:{id:number;from:Card}[];outgoing:{id:number;to:Card}[];pendingTestimonials:number};
 type Section='scraps'|'testimonials'|'visits';
 const date=(d:string)=>new Date(d).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
 const Avatar=({c,size=40}:{c:Card;size?:number})=><Icon name={c.profileAvatar??c.profileEmblem??'Hero'} size={size}/>;
 // Perfil de comunidade (estilo Orkut): cartão, amigos, recados, depoimentos e, no próprio perfil, visitas e pedidos.
 export default function ProfilePanel({hero,name,openProfile,perform}:{hero:Hero;name:string;openProfile:(name:string)=>void;perform:Perform}){
-  const [p,setP]=useState<Profile|null>(null),[mine,setMine]=useState<Mine|null>(null),[error,setError]=useState(''),[section,setSection]=useState<Section>('scraps'),[editing,setEditing]=useState(false);
-  const load=async()=>{try{const r=await api<Profile>(`/community/profiles/${encodeURIComponent(name)}?as=${hero.id}`);setP(r);setError('');if(r.owner)setMine(await api<Mine>(`/characters/${hero.id}/community`));}catch(e){setError(e instanceof Error?e.message:'Perfil indisponível.');setP(null);}};
+  const [p,setP]=useState<Profile|null>(null),[mine,setMine]=useState<Mine|null>(null),[error,setError]=useState(''),[section,setSection]=useState<Section>('scraps'),[editing,setEditing]=useState(false),[version,setVersion]=useState(0);
+  // Listas do perfil em páginas de 10; `version` recarrega a página atual depois de cada ação.
+  const list=(kind:string)=>`/community/profiles/${encodeURIComponent(name)}/${kind}?as=${hero.id}`,friends=usePaged<Card>(list('friends'),version);
+  const load=async()=>{try{const r=await api<Profile>(`/community/profiles/${encodeURIComponent(name)}?as=${hero.id}`);setP(r);setError('');setVersion(v=>v+1);if(r.owner)setMine(await api<Mine>(`/characters/${hero.id}/community`));}catch(e){setError(e instanceof Error?e.message:'Perfil indisponível.');setP(null);}};
   useEffect(()=>{setSection('scraps');setEditing(false);void load();},[name,hero.id]);
   // Ações da comunidade recarregam o perfil depois de concluídas.
   const act=(path:string,body:unknown,done?:()=>void)=>perform(async()=>{const r=await api(`/characters/${hero.id}/community/${path}`,body);done?.();await load();return r;});
@@ -35,15 +38,16 @@ export default function ProfilePanel({hero,name,openProfile,perform}:{hero:Hero;
         </section>
         {editing&&mine&&<Editor mine={mine} act={act} onDone={()=>setEditing(false)}/>}
         <section className="panel"><div className="section-title"><h2>Amigos</h2><span>{p.friendCount}</span></div>
-          <div className="friend-grid"><Limited items={p.friends} label="Ver mais amigos" render={f=><button key={f.id} className="friend" onClick={()=>openProfile(f.name)} title={`${f.name} · Nv. ${f.level}`}><Avatar c={f} size={36}/><small>{f.name}</small></button>}/></div>
-          {!p.friends.length&&<p className="muted">{p.owner?'Você ainda não tem amigos aqui. Procure jogadores na busca acima.':'Ainda sem amigos.'}</p>}
+          <div className="friend-grid">{friends.items.map(f=><button key={f.id} className="friend" onClick={()=>openProfile(f.name)} title={`${f.name} · Nv. ${f.level}`}><Avatar c={f} size={36}/><small>{f.name}</small></button>)}</div>
+          <Pager page={friends.page} pages={friends.pages} busy={friends.loading} onPage={n=>void friends.go(n)}/>
+          {!p.friendCount&&<p className="muted">{p.owner?'Você ainda não tem amigos aqui. Procure jogadores na busca acima.':'Ainda sem amigos.'}</p>}
         </section>
       </aside>
       <section className="panel profile-main">
-        <div className="profile-tabs" role="tablist">{([['scraps',`Recados (${p.scraps.length})`],['testimonials',`Depoimentos (${p.testimonials.filter(t=>t.status==='APPROVED').length})${p.owner&&mine?.pendingTestimonials?` · ${mine.pendingTestimonials} novo(s)`:''}`],...(p.owner?[['visits',`Visitas e pedidos${mine&&mine.incoming.length?` (${mine.incoming.length})`:''}`]]:[])] as [Section,string][]).map(([s,l])=><button key={s} role="tab" aria-selected={section===s} className={section===s?'active-chip':''} onClick={()=>setSection(s)}>{l}</button>)}</div>
-        {section==='scraps'&&<Scraps p={p} hero={hero} act={act} openProfile={openProfile}/>}
-        {section==='testimonials'&&<Testimonials p={p} act={act} openProfile={openProfile}/>}
-        {section==='visits'&&p.owner&&mine&&<Visits p={p} mine={mine} act={act} openProfile={openProfile}/>}
+        <div className="profile-tabs" role="tablist">{([['scraps',`Recados (${p.scrapCount})`],['testimonials',`Depoimentos (${p.testimonialCount})${p.owner&&mine?.pendingTestimonials?` · ${mine.pendingTestimonials} novo(s)`:''}`],...(p.owner?[['visits',`Visitas e pedidos${mine&&mine.incoming.length?` (${mine.incoming.length})`:''}`]]:[])] as [Section,string][]).map(([s,l])=><button key={s} role="tab" aria-selected={section===s} className={section===s?'active-chip':''} onClick={()=>setSection(s)}>{l}</button>)}</div>
+        {section==='scraps'&&<Scraps p={p} hero={hero} act={act} openProfile={openProfile} path={list('scraps')} version={version}/>}
+        {section==='testimonials'&&<Testimonials p={p} act={act} openProfile={openProfile} path={list('testimonials')} version={version}/>}
+        {section==='visits'&&p.owner&&mine&&<Visits mine={mine} act={act} openProfile={openProfile} path={list('visitors')} version={version}/>}
       </section>
     </div>}
   </div>;
@@ -65,44 +69,48 @@ function FriendButton({p,act}:{p:Profile;act:Act}){
 function Report({kind,id,act}:{kind:'scrap'|'testimonial';id:number;act:Act}){
   return <button className="link-button" onClick={()=>{const reason=window.prompt('Por que você está denunciando? A equipe vai analisar.');if(reason&&reason.trim().length>=2)void act('report',{kind,id,reason});}}>Denunciar</button>;
 }
-function Scraps({p,hero,act,openProfile}:{p:Profile;hero:Hero;act:Act;openProfile:(n:string)=>void}){
-  const [text,setText]=useState('');
+type ListProps={act:Act;openProfile:(n:string)=>void;path:string;version:number};
+function Scraps({p,hero,act,openProfile,path,version}:ListProps&{p:Profile;hero:Hero}){
+  const [text,setText]=useState(''),scraps=usePaged<Scrap>(path,version);
   return <>
     <form className="ops-form profile-write" onSubmit={e=>{e.preventDefault();void act('scraps',{to:p.profile.name,text},()=>setText(''));}}>
       <label>{p.owner?'Escrever no seu mural':`Deixar um recado para ${p.profile.name}`} ({text.length}/{limits.scrap})<textarea value={text} onChange={e=>setText(e.target.value)} maxLength={limits.scrap} rows={3} required/></label>
       <button className="primary">Enviar recado</button></form>
-    <Limited items={p.scraps} label="Ver mais recados" render={s=><article className="post" key={s.id}><button className="post-avatar" onClick={()=>openProfile(s.author.name)} aria-label={`Perfil de ${s.author.name}`}><Avatar c={s.author}/></button>
+    {scraps.items.map(s=><article className="post" key={s.id}><button className="post-avatar" onClick={()=>openProfile(s.author.name)} aria-label={`Perfil de ${s.author.name}`}><Avatar c={s.author}/></button>
       <div><p className="post-head"><button className="link-button" onClick={()=>openProfile(s.author.name)}>{s.author.name}</button> <small>{date(s.createdAt)}</small></p><p className="post-text">{s.text}</p>
-        <p className="post-actions">{(p.owner||s.author.id===hero.id)&&<button className="link-button" onClick={()=>{if(window.confirm('Apagar este recado?'))void act(`scraps/${s.id}/delete`,{});}}>Apagar</button>}{s.author.id!==hero.id&&<Report kind="scrap" id={s.id} act={act}/>}</p></div></article>}/>
-    {!p.scraps.length&&<p className="empty">Nenhum recado ainda.</p>}
+        <p className="post-actions">{(p.owner||s.author.id===hero.id)&&<button className="link-button" onClick={()=>{if(window.confirm('Apagar este recado?'))void act(`scraps/${s.id}/delete`,{});}}>Apagar</button>}{s.author.id!==hero.id&&<Report kind="scrap" id={s.id} act={act}/>}</p></div></article>)}
+    {!scraps.total&&!scraps.loading&&<p className="empty">Nenhum recado ainda.</p>}<Pager page={scraps.page} pages={scraps.pages} busy={scraps.loading} onPage={n=>void scraps.go(n)}/>
   </>;
 }
-function Testimonials({p,act,openProfile}:{p:Profile;act:Act;openProfile:(n:string)=>void}){
-  const [text,setText]=useState('');
-  const pending=p.testimonials.filter(t=>t.status==='PENDING'),approved=p.testimonials.filter(t=>t.status==='APPROVED');
+function Testimonials({p,act,openProfile,path,version}:ListProps&{p:Profile}){
+  // O servidor já filtra: o dono recebe também os pendentes; cada página separa os dois grupos.
+  const [text,setText]=useState(''),list=usePaged<Testimonial>(path,version);
+  const pending=list.items.filter(t=>t.status==='PENDING'),approved=list.items.filter(t=>t.status==='APPROVED');
   return <>
     {!p.owner&&!p.sameAccount&&<form className="ops-form profile-write" onSubmit={e=>{e.preventDefault();void act('testimonials',{to:p.profile.name,text},()=>setText(''));}}>
       <label>Escrever um depoimento sobre {p.profile.name} ({text.length}/{limits.testimonial})<textarea value={text} onChange={e=>setText(e.target.value)} maxLength={limits.testimonial} rows={4} required/></label>
       <p className="muted">O depoimento só aparece depois que {p.profile.name} aprovar. Se você já escreveu um, este substitui o anterior.</p>
       <button className="primary">Enviar depoimento</button></form>}
     {p.owner&&pending.length>0&&<h3 className="profile-subtitle">Esperando sua aprovação</h3>}
-    <Limited items={[...(p.owner?pending:[]),...approved]} label="Ver mais depoimentos" render={t=><article className={`post ${t.status==='PENDING'?'pending':''}`} key={t.id}><button className="post-avatar" onClick={()=>openProfile(t.author.name)} aria-label={`Perfil de ${t.author.name}`}><Avatar c={t.author}/></button>
+    {[...(p.owner?pending:[]),...approved].map(t=><article className={`post ${t.status==='PENDING'?'pending':''}`} key={t.id}><button className="post-avatar" onClick={()=>openProfile(t.author.name)} aria-label={`Perfil de ${t.author.name}`}><Avatar c={t.author}/></button>
       <div><p className="post-head"><button className="link-button" onClick={()=>openProfile(t.author.name)}>{t.author.name}</button> <small>{date(t.createdAt)}</small></p><p className="post-text">{t.text}</p>
         <p className="post-actions">{p.owner&&t.status==='PENDING'&&<><button className="link-button" onClick={()=>void act(`testimonials/${t.id}/approve`,{})}>Aprovar</button><button className="link-button" onClick={()=>void act(`testimonials/${t.id}/reject`,{})}>Recusar</button></>}
           {p.owner&&t.status==='APPROVED'&&<button className="link-button" onClick={()=>{if(window.confirm('Tirar este depoimento do seu perfil?'))void act(`testimonials/${t.id}/delete`,{});}}>Remover</button>}
-          {!p.owner&&<Report kind="testimonial" id={t.id} act={act}/>}</p></div></article>}/>
-    {!approved.length&&!(p.owner&&pending.length)&&<p className="empty">Nenhum depoimento ainda.</p>}
+          {!p.owner&&<Report kind="testimonial" id={t.id} act={act}/>}</p></div></article>)}
+    {!list.total&&!list.loading&&<p className="empty">Nenhum depoimento ainda.</p>}<Pager page={list.page} pages={list.pages} busy={list.loading} onPage={n=>void list.go(n)}/>
   </>;
 }
-function Visits({p,mine,act,openProfile}:{p:Profile;mine:Mine;act:Act;openProfile:(n:string)=>void}){
+function Visits({mine,act,openProfile,path,version}:ListProps&{mine:Mine}){
+  const visitors=usePaged<Visit>(path,version);
   return <>
     {mine.incoming.length>0&&<><h3 className="profile-subtitle">Pedidos de amizade</h3><Limited items={mine.incoming} label="Ver mais pedidos" render={f=><div className="market-row" key={f.id}><Avatar c={f.from}/><div><h3><button className="link-button" onClick={()=>openProfile(f.from.name)}>{f.from.name}</button></h3><p>{classLabel(f.from.vocation,f.from.classTier)} · Nv. {f.from.level}</p></div>
       <button className="primary" onClick={()=>void act(`friends/${f.id}/accept`,{})}>Aceitar</button><button onClick={()=>void act(`friends/${f.id}/decline`,{})}>Recusar</button></div>}/></>}
     {mine.outgoing.length>0&&<p className="muted">Pedidos enviados esperando resposta: {mine.outgoing.map(f=>f.to.name).join(', ')}.</p>}
     <h3 className="profile-subtitle">Quem visitou seu perfil</h3>
     <label className="price-label"><input type="checkbox" checked={mine.profileHideVisits} onChange={e=>void act('profile',{hideVisits:e.target.checked})}/> Visitar perfis sem aparecer na lista dos outros</label>
-    <div className="friend-grid"><Limited items={p.visitors} label="Ver mais visitas" render={v=><button key={v.visitor.id} className="friend" onClick={()=>openProfile(v.visitor.name)} title={date(v.visitedAt)}><Avatar c={v.visitor} size={36}/><small>{v.visitor.name}</small></button>}/></div>
-    {!p.visitors.length&&<p className="muted">Ninguém visitou ainda.</p>}
+    <div className="friend-grid">{visitors.items.map(v=><button key={v.visitor.id} className="friend" onClick={()=>openProfile(v.visitor.name)} title={date(v.visitedAt)}><Avatar c={v.visitor} size={36}/><small>{v.visitor.name}</small></button>)}</div>
+    <Pager page={visitors.page} pages={visitors.pages} busy={visitors.loading} onPage={n=>void visitors.go(n)}/>
+    {!visitors.total&&!visitors.loading&&<p className="muted">Ninguém visitou ainda.</p>}
   </>;
 }
 function Editor({mine,act,onDone}:{mine:Mine;act:Act;onDone:()=>void}){

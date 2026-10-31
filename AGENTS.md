@@ -16,7 +16,7 @@
 - Premium nunca altera regras de combate, XP, ouro ou drops. O acesso só é concedido pelo servidor, após validar a assinatura do webhook e consultar o pagamento no Mercado Pago; eventos repetidos devem ser idempotentes.
 - Não adicione dependências npm sem atualizar `package-lock.json` (o instalador usa `npm ci`).
 - Migrações continuam aditivas. A 0.5 é `202610280003_economy_admin_premium`; classes até o 1000: `202610310001_class_tiers`; comunidade: `202610310002_community_profile`; fórum: `202610310003_forum`.
-- Regra de interface do dono: nenhuma lista mostra mais de 10 itens de uma vez; passou disso, "Ver mais" (`ui/ShowMore.tsx`) e/ou busca.
+- Regra de interface do dono: nenhuma lista mostra mais de 10 itens de uma vez; passou disso, "Ver mais" (`ui/ShowMore.tsx`) e/ou busca. Listas que crescem com os jogadores (mercado, extrato, recados, fórum, combates…) usam páginas numeradas no servidor: `pageOf`/`paged` (`core/http.ts`) + `Pager`/`usePaged` (`ui/Pager.tsx`).
 - Gavetas (0.5.1): o código é organizado em pastas por assunto (`GAVETAS.md`). Antes de mexer, leia a `GAVETA.md` da pasta. Servidor: `core` → `economy` → `premium` → `game` → `community` → `account` → `admin` → `server.ts` (só importa gavetas de baixo). Tela: `lib` → `ui` → `features/*` → `App.tsx`. Rode `npm run check:drawers`. Não crie arquivos soltos em `backend/src/` nem `frontend/src/`.
 
 - **Exceção local (só desenvolvimento):** `POST /api/auth/dev-login` cria/entra na conta `mestre@localhost.dev` (ADMIN, senha aleatória desconhecida) SOMENTE com `DEV_QUICK_LOGIN=1`, `NODE_ENV != production` e pedido vindo do loopback sem proxy. Nunca ligar em servidor público; remover do `.env` antes de publicar.
