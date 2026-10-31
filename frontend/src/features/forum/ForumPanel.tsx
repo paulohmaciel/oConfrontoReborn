@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
 import {api} from '../../lib/api';
+import {smooth} from '../../lib/theme';
 import type {Hero,Perform} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
 import {useShowMore,ShowMore} from '../../ui/ShowMore';
@@ -39,7 +40,7 @@ function ListView({hero,openPost,openProfile,perform}:{hero:Hero;openPost:(id:st
       <div className="thread-body"><button className="thread-title" onClick={()=>openPost(String(r.id))}>{r.pinned&&<span className="tag">FIXADO</span>} {r.title}</button>
         <p className="thread-meta"><span className="pill">{cat(r.category)?.name??r.category}</span>{r.solvedCommentId&&<span className="pill solved">✓ Resolvida</span>}{r.locked&&<span className="pill">Trancado</span>} <Who a={r.author} openProfile={openProfile}/> · {ago(r.createdAt)} · <button className="link-button" onClick={()=>openPost(String(r.id))}>{r.commentCount} {r.commentCount===1?'comentário':'comentários'}</button></p></div></article>)}
       {!rows.length&&<p className="empty">{q?'Nenhum tópico com esse título.':'Nenhum tópico aqui ainda. Que tal começar um?'}</p>}
-      <Pager page={page} pages={Math.max(1,Math.ceil(total/10))} onPage={p=>{void load(p);window.scrollTo({top:0,behavior:'smooth'});}}/></section>
+      <Pager page={page} pages={Math.max(1,Math.ceil(total/10))} onPage={p=>{void load(p);window.scrollTo({top:0,behavior:smooth()});}}/></section>
   </div>;
 }
 function NewPost({hero,perform,done}:{hero:Hero;perform:Perform;done:(id:number)=>void}){

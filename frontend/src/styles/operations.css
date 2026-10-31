@@ -161,3 +161,6 @@
 :root[data-theme="light"] .game-notice.maintenance{background:#ecc98a;border-color:#8a3d0c}
 :root[data-theme="light"] .game-notice.news{background:#efe0bd;border-color:#9a7a3a}
 :root[data-theme="light"] .changelog-entry{border-color:#b9892f;background:#f4e2bd}
+/* "Menos movimento" (botão ao lado do tema; sem escolha salva, segue o sistema) */
+:root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+:root[data-motion="reduce"] .fire-icon::after{background-image:url(/assets/fx/fire-frame-static.png)!important}

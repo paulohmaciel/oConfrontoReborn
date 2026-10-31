@@ -9,6 +9,7 @@ import './styles/adventure.css';
 import './styles/operations.css';
 import './styles/fire.css';
 import './styles/cover.css';
-import { applyTheme, savedTheme } from './lib/theme';
+import { applyMotion, applyTheme, savedMotion, savedTheme } from './lib/theme';
 applyTheme(savedTheme(), false);
+applyMotion(savedMotion(), false);
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);

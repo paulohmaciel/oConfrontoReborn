@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-10-31-movimento', date: '2026-10-31', title: 'Opção "Menos movimento"', items: [
+    'Novo botão Menos movimento ao lado do tema (no celular, no menu): desliga animações, transições e o fogo animado dos itens +10.',
+    'Sem escolha, o jogo segue a preferência de acessibilidade do seu sistema.',
+  ] },
   { id: '2026-10-31-favoritos', date: '2026-10-31', title: 'Novidades, avisos e itens favoritos protegidos', items: [
     'Nova página Novidades com o histórico de atualizações; a equipe agora pode publicar avisos de manutenção que aparecem no topo do jogo.',
     'Item favorito (a estrela da mochila) fica protegido: não pode ser vendido, anunciado nem levado ao Ferreiro, e só arrisca melhoria que pode quebrar com Pedra de Proteção.',
