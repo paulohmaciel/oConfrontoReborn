@@ -52,8 +52,8 @@ export const regions = [
   { key: 'era2', name: 'Geleiras da 2ª Era', icon: 'Verminor', minLevel: 400, journeyStep: 5, description: 'O gelo eterno guarda feras e mortos-vivos de outra era. Verminor reina sobre a nevasca.' },
   { key: 'era3', name: 'Cidadela da 3ª Era', icon: 'Hero', minLevel: 550, journeyStep: 5, description: 'Heróis caídos e magos esquecidos defendem uma cidadela que não existe mais.' },
   { key: 'era4', name: 'Abismo da 4ª Era', icon: 'Dragon Lord', minLevel: 700, journeyStep: 5, description: 'O abismo mais fundo, onde dragões e demônios antigos esperam por quem chegou tão longe.' },
-  // A região final é sempre a mais perigosa do jogo e leva o nome de Capriel.
-  { key: 'capriel', name: 'Vale da Perdição de Capriel', icon: 'Apocalypse', minLevel: 850, journeyStep: 5, description: 'O lugar mais temido do mundo. Tudo o que já existiu luta aqui na sua forma final, e no fim do vale espera Apocalypse. Poucos voltam.' },
+  // A região final é sempre a mais perigosa do jogo: o Vale da Perdição, terra de Capriel.
+  { key: 'capriel', name: 'Vale da Perdição', icon: 'Apocalypse', minLevel: 850, journeyStep: 5, description: 'O lugar mais temido do mundo. Tudo o que já existiu luta aqui na sua forma final, e no fim do vale espera Apocalypse. Poucos voltam.' },
 ] as const;
 export const journey = [
   { key: 'vocation', title: 'Encontre sua vocação', description: 'Escolha como você quer lutar. Sua escolha será permanente nesta etapa.', icon: 'Sword', target: 1, gold: 25, xp: 0, action: 'vocation' },

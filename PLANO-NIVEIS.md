@@ -101,7 +101,7 @@ O que o simulador mostrou com os monstros atuais (personagem no nível do monstr
 Feito, só com sprites que já estavam no manifesto:
 - **Catálogo em um arquivo** (`backend/prisma/catalog.ts`): o seed, o simulador e o calibrador leem a mesma lista. Seed continua por upsert e agora se recusa a rodar se faltar sprite.
 - **41 monstros** (11 originais rebalanceados + 30 novos), do Rat (1) à Aranha Gigante (chefe, 100). Comum mais alto: Witch (90).
-- **4 regiões novas:** Acampamento Orc (15, chefe Orc Leader), Labirinto dos Minotauros (30), Terras Geladas (60) e Vale da Perdição de Capriel (80, chefe Giant Spider — a região mais perigosa). Demon Skeleton, Fire Devil e Fire Elemental foram para os Portões do Abismo (44–56), então saem da lista da Fase 2.
+- **4 regiões novas:** Acampamento Orc (15, chefe Orc Leader), Labirinto dos Minotauros (30), Terras Geladas (60) e Vale da Perdição (80, chefe Giant Spider — a região mais perigosa). Demon Skeleton, Fire Devil e Fire Elemental foram para os Portões do Abismo (44–56), então saem da lista da Fase 2.
 - **49 equipamentos novos** até o nível 100. As armas novas têm vocação: espadas para Cavaleiro, lanças/besta/estrela para Arqueiro, cajados para magos; robes e chapéus dão magia. Preço = 12 × nível² + 200.
 - **`npm run levels:calibrate`** acha vida, ataque e defesa de cada monstro pelo motor do jogo (meta: 5 turnos e ~12% da vida; chefes ~10 turnos e ~40%; começo mais leve). `-- --write` regrava o catálogo.
 - XP: curva-alvo com piso de 18 × nível no começo; chefes novos dão o dobro. Ouro: nível × (3 + nível/8) até o dobro.
@@ -114,7 +114,7 @@ Achados para depois:
 
 ## Resultado da Fase 2 (2026-10-31)
 
-- **3 regiões novas:** Cripta Esquecida (100, chefe Warlock), Cidadela dos Renegados (125, chefe Hero) e **Vale da Perdição de Capriel** (160, chefe **Infernatil** no 250). Regra do dono: a região final é sempre a mais perigosa e leva o nome de Capriel; a do nível 80 voltou a ser Pântano Sombrio. Na Fase 3 o nome de Capriel passa para a nova última região.
+- **3 regiões novas:** Cripta Esquecida (100, chefe Warlock), Cidadela dos Renegados (125, chefe Hero) e **Vale da Perdição** (160, chefe **Infernatil** no 250). Regra do dono: a região final é sempre a mais perigosa, o Vale da Perdição; a do nível 80 voltou a ser Pântano Sombrio. Na Fase 3 o nome de Capriel passa para a nova última região.
 - **17 monstros novos** (total 58). No Vale, alguns reaproveitam sprites com nome próprio (Elemental de Fogo Ancestral, Golem Ancestral, Gosma Primordial, Serpente Abissal, Dragão Ancião), como o Guardião da Pedreira faz com o Cyclops.
 - **38 equipamentos novos:** armas, escudos, armaduras, elmos, botas e amuleto até o nível 235, todos com sprite do manifesto.
 - **Munição / foco:** o espaço de munição agora é equipamento permanente (não empilha; regra em `economy.ts`). O Arqueiro usa Arrow → Throwing Knife (20–230) e os magos usam runas como foco mágico (Light Magic Missile → Sudden Death, 20–210). Isso resolve a falta de armas de mago acima do 35 e de Arqueiro acima do 65 sem importar sprites.
@@ -132,7 +132,7 @@ Decisão do dono: **❓4 = B (Eras)**. O jogo agora tem conteúdo do nível 1 ao
 | Geleiras da 2ª Era | 400 | Frost Troll, Mammoth, Witch, Necromancer… | Verminor (550) |
 | Cidadela da 3ª Era | 550 | Assassin, Elf Arcanist, Monk, Hero, Warlock… | Infernatil da 3ª Era (700) |
 | Abismo da 4ª Era | 700 | Giant Spider, Demon, Dragon Lord… | Senhor dos Dragões da 4ª Era (850) |
-| **Vale da Perdição de Capriel** | 850 | "… de Capriel" (Demon, Dragon Lord, Hero, Warlock…) | **Apocalypse (1000)** |
+| **Vale da Perdição** | 850 | "… de Capriel" (Demon, Dragon Lord, Hero, Warlock…) | **Apocalypse (1000)** |
 
 - **55 monstros novos** (113 no total): 10 comuns e 1 chefe por Era, ~14 níveis entre cada um. Verminor e Apocalypse usam os próprios sprites; os demais reaproveitam sprites com o nome da Era.
 - **65 equipamentos de Era** (173 itens no total): um conjunto completo por Era (250, 400, 550, 700, 850) para as 4 vocações — arma de Cavaleiro, arma e munição de Arqueiro, cajado/varinha, runa e robe de mago, armadura, elmo, pernas, botas, escudo, amuleto e anel. Reaproveitam sprites clássicos (campo `sprite` no catálogo) com atributos pela curva.
