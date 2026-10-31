@@ -37,7 +37,7 @@ export async function heal(accountId: number, characterId: number) {
     const c = await lockCharacter(tx, accountId, characterId);
     await requireIdle(tx, characterId);
     if (c.huntEndsAt) throw new GameError(409, 'Resolva a caça pendente.');
-    if (c.templeReadyAt && c.templeReadyAt > new Date()) throw new GameError(409, 'O templo ficará disponível novamente em breve.');
+    if (c.templeReadyAt && c.templeReadyAt > new Date()) throw new GameError(409, 'O Templo de Capriel ficará disponível novamente em breve.');
     const templeReadyAt = new Date(Date.now() + 5*60*1000);
     await tx.character.update({ where: { id: characterId }, data: { hp: c.maxHp, mana: c.maxMana, energy: c.maxEnergy, templeReadyAt } });
     return { hp: c.maxHp, mana: c.maxMana, energy: c.maxEnergy, templeReadyAt };
@@ -136,7 +136,7 @@ export async function usePotion(accountId: number, characterId: number, itemId: 
     const c = await lockCharacter(tx, accountId, characterId);
     return once(tx, characterId, key, ['potion', itemId], async () => {
       await requireIdle(tx, characterId);
-      if (c.hp <= 0) throw new GameError(409, 'Visite o templo antes de usar uma poção.');
+      if (c.hp <= 0) throw new GameError(409, 'Visite o Templo de Capriel antes de usar uma poção.');
       const item = await tx.inventoryItem.findFirst({ where: { id: itemId, characterId }, include: { blueprint: true } });
       if (!item) throw new GameError(404, 'Item não encontrado.');
       if (item.blueprint.slot !== 'CONSUMABLE' || item.quantity < 1) throw new GameError(409, 'Este item não é uma poção.');

@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {resolveTurn,monsterIntent} from '../core/engine';
 import {combatStats} from './combatStats';
-import {baseVocation,skillCosts} from '../../../shared/adventure';
+import {baseVocation,skillCosts,regions,vocations} from '../../../shared/adventure';
+import {items,monsters} from '../../prisma/catalog';
 import {gainExperience} from './gameRules';
 import {MAX_LEVEL,expForLevel,levelForExperience,levelGains,monsterXpTarget} from '../../../shared/progression';
 const player={hp:100,maxHp:200,mana:100,attack:30,defense:20};
@@ -50,4 +51,15 @@ test('subida de nível: vários níveis de uma vez, ganhos por nível e teto de 
 test('curva de XP do personagem não mudou e a curva-alvo dá ~31 lutas por nível',()=>{
   assert.equal(expForLevel(2),100n);assert.equal(expForLevel(60),3_256_800n);assert.equal(expForLevel(1000),16_566_949_800n);
   for(const l of [60,200,1000]){const fights=Number(expForLevel(l+1)-expForLevel(l))/monsterXpTarget(l);assert(fights>28&&fights<34,`nível ${l}: ${fights}`);}
+});
+test('catálogo: todo monstro está numa região que existe e abre antes do nível dele, e segue a curva de XP',()=>{
+  for(const m of monsters){
+    const region=regions.find(r=>r.key===m.regionKey);
+    assert(region,`${m.name}: região ${m.regionKey} não existe`);assert(region.minLevel<=m.level,`${m.name}: região abre no ${region.minLevel}, monstro é nível ${m.level}`);
+    assert(m.hp>0&&m.attack>0&&m.goldMax>=m.goldMin,`${m.name}: atributos inválidos`);
+    if(m.level>=12)assert(m.experience>=monsterXpTarget(m.level)*.85,`${m.name}: XP abaixo da curva`);
+  }
+  assert.equal(new Set(monsters.map(m=>m.name)).size,monsters.length,'nomes de monstro repetidos');
+  assert.equal(new Set(items.map(i=>i.name)).size,items.length,'nomes de item repetidos');
+  for(const i of items)if(i.vocations)for(const v of i.vocations.split(','))assert(v in vocations,`${i.name}: vocação ${v} inválida`);
 });

@@ -18,6 +18,7 @@ Depende de `core`, `economy` e `premium` (só `isPremium`).
 
 ## Regras que não podem quebrar
 Subida de nível só por `gainExperience` (`gameRules.ts`), que usa `shared/progression.ts` (teto `MAX_LEVEL`, ganhos por nível). Conteúdo novo de nível passa antes por `npm run levels:simulate`.
+Itens e monstros ficam em `backend/prisma/catalog.ts` (o seed só grava). Monstro novo: entra no catálogo com XP/ouro da curva e `npm run levels:calibrate -- --write` define vida, ataque e defesa.
 Fórmulas de atributos só em `combatStats.ts`. Vocações/regiões em `shared/adventure.ts`. Melhoria: sorteio no servidor, chance e quebra configuráveis, resultado repetível pela chave.
 
 ## Testes

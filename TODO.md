@@ -93,7 +93,9 @@
 ### Níveis 60 a 1000 — ver `PLANO-NIVEIS.md` (proposta de 2026-10-31, aguardando decisões ❓1–❓5)
 - [x] Fase 0: subida de nível num só lugar (`gainExperience`), `shared/progression.ts`, `MAX_LEVEL`, `npm run levels:simulate` (2026-10-31)
   - Achado do simulador: até o nível 40 as lutas acabam em 1–2 turnos (monstros fracos demais para o personagem da faixa); só o Demon (60) é desafiador. Rebalancear vida/ataque na Fase 1.
-- [ ] Fase 1: conteúdo até o nível 100 (sprites do manifesto)
+- [x] Fase 1: conteúdo até o nível 100 (sprites do manifesto) — 41 monstros, 4 regiões novas, 49 equipamentos, `levels:calibrate` (2026-10-31)
+- [ ] **Você:** `npm run seed` no seu banco depois de juntar a Fase 1 (o `iniciar.bat` já faz)
+- [ ] Rever equilíbrio do Arqueiro (perde ~2× mais vida no simulador) e importar armas de mago (35+) e de Arqueiro (65+)
 - [ ] Fase 2: conteúdo até o nível 250 (Infernatil)
 - [ ] Fase 3: 250–1000 conforme a decisão ❓4
 
