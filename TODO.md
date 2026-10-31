@@ -57,7 +57,7 @@
 - [x] **[Astra 13]** Aviso de manutenção + histórico de atualizações: página Novidades (shared/changelog.ts) e avisos da equipe no topo, inclusive na entrada (notices.manage, motivo e auditoria; migração 202611010002_game_notices) (2026-10-31)
 - [x] **[Astra 12]** Opção "Menos movimento" (botão ao lado do tema; segue o sistema sem escolha salva; desliga animações, transições e o fogo do +10). Perigo/raridade já têm texto além da cor (PERIGOSO/CHEFE, +N, sinais +/−, "caiu") (2026-10-31)
 - [x] **[Astra 2]** Bloqueio de item favorito (contra venda, anúncio, Ferreiro e melhoria que pode quebrar sem Pedra); desfavoritar não exige Premium (2026-10-31)
-- [ ] **[Astra 7]** Indicadores de ouro criado × consumido × acumulado (painel admin)
+- [x] **[Astra 7]** Indicadores de ouro criado × consumido × acumulado (painel admin): por dia com criado, removido, líquido e acumulado; estoque total e média por personagem; motivos vêm de goldReasons (antes Ferreiro/redistribuição/caçada em grupo caíam em "entre jogadores") (2026-10-31)
 - [x] Aviso de mudança do Ferreiro aos jogadores (entrada em Novidades)
 - [ ] Mensagem/limite contra cliques repetidos conferidos em todas as telas novas
 - [ ] SMTP real para e-mails (hoje só log)

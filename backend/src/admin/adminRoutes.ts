@@ -221,6 +221,8 @@ adminRoutes.put('/admin/settings', need('settings.write'), asyncRoute(async (req
     return { changed: diff };
   }));
 }));
+// Motivos de entrada e saída de ouro vêm de goldReasons: motivo novo entra no lugar certo sem mexer aqui.
+const reasonsOf = (kind: 'source' | 'sink') => Prisma.join(Object.entries(goldReasons).filter(([, k]) => k === kind).map(([r]) => r));
 adminRoutes.get('/admin/economy', need('economy.read'), asyncRoute(async (req, res) => {
   const days = [1, 7, 30].includes(Number(req.query.days)) ? Number(req.query.days) : 7, since = new Date(Date.now() - days * 86_400_000);
   const [goldFlow, itemFlow, wallets, daily, listings, volume, activePremium, revenue] = await Promise.all([
@@ -229,8 +231,8 @@ adminRoutes.get('/admin/economy', need('economy.read'), asyncRoute(async (req, r
     prisma.character.aggregate({ _sum: { goldInHand: true, goldInBank: true }, _count: { _all: true } }),
     prisma.$queryRaw<{ day: Date; kind: string; total: unknown }[]>`
       SELECT DATE(createdAt) AS day,
-             CASE WHEN reason IN ('MONSTER','TASK','JOURNEY','NPC_SELL','STARTER','ADMIN_GRANT') THEN 'in'
-                  WHEN reason IN ('NPC_BUY','UPGRADE','PROMOTION','MARKET_FEE','MARKET_LISTING_FEE','ADMIN_REMOVE') THEN 'out' ELSE 'transfer' END AS kind,
+             CASE WHEN reason IN (${reasonsOf('source')}) THEN 'in'
+                  WHEN reason IN (${reasonsOf('sink')}) THEN 'out' ELSE 'transfer' END AS kind,
              SUM(delta) AS total
       FROM GoldLedger WHERE createdAt >= ${since} GROUP BY DATE(createdAt), kind ORDER BY day`,
     prisma.marketListing.groupBy({ by: ['status'], _count: { _all: true } }),
