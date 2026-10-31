@@ -101,6 +101,13 @@
 - [x] Fase 2: conteúdo até o nível 250 (Infernatil) — 17 monstros, 3 regiões (a última é o Vale da Perdição), 38 equipamentos, munição/foco para Arqueiro e magos (2026-10-31)
 - [x] Fase 3: 250–1000 com Eras (decisão ❓4 = B) — 5 Eras, 55 monstros, 65 equipamentos, Apocalypse no 1000; Vale da Perdição é a região final (2026-10-31)
 
+### Comunidade e grupo (pedidos de 2026-10-31)
+- [x] Missões com nome, quem pede e história para os 113 monstros (`shared/missions.ts`); Thais virou Capriel e a primeira região, Campos do Amanhecer
+- [x] 8 classes por vocação (20, 100, 250, 400, 550, 700, 850, 1000): +3% ataque/defesa e +1 crítico por classe após a promoção, custo = promoção × (nível ÷ 20)², migração aditiva `202610310001_class_tiers`, monstros recalibrados (2026-10-31)
+- [ ] Perfil de comunidade grátis: imagem/GIF da galeria do TibiaWiki, descrição, recados, depoimentos (com aprovação), amigos, visitas (com modo invisível); Premium dá extras
+- [ ] Fórum estilo Reddit: categorias, votos, comentários, "resolvido"; denúncia e moderação com auditoria
+- [ ] Caçada em grupo com amigos a partir de um nível — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
+
 ### Depois de validar o jogo
 - [ ] **[Astra 3]** Talentos / especializações / redistribuição com custo
 - [ ] **[Astra 8]** Profissões e receitas; ordens de compra com ouro reservado; troca direta confirmada pelos dois

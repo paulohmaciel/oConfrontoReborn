@@ -107,7 +107,8 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       const c = await prisma.character.findUniqueOrThrow({ where: { id: victim.characters[0].id } });
       assert.equal(c.vocation, 'ELITE_KNIGHT'); assert.equal(c.goldInHand, 5000n); assert(c.promotedAt);
       assert.equal((await prisma.goldLedger.findFirstOrThrow({ where: { characterId: c.id, reason: 'PROMOTION' } })).delta, -5000n);
-      await assert.rejects(() => promoteCharacter(victim.id, c.id), /já foi promovido/);
+      // A próxima classe (2ª) só abre no nível 100.
+      await assert.rejects(() => promoteCharacter(victim.id, c.id), /nível 100/);
     });
     await t.test('pagamentos: aprovação concede uma vez, repetição é ignorada, valor divergente não concede, reembolso revoga', async () => {
       process.env.MP_ACCESS_TOKEN = 'token-de-teste'; process.env.MP_WEBHOOK_SECRET = 'segredo-de-teste';

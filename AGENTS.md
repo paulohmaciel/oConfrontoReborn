@@ -15,7 +15,7 @@
 - Cargos (`Account.role`) só mudam por `npm run admin:role`. Rotas `/api/admin/*` exigem permissão (`shared/permissions.ts`), motivo e registro em `AdminAuditLog` na mesma transação.
 - Premium nunca altera regras de combate, XP, ouro ou drops. O acesso só é concedido pelo servidor, após validar a assinatura do webhook e consultar o pagamento no Mercado Pago; eventos repetidos devem ser idempotentes.
 - Não adicione dependências npm sem atualizar `package-lock.json` (o instalador usa `npm ci`).
-- Migrações continuam aditivas. A 0.5 é `202610280003_economy_admin_premium`.
+- Migrações continuam aditivas. A 0.5 é `202610280003_economy_admin_premium`; classes até o 1000: `202610310001_class_tiers`.
 - Gavetas (0.5.1): o código é organizado em pastas por assunto (`GAVETAS.md`). Antes de mexer, leia a `GAVETA.md` da pasta. Servidor: `core` → `economy` → `premium` → `game` → `account` → `admin` → `server.ts` (só importa gavetas de baixo). Tela: `lib` → `ui` → `features/*` → `App.tsx`. Rode `npm run check:drawers`. Não crie arquivos soltos em `backend/src/` nem `frontend/src/`.
 
 - **Exceção local (só desenvolvimento):** `POST /api/auth/dev-login` cria/entra na conta `mestre@localhost.dev` (ADMIN, senha aleatória desconhecida) SOMENTE com `DEV_QUICK_LOGIN=1`, `NODE_ENV != production` e pedido vindo do loopback sem proxy. Nunca ligar em servidor público; remover do `.env` antes de publicar.

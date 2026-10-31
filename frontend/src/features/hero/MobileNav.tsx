@@ -3,7 +3,7 @@ import {mobileMain,shortLabels,drawerGroups,type Tab} from '../../lib/tabs';
 import type {Hero} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
 import ThemeToggle from '../../ui/ThemeToggle';
-import {vocationLabel} from '../../../../shared/adventure';
+import {classLabel} from '../../../../shared/adventure';
 type TabRow=readonly [Tab,string,string];
 type Roster={id:number;name:string;level:number;vocation:string}[];
 // Menu inferior do celular: os 5 lugares mais usados, sempre à mão.
@@ -24,7 +24,7 @@ export function MobileDrawer({open,onClose,hero,roster,busy,fighting,tabs,tab,on
   const byId=new Map(tabs.map(t=>[t[0],t])),go=(id:Tab)=>{onTab(id);onClose();};
   return <div className="mobile-drawer-layer"><div className="mobile-backdrop" onClick={onClose}/>
     <div className="mobile-drawer" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu do jogo">
-      <div className="drawer-head"><div className="crest"><Icon name={hero.profileEmblem??'Mastermind Shield'} size={40}/></div><div><h2>{hero.name}</h2><p>{vocationLabel(hero.vocation)} · Nível {hero.level}</p></div>
+      <div className="drawer-head"><div className="crest"><Icon name={hero.profileEmblem??'Mastermind Shield'} size={40}/></div><div><h2>{hero.name}</h2><p>{classLabel(hero.vocation,hero.classTier)} · Nível {hero.level}</p></div>
         <button ref={closeRef} type="button" className="quiet drawer-close" aria-label="Fechar menu" onClick={onClose}>✕</button></div>
       {roster.length>1&&<select className="char-switch" aria-label="Trocar de personagem" value={hero.id} disabled={busy||fighting} onChange={e=>{onSelectCharacter(Number(e.target.value));onClose();}}>{roster.map(c=><option key={c.id} value={c.id}>{c.name} · Nv. {c.level}</option>)}</select>}
       {drawerGroups.map(([title,ids])=>{const rows=ids.map(id=>byId.get(id)).filter((r):r is TabRow=>!!r);if(!rows.length)return null;

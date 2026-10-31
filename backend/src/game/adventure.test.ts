@@ -63,3 +63,20 @@ test('catálogo: todo monstro está numa região que existe e abre antes do nív
   assert.equal(new Set(items.map(i=>i.name)).size,items.length,'nomes de item repetidos');
   for(const i of items)if(i.vocations)for(const v of i.vocations.split(','))assert(v in vocations,`${i.name}: vocação ${v} inválida`);
 });
+test('missões: todo monstro do catálogo tem nome, quem pede e história próprios, sem nomes repetidos',async()=>{
+  const {missionFor}=await import('../../../shared/missions');
+  const all=monsters.map(x=>({name:x.name,...missionFor(x.name)}));
+  for(const x of all){assert.notEqual(x.giver,'Mural de missões de Capriel',`${x.name} caiu na história genérica`);assert(x.story.length>40,`${x.name}: história curta`);assert(!/thais/i.test(x.story+x.title+x.giver),`${x.name} ainda cita Thais`);}
+  assert.equal(new Set(all.map(x=>x.title)).size,all.length,'títulos de missão repetidos');
+});
+test('classes: 8 por vocação até o 1000, nomes únicos, custo crescente e bônus no combate',async()=>{
+  const {classLevels,classNames,classLabel,classTierOf,classCost,MAX_CLASS_TIER}=await import('../../../shared/adventure');
+  assert.equal(MAX_CLASS_TIER,8);assert.equal(classLevels.at(-1),1000);
+  for(const names of Object.values(classNames)){assert.equal(names.length,8);assert.equal(new Set(names).size,8);}
+  assert.equal(classLabel('KNIGHT'),'Cavaleiro');assert.equal(classLabel('ELITE_KNIGHT'),'Cavaleiro de Elite');assert.equal(classLabel('ELITE_KNIGHT',8),'Escudo Eterno de Capriel');
+  assert.equal(classTierOf('ROYAL_PALADIN',0),1);assert.equal(classTierOf('ROYAL_PALADIN',5),5);
+  assert.equal(classCost(1,5000),5000n);assert.equal(classCost(2,5000),125000n);assert.equal(classCost(8,5000),12_500_000n);
+  const c={strength:100,agility:10,resistance:10,level:500,vocation:'ELITE_KNIGHT'};
+  const t1=combatStats({...c,classTier:1},[]),t5=combatStats({...c,classTier:5},[]);
+  assert(t5.attack>t1.attack);assert(t5.defense>=t1.defense);assert.equal(t5.criticalChance,t1.criticalChance+4);
+});
