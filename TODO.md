@@ -106,7 +106,7 @@
 - [ ] 8 classes por vocação (20, 100, 250, 400, 550, 700, 850, 1000) com bônus pequeno, custo em ouro e monstros recalibrados
 - [ ] Perfil de comunidade grátis: imagem/GIF da galeria do TibiaWiki, descrição, recados, depoimentos (com aprovação), amigos, visitas (com modo invisível); Premium dá extras
 - [ ] Fórum estilo Reddit: categorias, votos, comentários, "resolvido"; denúncia e moderação com auditoria
-- [ ] Caçada em grupo com amigos a partir de um nível — campanha em `CAMPANHA-QUATRO-MARCAS.md`. **Decidir:** o Arqueiro (PALADIN) vira o Paladino do texto (tanque e cura sagrada)?
+- [ ] Caçada em grupo com amigos a partir de um nível — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
 
 ### Depois de validar o jogo
 - [ ] **[Astra 3]** Talentos / especializações / redistribuição com custo

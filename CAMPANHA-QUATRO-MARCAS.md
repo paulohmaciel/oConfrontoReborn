@@ -1,28 +1,57 @@
 # A Caçada das Quatro Marcas — campanha da caçada em grupo
 
-> Texto do dono do jogo (2026-10-31), guardado como referência para a **caçada em grupo com amigos**.
-> Ainda não implementado. Decisão pendente: no texto o **Paladino** é tanque e curandeiro sagrado; no jogo a vocação PALADIN se chama **Arqueiro** (crítico e esquiva). Ver `TODO.md`.
+> Ideia do dono do jogo (2026-10-31), revisada para as vocações do jogo. Base da **caçada em grupo com amigos**; ainda não implementada.
+> O **Paladino** é o atacante à distância (no jogo, a vocação PALADIN, hoje exibida como "Arqueiro").
 
 ## História
-Há muito tempo, quatro criaturas lendárias mantinham o equilíbrio entre os reinos: uma fera das montanhas, um espírito da floresta, um monstro dos pântanos e um dragão adormecido. Quando alguém começa a caçá-las por poder, o equilíbrio se rompe. Animais fogem para as cidades, rios adoecem e criaturas selvagens atacam viajantes.
+Há muito tempo, quatro criaturas lendárias guardavam o equilíbrio entre os reinos ao redor de Capriel: a fera da Serra Vermelha, o espírito da Floresta Oca, o monstro do Lago Cinzento e o dragão que dorme sob a Fortaleza Partida. Cada uma carrega uma **marca** antiga, e enquanto as quatro marcas existirem, montanhas, matas, águas e céus permanecem em paz.
 
-Para impedir uma guerra entre os reinos, o grupo recebe a missão de rastrear as feras e descobrir quem está por trás dos ataques. Mas cada caça exige mais do que força: o grupo precisa trabalhar junto.
+Alguém começou a caçá-las para roubar esse poder. O equilíbrio se rompeu: animais fogem para dentro das cidades, rios adoecem e criaturas selvagens atacam viajantes nas estradas. Os reinos culpam uns aos outros, e uma guerra está a um passo de começar.
 
-## A função de cada personagem
-- **Cavaleiro:** fica na linha de frente, protege os companheiros e enfrenta os inimigos de perto. Também pode rastrear pistas e manter a equipe segura durante a viagem.
-- **Druida:** cura ferimentos, conhece plantas e animais e ajuda a encontrar as criaturas. Pode usar raízes, espinhos ou formas animais para atrapalhar os inimigos.
-- **Feiticeiro:** causa dano com magia e controla o campo de batalha. Pode afastar grupos de inimigos, criar barreiras ou atingir uma criatura à distância.
-- **Paladino:** protege os aliados com sua armadura, cura em momentos decisivos e enfrenta criaturas sombrias com poderes sagrados. É o apoio que também sabe lutar na linha de frente.
+O Templo de Capriel reúne um grupo de aventureiros com uma missão dupla: rastrear as quatro feras antes dos caçadores e descobrir quem está por trás deles. Nenhum herói consegue isso sozinho. Cada caçada exige um papel diferente, e a vitória depende de todos.
 
-O cavaleiro e o paladino podem lutar lado a lado: o cavaleiro segura os inimigos e abre espaço; o paladino protege o grupo e concentra seus poderes nas ameaças mais perigosas. Enquanto isso, o druida mantém todos de pé e o feiticeiro enfraquece ou afasta os monstros.
+## O papel de cada vocação
+- **Cavaleiro — a muralha.** Fica na linha de frente, segura a criatura e protege os companheiros. Abre caminho em passagens estreitas e mantém a equipe inteira durante a viagem.
+- **Paladino — a mira.** Ataca à distância com flechas e virotes. Derruba ameaças antes que cheguem perto, acerta pontos fracos e escolhe o alvo certo no caos da batalha. Quando o Cavaleiro segura, é o Paladino quem decide a luta.
+- **Druida — a vida.** Cura ferimentos, conhece plantas e animais e lê os rastros das criaturas. Usa raízes e espinhos para prender inimigos e é o único que sabe quando uma fera está ferida em vez de furiosa.
+- **Feiticeiro — o controle.** Causa o maior dano mágico e domina o campo: afasta grupos de inimigos, ergue barreiras, ilumina a escuridão e quebra selos e encantamentos.
+
+O Cavaleiro e o Paladino formam a dupla clássica: um segura na frente, o outro atira por trás de seu escudo. Enquanto isso, o Druida mantém todos de pé e o Feiticeiro enfraquece, afasta e desfaz a magia dos inimigos.
 
 ## As caçadas
-1. **A fera da Serra Vermelha** — uma criatura enorme ataca caravanas nas montanhas. As pegadas levam a uma armadilha: caçadores tentam atrair a fera para uma emboscada. O cavaleiro segura a criatura, o druida percebe que ela está ferida, o feiticeiro impede os caçadores de cercarem o grupo e o paladino tenta acalmar a fera em vez de matá-la.
-2. **O espírito da floresta oca** — árvores caminham à noite. O druida percebe que o espírito defende a floresta de uma mineração ilegal. A caçada vira investigação: achar quem fere as raízes antigas antes que a criatura ataque uma aldeia.
-3. **O monstro do Lago Cinzento** — pescadores somem e uma névoa cobre o lago. Luta com pouca visibilidade: o feiticeiro ilumina e abre caminho, o cavaleiro protege nas margens, o druida prepara remédios contra o veneno e o paladino mantém o grupo unido quando as ilusões começam.
-4. **A última caçada: o dragão adormecido** — alguém está despertando o dragão para controlar as criaturas. Batalha final numa fortaleza sobre a caverna: o cavaleiro abre passagem, o druida impede que a magia corrompa a floresta, o feiticeiro destrói os selos que prendem o dragão e o paladino enfrenta o líder dos caçadores.
+### 1. A fera da Serra Vermelha
+Uma criatura enorme ataca caravanas nas montanhas. As pegadas parecem levar ao covil, mas são uma armadilha: os caçadores querem que o grupo empurre a fera para uma emboscada.
+- O **Cavaleiro** segura a fera para que ela não esmague a caravana.
+- O **Druida** percebe que ela está ferida por uma flecha envenenada, e não furiosa.
+- O **Feiticeiro** ergue barreiras para que os caçadores não cerquem o grupo.
+- O **Paladino**, do alto das rochas, acerta as correntes do laço que prende a fera e a liberta, em vez de matá-la.
 
-No fim, o grupo escolhe derrotar o dragão ou fazê-lo voltar a dormir: vitória militar ou começo de uma aliança entre os povos e as criaturas.
+### 2. O espírito da Floresta Oca
+Árvores começam a caminhar durante a noite. O **Druida** percebe que o espírito não é o inimigo: ele defende a floresta de uma mineração ilegal que fere as raízes antigas. A caçada vira investigação.
+- O **Paladino** segue os rastros das carroças de minério e derruba de longe os vigias da mina.
+- O **Cavaleiro** protege a aldeia próxima enquanto o espírito ainda está furioso.
+- O **Feiticeiro** quebra o encantamento que os mineiros usam para enlouquecer as árvores.
+
+### 3. O monstro do Lago Cinzento
+Pescadores desaparecem e uma névoa cobre o lago. O grupo precisa atravessar a água e lutar quase sem ver.
+- O **Feiticeiro** ilumina o caminho e abre a névoa.
+- O **Cavaleiro** protege os companheiros nas margens e nas pontes podres.
+- O **Druida** prepara remédios contra o veneno da criatura.
+- Quando as ilusões multiplicam o monstro, o **Paladino** espera o momento certo e acerta o único reflexo que sangra: o verdadeiro.
+
+### 4. A última caçada: o dragão adormecido
+As pistas revelam o plano: o líder dos caçadores quer despertar o dragão e usar as quatro marcas para controlar todas as criaturas da região. A batalha final acontece na Fortaleza Partida, construída sobre a caverna do dragão.
+- O **Cavaleiro** abre passagem pelos portões e pelos guardas.
+- O **Druida** impede que a magia roubada corrompa a floresta ao redor.
+- O **Feiticeiro** destrói os selos que prendem o dragão ao controle dos caçadores.
+- O **Paladino**, das ameias, enfrenta o líder dos caçadores num duelo de mira e derruba o cajado que comanda as marcas.
+
+No fim, o grupo escolhe: **derrotar o dragão** ou **fazê-lo voltar a dormir**. A escolha decide se as caçadas terminam como uma vitória militar ou como o começo de uma aliança entre os povos e as criaturas.
 
 ## E se fossem quatro cavaleiros?
-Também daria certo, mas a equipe teria de compensar a falta de cura e magia: poções, guias e curandeiros contratados, ou aceitar mais risco em cada batalha. Com druida, feiticeiro e paladino, as caçadas ficam mais variadas e a vitória depende da colaboração do grupo.
+Também daria certo, mas mais difícil: sem cura, sem magia e sem ataque à distância, a equipe teria de levar mais poções, contratar guias e aceitar mais risco em cada batalha. Com Paladino, Druida e Feiticeiro, cada caçada tem problemas diferentes para resolver, e a vitória depende de cada um fazer a sua parte.
+
+## Ideias para o jogo (a desenhar)
+- Liberar a caçada em grupo a partir de um nível (por exemplo, 100) e só com **amigos** (sistema de amigos do perfil).
+- Grupos de 2 a 4 personagens; os turnos dão a cada vocação uma ação com o seu papel (segurar, atirar, curar, controlar).
+- As quatro caçadas como **chefes de grupo**, cada um com uma mecânica que favorece a cooperação descrita acima, e a escolha final do dragão gravada no Diário de cada participante.
