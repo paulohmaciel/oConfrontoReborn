@@ -1,0 +1,17 @@
+# Dependências e build
+node_modules/
+dist/
+
+# Configuração local (contém senha do banco) — use .env.example como modelo
+.env
+.env.*
+!.env.example
+
+# Backups, logs e arquivos do sistema
+backups/
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
