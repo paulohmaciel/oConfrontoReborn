@@ -90,6 +90,13 @@
 - [ ] Brilho discreto no +7 e mais forte no +9 (proposta Astra 1)
 - [ ] Revisar com a LGPD/Privacidade: texto legal deve citar a exibição pública do nome do personagem e o opt-out
 
+### Níveis 60 a 1000 — ver `PLANO-NIVEIS.md` (proposta de 2026-10-31, aguardando decisões ❓1–❓5)
+- [x] Fase 0: subida de nível num só lugar (`gainExperience`), `shared/progression.ts`, `MAX_LEVEL`, `npm run levels:simulate` (2026-10-31)
+  - Achado do simulador: até o nível 40 as lutas acabam em 1–2 turnos (monstros fracos demais para o personagem da faixa); só o Demon (60) é desafiador. Rebalancear vida/ataque na Fase 1.
+- [ ] Fase 1: conteúdo até o nível 100 (sprites do manifesto)
+- [ ] Fase 2: conteúdo até o nível 250 (Infernatil)
+- [ ] Fase 3: 250–1000 conforme a decisão ❓4
+
 ### Depois de validar o jogo
 - [ ] **[Astra 3]** Talentos / especializações / redistribuição com custo
 - [ ] **[Astra 8]** Profissões e receitas; ordens de compra com ouro reservado; troca direta confirmada pelos dois

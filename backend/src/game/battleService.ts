@@ -1,6 +1,8 @@
 import { randomInt } from 'node:crypto';
 import { transaction, lockCharacter } from '../core/db';
-import { GameError, getExpForLevel, integer, parseAction, resolveTurn, monsterIntent } from '../core/engine';
+import { GameError, integer, parseAction, resolveTurn, monsterIntent } from '../core/engine';
+import { gainExperience } from './gameRules';
+import { levelGains } from '../../../shared/progression';
 import { combatStats } from './combatStats';
 import { regions } from '../../../shared/adventure';
 import { event, awardAchievements } from './adventureService';
@@ -60,16 +62,14 @@ export class BattleService {
       const result = resolveTurn({ hp: c.hp, maxHp: c.maxHp, mana: c.mana,
         ...stats,agility:c.agility,vocation:c.vocation },
         { hp: b.monsterHp, attack: b.monster.attack, defense: b.monster.defense,isBoss:b.monster.isBoss,turn:b.turnVersion,element:b.monster.element }, action, dice);
-      let experience = c.experience, level = c.level, gold = 0, xpGain = 0;
+      let gold = 0, xpGain = 0;
       const droppedItems: { blueprintId: number; quantity: number; name: string }[] = [];
       if (result.status === 'VICTORY') {
         if (b.monster.experience < 0 || b.monster.goldMin < 0 || b.monster.goldMax < b.monster.goldMin)
           throw new GameError(409, 'Recompensa do monstro inválida.');
         const settings = await loadSettings(tx);
         xpGain = scaleInt(b.monster.experience, settings['economy.xpRewardPercent']);
-        experience += BigInt(xpGain);
         gold = scaleInt(dice(b.monster.goldMin, b.monster.goldMax), settings['economy.goldRewardPercent']);
-        while (experience >= getExpForLevel(level + 1)) level++;
         for (const loot of b.monster.loots) {
           if (loot.dropChance < 0 || loot.dropChance > 1 || !Number.isFinite(loot.dropChance) || loot.maxAmount < 1)
             throw new GameError(409, 'Tabela de loot inválida. Use probabilidades entre 0 e 1.');
@@ -81,8 +81,8 @@ export class BattleService {
         }
         await tx.characterTask.updateMany({ where: { characterId, isCompleted: false, task: { monsterId: b.monsterId } }, data: { currentKills: { increment: 1 } } });
       }
-      await tx.character.update({ where: { id: characterId }, data: { hp: result.hp, mana: result.mana,
-        experience, level, maxHp: { increment: (level-c.level)*5 }, maxMana: { increment: (level-c.level)*5 }, statPoints: { increment: (level-c.level)*3 }, goldInHand: { increment: BigInt(gold) } } });
+      const { experience, level, data: levelData } = gainExperience(c, xpGain);
+      await tx.character.update({ where: { id: characterId }, data: { hp: result.hp, mana: result.mana, ...levelData, goldInHand: { increment: BigInt(gold) } } });
       if (gold > 0) await recordGold(tx, characterId, BigInt(gold), c.goldInHand + BigInt(gold), 'MONSTER', { type: 'battle', id: battleId });
       await tx.battle.update({ where: { id: battleId }, data: { monsterHp: result.monsterHp,
         isFinished: result.status !== 'ONGOING', activeCharacterId: result.status === 'ONGOING' ? characterId : null,
@@ -101,7 +101,7 @@ export class BattleService {
           result.status==='VICTORY'?`+${xpGain} XP e +${gold} ouro. ${droppedItems.length} tipo(s) de item encontrado(s).`:[...result.log,...(defeat?.reasons??[])].join(' '));
         if(result.status==='VICTORY')await awardAchievements(tx,characterId);
       }
-      return { ...result, battleId, turnVersion: b.turnVersion+1, maxHp: c.maxHp+(level-c.level)*5, monsterMaxHp: b.monster.hp,
+      return { ...result, battleId, turnVersion: b.turnVersion+1, maxHp: c.maxHp+(level-c.level)*levelGains.hp, monsterMaxHp: b.monster.hp,
         monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), defeat, rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
     });
   }
