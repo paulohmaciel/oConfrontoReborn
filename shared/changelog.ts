@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-10-31-ferreiro-historico', date: '2026-10-31', title: 'Ferreiro: seu histórico e itens que brilham', items: [
+    'Nova aba Meu histórico no Ferreiro: todas as suas tentativas de melhoria, com sucessos, falhas, itens quebrados, salvamentos da Pedra de Proteção e o ouro gasto.',
+    'Itens +7 e +8 ganham um brilho discreto, +9 brilha forte e +10 continua em chamas. Com Menos movimento, o brilho fica parado.',
+  ] },
   { id: '2026-10-31-movimento', date: '2026-10-31', title: 'Opção "Menos movimento"', items: [
     'Novo botão Menos movimento ao lado do tema (no celular, no menu): desliga animações, transições e o fogo animado dos itens +10.',
     'Sem escolha, o jogo segue a preferência de acessibilidade do seu sistema.',
