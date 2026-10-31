@@ -42,3 +42,8 @@
   .duel-page .market-row{flex-wrap:wrap}
 }
 @media(prefers-reduced-motion:reduce){.duel-page *{transition:none!important}}
+.duel-report{flex-basis:100%;margin-top:8px}
+.duel-report label{display:block;font-size:13px}
+.duel-report textarea{width:100%;margin-top:6px;font:inherit;font-size:13px;padding:8px;border-radius:5px;border:1px solid #404b4d;background:#161d20;color:inherit}
+:root[data-theme="light"] .duel-report textarea{background:#fff8e6;border-color:#c5a26a}
+.duel-page .market-row:has(.duel-report){flex-wrap:wrap}

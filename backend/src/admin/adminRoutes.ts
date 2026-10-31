@@ -1,6 +1,6 @@
 import { Router, type RequestHandler } from 'express';
 import { Prisma } from '@prisma/client';
-import { asyncRoute } from '../core/http';
+import { asyncRoute, pageOf, paged } from '../core/http';
 import { prisma, transaction, lockCharacterAny, lockAccount } from '../core/db';
 import { GameError, integer } from '../core/engine';
 import { addGold } from '../economy/economy';
@@ -71,7 +71,8 @@ adminRoutes.get('/admin/accounts/:id', need('accounts.read'), asyncRoute(async (
 }));
 
 // ----- Punições -----
-const punishKinds = ['WARNING', 'MARKET_BAN', 'BAN'];
+// PVP_BLOCK: proíbe desafiar e aceitar duelos (backend/src/game/duelService.ts).
+const punishKinds = ['WARNING', 'MARKET_BAN', 'PVP_BLOCK', 'BAN'];
 adminRoutes.post('/admin/accounts/:id/punishments', need('punish.apply'), asyncRoute(async (req, res) => {
   const accountId = integer(Number(req.params.id)), reason = reasonOf(req.body), kind = String(req.body?.kind);
   if (!punishKinds.includes(kind)) throw new GameError(400, 'Tipo de punição inválido.');
@@ -312,6 +313,17 @@ adminRoutes.post('/admin/tickets/:id/status', need('tickets.reply'), asyncRoute(
     await audit(tx, actor(res), 'TICKET_STATUS', 'TICKET', id, `Status alterado para ${status}`);
   });
   res.json({ ok: true });
+}));
+// Duelos recentes (só leitura), para investigar contas múltiplas inflando vitórias. 10 por página.
+const duelCard = { id: true, name: true, level: true, accountId: true } as const;
+adminRoutes.get('/admin/duels', need('duels.read'), asyncRoute(async (req, res) => {
+  const { page, skip, take } = pageOf(req.query);
+  const where = { status: { not: 'INVITED' }, outcome: { notIn: ['DECLINED', 'CANCELLED', 'LAPSED'] } };
+  const [rows, total] = await Promise.all([
+    prisma.duel.findMany({ where, orderBy: { id: 'desc' }, skip, take, include: { challenger: { select: duelCard }, opponent: { select: duelCard } } }),
+    prisma.duel.count({ where }),
+  ]);
+  res.json(paged(rows.map(d => ({ id: d.id, challenger: d.challenger, opponent: d.opponent, status: d.status, outcome: d.outcome, winnerId: d.winnerId, round: d.round, createdAt: d.createdAt, finishedAt: d.finishedAt })), total, page));
 }));
 adminRoutes.get('/admin/audit', need('audit.read'), asyncRoute(async (req, res) => {
   const before = num(req.query.before, 2147483647, 0);

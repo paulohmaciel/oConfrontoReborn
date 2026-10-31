@@ -28,6 +28,7 @@ const vocationIcon:Record<string,string>={KNIGHT:'Sword',PALADIN:'Bow',SORCERER:
 // Duelo entre amigos: desafios, a luta em rodadas com prazo, histórico e ranking de honra. A tela só mostra o que o servidor devolve.
 export default function DuelPanel({hero,openProfile}:{hero:Hero;openProfile:(name:string)=>void}){
   const [s,setS]=useState<State|null>(null),[q,setQ]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[ok,setOk]=useState(''),[clock,setClock]=useState(Date.now());
+  const [report,setReport]=useState<{id:number;name:string;reason:string}|null>(null);
   const [surrender,setSurrender]=useState(false),[hidden,setHidden]=useState(0),[tier,setTier]=useState(''),[ranking,setRanking]=useState<Ranking|null>(null),[refresh,setRefresh]=useState(0);
   const offset=useRef(0);
   const load=useCallback(async()=>{try{const r=await api<State>(`/characters/${hero.id}/duel${q.trim()?`?q=${encodeURIComponent(q.trim())}`:''}`);offset.current=new Date(r.now).getTime()-Date.now();setS(r);}catch(e){setError(msg(e));}},[hero.id,q]);
@@ -42,6 +43,10 @@ export default function DuelPanel({hero,openProfile}:{hero:Hero;openProfile:(nam
   useEffect(()=>{if(finishedId)setRefresh(r=>r+1);},[finishedId]);
   async function act(path:string,body:unknown={}){if(busy)return;setBusy(true);setError('');setOk('');
     try{const r=await api<{message?:string}>(`/characters/${hero.id}/duel/${path}`,body);if(r?.message)setOk(r.message);await load();}catch(e){setError(msg(e));await load();}finally{setBusy(false);setSurrender(false);}}
+  // Denúncia de um duelo: abre um atendimento do tipo denúncia (Suporte) com o número do duelo.
+  async function sendReport(){if(!report||busy)return;setBusy(true);setError('');setOk('');
+    try{await api('/support/tickets',{kind:'REPORT',reportedName:report.name,subject:`Duelo #${report.id}`,body:`Duelo #${report.id} contra ${report.name}: ${report.reason.trim()}`});setOk('Denúncia enviada. Acompanhe a resposta em Suporte.');setReport(null);}
+    catch(e){setError(msg(e));}finally{setBusy(false);}}
   // Prazo vencido com a tela aberta: fecha a rodada (quem não escolheu, defende). A varredura do servidor faz o mesmo a cada minuto.
   const left=d?.deadlineAt?new Date(d.deadlineAt).getTime()-(clock+offset.current):0,advanced=useRef(0);
   useEffect(()=>{if(d&&fighting&&left<=0&&advanced.current!==d.round){advanced.current=d.round;void api(`/characters/${hero.id}/duel/${d.id}/advance`,{round:d.round}).catch(()=>{}).then(()=>load());}},[left<=0,d?.round,d?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -80,7 +85,11 @@ export default function DuelPanel({hero,openProfile}:{hero:Hero;openProfile:(nam
       {history.error&&<p className="error" role="alert">{history.error}</p>}
       {history.items.map(h=><div className="market-row" key={h.id}><Avatar c={h.opponent}/><div><h3>{h.draw?'Empate':h.won?'Vitória':'Derrota'} contra <button className="link-button" onClick={()=>openProfile(h.opponent.name)}>{h.opponent.name}</button></h3>
         <p>{outcomeLabels[h.outcome]} · {h.rounds} {h.rounds===1?'rodada':'rodadas'} · {new Date(h.finishedAt).toLocaleDateString('pt-BR')}</p></div>
-        <span className={h.draw?'tag':h.won?'tag':'tag danger'}>{h.draw?'EMPATE':h.won?'VITÓRIA':'DERROTA'}</span></div>)}
+        <span className={h.draw?'tag':h.won?'tag':'tag danger'}>{h.draw?'EMPATE':h.won?'VITÓRIA':'DERROTA'}</span>
+        <button type="button" className="link-button" onClick={()=>setReport({id:h.id,name:h.opponent.name,reason:''})}>Denunciar</button>
+        {report?.id===h.id&&<form className="duel-report" onSubmit={e=>{e.preventDefault();void sendReport();}}><label>O que aconteceu neste duelo? A equipe vai analisar.
+          <textarea value={report.reason} maxLength={1500} rows={3} onChange={e=>setReport({...report,reason:e.target.value})}/></label>
+          <div className="inline-actions"><button className="primary" disabled={busy||report.reason.trim().length<5}>Enviar denúncia</button><button type="button" onClick={()=>setReport(null)}>Cancelar</button></div></form>}</div>)}
       {!history.items.length&&!history.loading&&<p className="muted">Nenhum duelo terminado ainda.</p>}
       <Pager page={history.page} pages={history.pages} onPage={p=>void history.go(p)} busy={history.loading}/></section>
 
