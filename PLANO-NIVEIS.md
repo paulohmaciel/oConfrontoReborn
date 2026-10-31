@@ -121,6 +121,26 @@ Achados para depois:
 - Todos os 58 monstros recalibrados com o equipamento novo (os da Fase 1 mudaram pouco).
 - **Ainda falta:** pernas acima do 85 e armaduras acima do 160 (sem sprites livres); o Arqueiro continua perdendo ~2× mais vida (23% contra 6–11% nos comuns), então o problema dele é defesa/vida, não ataque.
 
+## Resultado da Fase 3 — Eras (2026-10-31)
+
+Decisão do dono: **❓4 = B (Eras)**. O jogo agora tem conteúdo do nível 1 ao 1000.
+
+| Região | Abre no nível | Monstros | Chefe |
+|---|---|---|---|
+| Santuário Elemental | 160 | os da Fase 2 (era o Vale de Capriel) | Infernatil (250) |
+| Ruínas da 1ª Era | 250 | Cyclops, Orc Berserker, Valkyrie… "da 1ª Era" | Demon da 1ª Era (400) |
+| Geleiras da 2ª Era | 400 | Frost Troll, Mammoth, Witch, Necromancer… | Verminor (550) |
+| Cidadela da 3ª Era | 550 | Assassin, Elf Arcanist, Monk, Hero, Warlock… | Infernatil da 3ª Era (700) |
+| Abismo da 4ª Era | 700 | Giant Spider, Demon, Dragon Lord… | Senhor dos Dragões da 4ª Era (850) |
+| **Vale da Perdição de Capriel** | 850 | "… de Capriel" (Demon, Dragon Lord, Hero, Warlock…) | **Apocalypse (1000)** |
+
+- **55 monstros novos** (113 no total): 10 comuns e 1 chefe por Era, ~14 níveis entre cada um. Verminor e Apocalypse usam os próprios sprites; os demais reaproveitam sprites com o nome da Era.
+- **65 equipamentos de Era** (173 itens no total): um conjunto completo por Era (250, 400, 550, 700, 850) para as 4 vocações — arma de Cavaleiro, arma e munição de Arqueiro, cajado/varinha, runa e robe de mago, armadura, elmo, pernas, botas, escudo, amuleto e anel. Reaproveitam sprites clássicos (campo `sprite` no catálogo) com atributos pela curva.
+- **Mudança em relação ao plano:** em vez de "nível de item" (que exigia migração e mudança no cálculo de atributos), cada Era tem os próprios itens. Para o jogador o efeito é o mesmo e **não houve migração**.
+- **Tela:** Mercador, Mercado, Tarefas e Equipamento agora usam o sprite gravado no item/monstro (antes o Guardião da Pedreira aparecia com "?" nas Tarefas). O Mercador ganhou o filtro "Só o que posso usar" (ligado por padrão). Limites da lista: loja 400 itens, tarefas 300.
+- **Simulador:** do 250 ao 1000, comuns ≈ 5 turnos e 5–25% da vida, chefes ≈ 10 turnos e 33–50%, 100% de vitórias em todas as vocações. Testado no jogo: Cavaleiro nível 1000 com parte do conjunto de Capriel venceu o Demon de Capriel (981) em 7 turnos.
+- **Custo:** um conjunto completo de Capriel (8 peças de Cavaleiro) custa ~69 milhões de ouro, ≈ 500 lutas no próprio Vale.
+
 ## 6. Decisões do dono
 
 1. **❓1 Ritmo:** ~31 lutas por nível (≈ 260–400 h até o 1000) está bom? Mais lento = monstros dão menos XP.
