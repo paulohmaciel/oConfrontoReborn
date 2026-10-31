@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {resolveTurn,monsterIntent} from '../core/engine';
 import {combatStats} from './combatStats';
 import {baseVocation,skillCosts} from '../../../shared/adventure';
+import {gainExperience} from './gameRules';
+import {MAX_LEVEL,expForLevel,levelForExperience,levelGains,monsterXpTarget} from '../../../shared/progression';
 const player={hp:100,maxHp:200,mana:100,attack:30,defense:20};
 const monster={hp:10000,attack:60,defense:0};
 const max=(a:number,b:number)=>b;
@@ -33,4 +35,19 @@ test('efeitos dos equipamentos respeitam os limites de crítico, fogo e esquiva'
   const gear={upgradeTier:0,blueprint:{attack:0,defense:0,armor:0,magicAttack:0,criticalChance:99,fireResistance:99,speed:99}};
   const stats=combatStats({strength:10,agility:10,resistance:10,level:1,vocation:'PALADIN'},[gear]);
   assert.equal(stats.criticalChance,45);assert.equal(stats.fireResistance,75);assert.equal(stats.dodgeChance,20);
+});
+test('subida de nível: vários níveis de uma vez, ganhos por nível e teto de 1000',()=>{
+  const g=gainExperience({experience:0n,level:1},Number(expForLevel(4)));
+  assert.equal(g.level,4);assert.equal(g.leveledUp,true);
+  assert.deepEqual(g.data.maxHp,{increment:3*levelGains.hp});assert.deepEqual(g.data.statPoints,{increment:3*levelGains.statPoints});
+  const none=gainExperience({experience:150n,level:2},10);
+  assert.equal(none.level,2);assert.equal(none.leveledUp,false);assert.deepEqual(none.data.maxMana,{increment:0});
+  const top=gainExperience({experience:expForLevel(MAX_LEVEL),level:MAX_LEVEL},1_000_000_000);
+  assert.equal(top.level,MAX_LEVEL);assert.equal(top.leveledUp,false);assert.equal(top.experience,expForLevel(MAX_LEVEL)+1_000_000_000n);
+  assert.equal(levelForExperience(expForLevel(MAX_LEVEL+50)),MAX_LEVEL);
+  assert.equal(levelForExperience(0n,7),7,'nunca desce de nível');
+});
+test('curva de XP do personagem não mudou e a curva-alvo dá ~31 lutas por nível',()=>{
+  assert.equal(expForLevel(2),100n);assert.equal(expForLevel(60),3_256_800n);assert.equal(expForLevel(1000),16_566_949_800n);
+  for(const l of [60,200,1000]){const fights=Number(expForLevel(l+1)-expForLevel(l))/monsterXpTarget(l);assert(fights>28&&fights<34,`nível ${l}: ${fights}`);}
 });

@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { transaction, lockCharacter } from '../core/db';
-import { GameError, getExpForLevel } from '../core/engine';
+import { GameError } from '../core/engine';
+import { gainExperience } from './gameRules';
 import { addItem, recordGold } from '../economy/economy';
 import { achievementDefinitions, journey, regions, vocations, type BaseVocation } from '../../../shared/adventure';
 type Tx=Prisma.TransactionClient;
@@ -56,10 +57,8 @@ export async function claimJourney(accountId:number,characterId:number,expectedS
     if(await tx.battle.findFirst({where:{characterId,isFinished:false}}))throw new GameError(409,'Encerre o combate antes de receber.');
     const state=await journeyState(tx,characterId),step=state.steps[expectedStep];
     if(!step.ready)throw new GameError(409,'Complete o objetivo desta etapa.');
-    const experience=c.experience+BigInt(step.xp);let level=c.level;
-    while(experience>=getExpForLevel(level+1))level++;
-    await tx.character.update({where:{id:characterId},data:{journeyStep:{increment:1},goldInHand:{increment:BigInt(step.gold)},experience,level,
-      statPoints:{increment:(level-c.level)*3},maxHp:{increment:(level-c.level)*5},maxMana:{increment:(level-c.level)*5}}});
+    const gain=gainExperience(c,step.xp);
+    await tx.character.update({where:{id:characterId},data:{journeyStep:{increment:1},goldInHand:{increment:BigInt(step.gold)},...gain.data}});
     if(step.gold>0)await recordGold(tx,characterId,BigInt(step.gold),c.goldInHand+BigInt(step.gold),'JOURNEY',{type:'journey',id:expectedStep});
     if(expectedStep===0) {
       for(const name of ['Health Potion','Mana Potion']) {
@@ -71,6 +70,6 @@ export async function claimJourney(accountId:number,characterId:number,expectedS
     if(expectedStep===3)await event(tx,characterId,'REGION','A pedreira está aberta','Você recebeu autorização para explorar a Pedreira dos Gigantes.');
     await awardAchievements(tx,characterId);
     const gains=[step.xp>0&&`+${step.xp} XP`,step.gold>0&&`+${step.gold} ouro`,expectedStep===0&&'2 poções de vida e 1 de mana'].filter(Boolean).join(', ');
-    return {message:`Etapa concluída!${gains?` Você recebeu ${gains}.`:''}${level>c.level?` Subiu para o nível ${level}!`:''}`};
+    return {message:`Etapa concluída!${gains?` Você recebeu ${gains}.`:''}${gain.leveledUp?` Subiu para o nível ${gain.level}!`:''}`};
   });
 }

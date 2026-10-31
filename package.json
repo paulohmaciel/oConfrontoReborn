@@ -23,7 +23,8 @@
     "mp:sim": "node scripts/mp-webhook-sim.mjs",
     "icons": "node scripts/import-icons.mjs",
     "start": "tsx backend/src/server.ts",
-    "test:icons": "node --test scripts/import-icons.test.mjs"
+    "test:icons": "node --test scripts/import-icons.test.mjs",
+    "levels:simulate": "tsx scripts/simulate-levels.ts"
   },
   "dependencies": {
     "@prisma/client": "5.19.0",
