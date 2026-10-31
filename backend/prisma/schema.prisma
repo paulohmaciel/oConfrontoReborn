@@ -16,36 +16,37 @@ enum AccountRole {
 }
 
 model Account {
-  id         Int         @id @default(autoincrement())
-  email      String      @unique
-  password   String
+  id              Int             @id @default(autoincrement())
+  email           String          @unique
+  password        String
   // Legado: não é mais usado. O acesso Premium vem de PremiumPeriod.
-  vipDays    Int         @default(0)
-  role       AccountRole @default(PLAYER)
+  vipDays         Int             @default(0)
+  role            AccountRole     @default(PLAYER)
   emailVerifiedAt DateTime?
-  createdAt  DateTime    @default(now())
-  characters Character[]
-  sessions   Session[]
-  tokens     AccountToken[]
-  punishments Punishment[]
-  premiumPeriods PremiumPeriod[]
-  premiumOrders PremiumOrder[]
-  tickets    SupportTicket[]
+  createdAt       DateTime        @default(now())
+  characters      Character[]
+  sessions        Session[]
+  tokens          AccountToken[]
+  punishments     Punishment[]
+  premiumPeriods  PremiumPeriod[]
+  premiumOrders   PremiumOrder[]
+  tickets         SupportTicket[]
 }
 
 model Session {
-  tokenHash String @id @db.VarChar(64)
+  tokenHash String   @id @db.VarChar(64)
   accountId Int
-  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   expiresAt DateTime
+
   @@index([expiresAt])
 }
 
 model Operation {
-  key String @id @db.VarChar(160)
-  fingerprint String @db.VarChar(64)
-  result Json
-  createdAt DateTime @default(now())
+  key         String   @id @db.VarChar(160)
+  fingerprint String   @db.VarChar(64)
+  result      Json
+  createdAt   DateTime @default(now())
 }
 
 enum Vocation {
@@ -76,54 +77,65 @@ enum ItemSlot {
 }
 
 model Character {
-  id             Int              @id @default(autoincrement())
-  accountId      Int
-  account        Account          @relation(fields: [accountId], references: [id])
-  name           String           @unique
-  vocation       Vocation         @default(NONE)
-  vocationChosen Boolean          @default(false)
-  journeyStep    Int              @default(0)
-  level          Int              @default(1)
-  experience     BigInt           @default(0)
-  hp             Int              @default(150)
-  maxHp          Int              @default(150)
-  mana           Int              @default(55)
-  maxMana        Int              @default(55)
-  energy         Int              @default(100)
-  maxEnergy      Int              @default(100)
-  templeReadyAt  DateTime?
-  strength       Int              @default(10)
-  vitality       Int              @default(10)
-  agility        Int              @default(10)
-  resistance     Int              @default(10)
-  statPoints     Int              @default(0)
-  goldInHand     BigInt           @default(100)
-  goldInBank     BigInt           @default(0)
-  huntMonsterId  Int?
-  huntEndsAt     DateTime?
-  guildId        Int?
-  guild          Guild?           @relation(fields: [guildId], references: [id])
-  guildRank      String           @default("MEMBER")
-  pvpWins        Int              @default(0)
-  pvpLosses      Int              @default(0)
-  promotedAt     DateTime?
-  classTier      Int              @default(0)
-  profileTitle   String?          @db.VarChar(24)
-  profileEmblem  String?          @db.VarChar(40)
-  profileBio     String?          @db.VarChar(160)
-  fameHidden     Boolean          @default(false)
-  rareItemsMade  RareItem[]
-  profileFrame   String?          @db.VarChar(16)
-  presets        CharacterPreset[]
-  goldLedger     GoldLedger[]
-  itemLedger     ItemLedger[]
-  inventory      InventoryItem[]
-  battles        Battle[]
-  marketListings MarketListing[]
-  tasks          CharacterTask[]
-  quests         CharacterQuest[]
-  events         AdventureEvent[]
-  achievements   CharacterAchievement[]
+  id                     Int                    @id @default(autoincrement())
+  accountId              Int
+  account                Account                @relation(fields: [accountId], references: [id])
+  name                   String                 @unique
+  vocation               Vocation               @default(NONE)
+  vocationChosen         Boolean                @default(false)
+  journeyStep            Int                    @default(0)
+  level                  Int                    @default(1)
+  experience             BigInt                 @default(0)
+  hp                     Int                    @default(150)
+  maxHp                  Int                    @default(150)
+  mana                   Int                    @default(55)
+  maxMana                Int                    @default(55)
+  energy                 Int                    @default(100)
+  maxEnergy              Int                    @default(100)
+  templeReadyAt          DateTime?
+  strength               Int                    @default(10)
+  vitality               Int                    @default(10)
+  agility                Int                    @default(10)
+  resistance             Int                    @default(10)
+  statPoints             Int                    @default(0)
+  goldInHand             BigInt                 @default(100)
+  goldInBank             BigInt                 @default(0)
+  huntMonsterId          Int?
+  huntEndsAt             DateTime?
+  guildId                Int?
+  guild                  Guild?                 @relation(fields: [guildId], references: [id])
+  guildRank              String                 @default("MEMBER")
+  pvpWins                Int                    @default(0)
+  pvpLosses              Int                    @default(0)
+  promotedAt             DateTime?
+  classTier              Int                    @default(0)
+  profileAvatar          String?                @db.VarChar(60)
+  profileAbout           String?                @db.Text
+  profileHideVisits      Boolean                @default(false)
+  scrapsReceived         ProfileScrap[]         @relation("ScrapsReceived")
+  scrapsWritten          ProfileScrap[]         @relation("ScrapsWritten")
+  testimonialsReceived   ProfileTestimonial[]   @relation("TestimonialsReceived")
+  testimonialsWritten    ProfileTestimonial[]   @relation("TestimonialsWritten")
+  friendRequestsSent     Friendship[]           @relation("FriendRequester")
+  friendRequestsReceived Friendship[]           @relation("FriendAddressee")
+  profileVisits          ProfileVisit[]         @relation("ProfileVisited")
+  visitsMade             ProfileVisit[]         @relation("ProfileVisitor")
+  profileTitle           String?                @db.VarChar(24)
+  profileEmblem          String?                @db.VarChar(40)
+  profileBio             String?                @db.VarChar(160)
+  fameHidden             Boolean                @default(false)
+  rareItemsMade          RareItem[]
+  profileFrame           String?                @db.VarChar(16)
+  presets                CharacterPreset[]
+  goldLedger             GoldLedger[]
+  itemLedger             ItemLedger[]
+  inventory              InventoryItem[]
+  battles                Battle[]
+  marketListings         MarketListing[]
+  tasks                  CharacterTask[]
+  quests                 CharacterQuest[]
+  events                 AdventureEvent[]
+  achievements           CharacterAchievement[]
 }
 
 model ItemBlueprint {
@@ -194,25 +206,27 @@ model MonsterLoot {
   blueprint   ItemBlueprint @relation(fields: [blueprintId], references: [id])
   dropChance  Float
   maxAmount   Int           @default(1)
+
   @@unique([monsterId, blueprintId])
 }
 
 model Battle {
-  id          Int       @id @default(autoincrement())
-  characterId Int
-  character   Character @relation(fields: [characterId], references: [id])
-  monsterId   Int
-  monster     Monster   @relation(fields: [monsterId], references: [id])
-  activeCharacterId Int? @unique
-  turnVersion Int @default(0)
-  monsterHp   Int
-  isFinished  Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  outcome     String @default("ONGOING")
-  lastLog     Json?
-  rewardGold  BigInt @default(0)
-  rewardExperience Int @default(0)
-  rewardRecorded Boolean @default(false)
+  id                Int       @id @default(autoincrement())
+  characterId       Int
+  character         Character @relation(fields: [characterId], references: [id])
+  monsterId         Int
+  monster           Monster   @relation(fields: [monsterId], references: [id])
+  activeCharacterId Int?      @unique
+  turnVersion       Int       @default(0)
+  monsterHp         Int
+  isFinished        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  outcome           String    @default("ONGOING")
+  lastLog           Json?
+  rewardGold        BigInt    @default(0)
+  rewardExperience  Int       @default(0)
+  rewardRecorded    Boolean   @default(false)
+
   @@index([characterId, isFinished])
 }
 
@@ -227,13 +241,14 @@ model MarketListing {
   rareItemId  Int?
   rareItem    RareItem?     @relation(fields: [rareItemId], references: [id])
   price       BigInt
-  status      String @default("OPEN")
+  status      String        @default("OPEN")
   buyerId     Int?
   createdAt   DateTime      @default(now())
   expiresAt   DateTime?
   soldAt      DateTime?
   fee         BigInt        @default(0)
   listingFee  BigInt        @default(0)
+
   @@index([status, id])
   @@index([status, expiresAt])
 }
@@ -315,25 +330,26 @@ model KingdomState {
 }
 
 model AdventureEvent {
-  id Int @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   characterId Int
-  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  kind String
-  title String
-  description String @db.Text
-  createdAt DateTime @default(now())
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  kind        String
+  title       String
+  description String    @db.Text
+  createdAt   DateTime  @default(now())
+
   @@index([characterId, id])
 }
 
 model CharacterAchievement {
-  id Int @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   characterId Int
-  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  key String
-  unlockedAt DateTime @default(now())
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  key         String
+  unlockedAt  DateTime  @default(now())
+
   @@unique([characterId, key])
 }
-
 
 // ===== Versão 0.5: economia, operação, Premium e pagamentos =====
 
@@ -354,6 +370,7 @@ model GoldLedger {
   refType      String?   @db.VarChar(24)
   refId        Int?
   createdAt    DateTime  @default(now())
+
   @@index([characterId, id])
   @@index([reason, createdAt])
   @@index([createdAt])
@@ -370,35 +387,38 @@ model ItemLedger {
   refType     String?   @db.VarChar(24)
   refId       Int?
   createdAt   DateTime  @default(now())
+
   @@index([characterId, id])
   @@index([blueprintId, createdAt])
   @@index([reason, createdAt])
 }
 
 model AccountToken {
-  tokenHash String   @id @db.VarChar(64)
+  tokenHash String    @id @db.VarChar(64)
   accountId Int
-  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  kind      String   @db.VarChar(16)
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  kind      String    @db.VarChar(16)
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+
   @@index([accountId, kind])
   @@index([expiresAt])
 }
 
 model Punishment {
-  id          Int       @id @default(autoincrement())
-  accountId   Int
-  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  kind        String    @db.VarChar(12)
-  reason      String    @db.VarChar(500)
-  createdById Int
-  startsAt    DateTime  @default(now())
-  expiresAt   DateTime?
-  revokedAt   DateTime?
-  revokedById Int?
-  revokeReason String?  @db.VarChar(500)
+  id           Int       @id @default(autoincrement())
+  accountId    Int
+  account      Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  kind         String    @db.VarChar(12)
+  reason       String    @db.VarChar(500)
+  createdById  Int
+  startsAt     DateTime  @default(now())
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  revokedById  Int?
+  revokeReason String?   @db.VarChar(500)
+
   @@index([accountId, kind])
 }
 
@@ -411,6 +431,7 @@ model AdminAuditLog {
   reason         String   @db.VarChar(500)
   details        Json?
   createdAt      DateTime @default(now())
+
   @@index([actorAccountId, id])
   @@index([targetType, targetId])
 }
@@ -427,6 +448,7 @@ model SupportTicket {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
   messages            SupportMessage[]
+
   @@index([status, id])
   @@index([accountId, id])
 }
@@ -439,6 +461,7 @@ model SupportMessage {
   body            String        @db.Text
   internal        Boolean       @default(false)
   createdAt       DateTime      @default(now())
+
   @@index([ticketId, id])
 }
 
@@ -459,6 +482,7 @@ model PremiumOrder {
   paidAt               DateTime?
   refundedAt           DateTime?
   period               PremiumPeriod?
+
   @@index([accountId, id])
   @@index([status, createdAt])
 }
@@ -479,6 +503,7 @@ model PremiumPeriod {
   revokedAt    DateTime?
   revokedById  Int?
   revokeReason String?       @db.VarChar(500)
+
   @@index([accountId, endsAt])
 }
 
@@ -497,6 +522,7 @@ model CharacterPreset {
   name        String    @db.VarChar(30)
   itemIds     Json
   createdAt   DateTime  @default(now())
+
   @@unique([characterId, name])
 }
 
@@ -516,6 +542,7 @@ model RareItem {
   inventoryItem InventoryItem?
   listings      MarketListing[]
   events        RareItemEvent[]
+
   @@unique([blueprintId, serial])
   @@index([status])
 }
@@ -527,5 +554,63 @@ model RareItemEvent {
   kind       String   @db.VarChar(24)
   detail     String   @db.VarChar(200)
   createdAt  DateTime @default(now())
+
   @@index([rareItemId])
+}
+
+// ----- Comunidade (perfil): recados, depoimentos, amizades e visitas -----
+model ProfileScrap {
+  id          Int       @id @default(autoincrement())
+  profileId   Int
+  profile     Character @relation("ScrapsReceived", fields: [profileId], references: [id], onDelete: Cascade)
+  authorId    Int
+  author      Character @relation("ScrapsWritten", fields: [authorId], references: [id], onDelete: Cascade)
+  text        String    @db.VarChar(500)
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+  deletedById Int?
+
+  @@index([profileId, id])
+  @@index([authorId, createdAt])
+}
+
+model ProfileTestimonial {
+  id        Int       @id @default(autoincrement())
+  profileId Int
+  profile   Character @relation("TestimonialsReceived", fields: [profileId], references: [id], onDelete: Cascade)
+  authorId  Int
+  author    Character @relation("TestimonialsWritten", fields: [authorId], references: [id], onDelete: Cascade)
+  text      String    @db.VarChar(1000)
+  status    String    @default("PENDING") @db.VarChar(12)
+  createdAt DateTime  @default(now())
+  decidedAt DateTime?
+
+  @@unique([profileId, authorId])
+  @@index([profileId, status])
+}
+
+model Friendship {
+  id          Int       @id @default(autoincrement())
+  requesterId Int
+  requester   Character @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addresseeId Int
+  addressee   Character @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  status      String    @default("PENDING") @db.VarChar(12)
+  createdAt   DateTime  @default(now())
+  respondedAt DateTime?
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+}
+
+model ProfileVisit {
+  id        Int       @id @default(autoincrement())
+  profileId Int
+  profile   Character @relation("ProfileVisited", fields: [profileId], references: [id], onDelete: Cascade)
+  visitorId Int
+  visitor   Character @relation("ProfileVisitor", fields: [visitorId], references: [id], onDelete: Cascade)
+  visitedAt DateTime  @default(now())
+
+  @@unique([profileId, visitorId])
+  @@index([profileId, visitedAt])
 }

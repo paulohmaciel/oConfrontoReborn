@@ -87,6 +87,25 @@ adminRoutes.post('/admin/accounts/:id/punishments', need('punish.apply'), asyncR
     return p;
   }));
 }));
+// Moderação da comunidade: a equipe remove recados e depoimentos (ex.: depois de uma denúncia), com motivo e auditoria.
+adminRoutes.post('/admin/community/:kind/:id/remove', need('community.moderate'), asyncRoute(async (req, res) => {
+  const id = integer(Number(req.params.id)), reason = reasonOf(req.body), kind = req.params.kind;
+  if (kind !== 'scrap' && kind !== 'testimonial') throw new GameError(400, 'Tipo de conteúdo inválido.');
+  await transaction(async tx => {
+    if (kind === 'scrap') {
+      const s = await tx.profileScrap.findUnique({ where: { id } });
+      if (!s) throw new GameError(404, 'Recado não encontrado.');
+      if (!s.deletedAt) await tx.profileScrap.update({ where: { id }, data: { deletedAt: new Date(), deletedById: actor(res) } });
+      await audit(tx, actor(res), 'COMMUNITY_REMOVE', 'CHARACTER', s.authorId, reason, { kind, id, text: s.text });
+    } else {
+      const t = await tx.profileTestimonial.findUnique({ where: { id } });
+      if (!t) throw new GameError(404, 'Depoimento não encontrado.');
+      await tx.profileTestimonial.update({ where: { id }, data: { status: 'REMOVED', decidedAt: new Date() } });
+      await audit(tx, actor(res), 'COMMUNITY_REMOVE', 'CHARACTER', t.authorId, reason, { kind, id, text: t.text });
+    }
+  });
+  res.json({ ok: true });
+}));
 adminRoutes.post('/admin/punishments/:id/revoke', need('punish.apply'), asyncRoute(async (req, res) => {
   const id = integer(Number(req.params.id)), reason = reasonOf(req.body);
   await transaction(async tx => {

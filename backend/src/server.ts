@@ -16,6 +16,7 @@ import { economyRoutes } from './economy/economyRoutes';
 import { characterRoutes } from './game/characterRoutes';
 import { supportRoutes } from './admin/supportRoutes';
 import { adminRoutes } from './admin/adminRoutes';
+import { communityRoutes } from './community/communityRoutes';
 import { expireListings } from './economy/marketService';
 import { requestId } from './core/monitor';
 
@@ -34,7 +35,7 @@ export function createApp() {
   app.use('/api', webhookRoutes);
   app.use('/api', protectOrigin, rateLimit({ windowMs: 60000, limit: 180, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas ações em pouco tempo. Aguarde um minuto.' } }));
   app.use('/api/auth', rateLimit({ windowMs: 15*60000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas tentativas. Aguarde antes de entrar novamente.' } }), authRouter, emailRouter);
-  app.use('/api', authenticate, readRoutes, taskRoutes, adventureRoutes, economyRoutes, characterRoutes, premiumRoutes, supportRoutes, adminRoutes, gameRouter());
+  app.use('/api', authenticate, readRoutes, taskRoutes, adventureRoutes, economyRoutes, characterRoutes, premiumRoutes, communityRoutes, supportRoutes, adminRoutes, gameRouter());
   app.use('/api', (_req,res) => { res.status(404).json({ error: 'Rota não encontrada.' }); });
   app.use(gameErrorHandler);
   const dist = path.resolve('dist');

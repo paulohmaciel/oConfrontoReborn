@@ -1,10 +1,10 @@
 // Confere as "gavetas": cada pasta só pode depender das gavetas abaixo dela. Uso: npm run check:drawers
-// Regras (backend, de baixo para cima): core < economy < premium < game < account < admin < server.
+// Regras (backend, de baixo para cima): core < economy < premium < game < community < account < admin < server.
 // Frontend: lib < ui < features/* < App/main; features só importam outra feature se estiver na lista abaixo.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
-const backendOrder = ['core', 'economy', 'premium', 'game', 'account', 'admin', 'server'];
+const backendOrder = ['core', 'economy', 'premium', 'game', 'community', 'account', 'admin', 'server'];
 const featureLinks = { admin: ['ledger'], auth: ['adventure'], characters: ['adventure'] }; // exceções declaradas
 const files = [];
 (function walk(dir) {

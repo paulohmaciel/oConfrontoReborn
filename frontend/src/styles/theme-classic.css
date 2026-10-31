@@ -154,3 +154,5 @@
 :root[data-theme="light"] .xp-meter .xp b { color: #8c4b1d; }
 :root[data-theme="light"] .xp-bar, :root[data-theme="light"] .xp-bar::-webkit-progress-bar { background: #d9c08e; }
 :root[data-theme="light"] .xp-detail { color: #745927; }
+:root[data-theme="light"] .search-results { background: #f4e2bd; }
+:root[data-theme="light"] .nav-group+.nav-group { border-color: #c5a46d; } :root[data-theme="light"] .nav-title { color: #8c5b24; }
