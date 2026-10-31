@@ -52,8 +52,8 @@ export function skillCosts(value: string) {
 export function skillLabels(value: string) {
   const v = baseVocation(value);
   return { ATTACK: v === 'PALADIN' ? 'Disparar' : v === 'SORCERER' || v === 'DRUID' ? 'Rajada' : 'Atacar',
-    TRIPLE_HIT: v === 'PALADIN' ? 'Tiro preciso' : v === 'SORCERER' ? 'Explosão' : v === 'DRUID' ? 'Espinhos' : 'Triplo hit',
-    FIFTH_HIT: v === 'PALADIN' ? 'Salva de flechas' : v === 'SORCERER' ? 'Tempestade' : v === 'DRUID' ? 'Fúria natural' : 'Quinto hit',
+    TRIPLE_HIT: v === 'PALADIN' ? 'Tiro preciso' : v === 'SORCERER' ? 'Explosão' : v === 'DRUID' ? 'Espinhos' : 'Golpe brutal',
+    FIFTH_HIT: v === 'PALADIN' ? 'Salva de flechas' : v === 'SORCERER' ? 'Tempestade' : v === 'DRUID' ? 'Fúria natural' : 'Fúria berserker',
     HEAL: 'Curar', DEFEND_SHIELD: 'Defender', INTERRUPT: 'Interromper', FLEE: 'Fugir' };
 }
 export const regions = [
