@@ -16,7 +16,7 @@
 Depende só de `core`.
 
 ## Regras que não podem quebrar
-Todo ouro/item passa por `addGold`/`addItem` na mesma transação, depois de `lockCharacter`. Preços e taxas vêm de `loadSettings`. Saldo negativo desfaz tudo. Compra e venda NPC nunca dão lucro (`settingsConflict`). Só loot e consumíveis empilham; munição (flechas, virotes, runas de foco) é equipamento permanente e não empilha.
+Todo ouro/item passa por `addGold`/`addItem` na mesma transação, depois de `lockCharacter`. Preços e taxas vêm de `loadSettings`. Saldo negativo desfaz tudo. Compra e venda NPC nunca dão lucro (`settingsConflict`). `takeStack` consome itens empilháveis (materiais) com registro no extrato. Motivos do Ferreiro: `FORGE_*` em `shared/economy.ts`. Só loot e consumíveis empilham; munição (flechas, virotes, runas de foco) é equipamento permanente e não empilha.
 
 ## Testes
 `npm test` (economy.test) · `npm run test:integration` · `npm run economy:reconcile`

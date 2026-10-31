@@ -11,7 +11,8 @@ export const economyRoutes = Router();
 economyRoutes.get('/config', asyncRoute(async (_req, res) => {
   const s = await loadSettings(prisma);
   res.json({ saleFeePercent: s['market.saleFeePercent'], listingFeeGold: s['market.listingFeeGold'], listingHours: s['market.durationHours'], npcBuyPercent: s['economy.npcBuyPercent'],
-    npcSellPercent: s['economy.npcSellPercent'], upgradePercent: s['economy.upgradePricePercent'], promotionGold: s['class.promotionGold'], presetLimit: s['premium.presetLimit'], xpPercent: s['economy.xpRewardPercent'], goldPercent: s['economy.goldRewardPercent'], safeUntilTier: s['upgrade.safeUntilTier'], breakFromTier: s['upgrade.breakFromTier'], breakOnFailPercent: s['upgrade.breakOnFailPercent'] });
+    npcSellPercent: s['economy.npcSellPercent'], upgradePercent: s['economy.upgradePricePercent'], promotionGold: s['class.promotionGold'], presetLimit: s['premium.presetLimit'], xpPercent: s['economy.xpRewardPercent'], goldPercent: s['economy.goldRewardPercent'], safeUntilTier: s['upgrade.safeUntilTier'], breakFromTier: s['upgrade.breakFromTier'], breakOnFailPercent: s['upgrade.breakOnFailPercent'],
+    statsResetBaseGold: s['stats.resetBaseGold'], statsResetPerLevelSquared: s['stats.resetGoldPerLevelSquared'] });
 }));
 economyRoutes.get('/characters/:id/ledger', asyncRoute(async (req, res) => {
   const characterId = integer(Number(req.params.id)), before = integer(Number(req.query.before ?? 2147483647));

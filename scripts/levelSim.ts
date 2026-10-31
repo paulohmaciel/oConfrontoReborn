@@ -2,15 +2,14 @@
 import { resolveTurn, monsterIntent, type Action } from '../backend/src/core/engine';
 import { combatStats } from '../backend/src/game/combatStats';
 import { vocations, promotion, promotedOf, skillCosts, vocationAllowed, type BaseVocation } from '../shared/adventure';
-import { levelGains } from '../shared/progression';
+import { levelGains, typicalAttributes } from '../shared/progression';
 import type { CatalogItem } from '../backend/prisma/catalog';
 
 export const allVocations = Object.keys(vocations) as BaseVocation[];
 let seed = 12345; const rng = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
 export const resetRng = (s = 12345) => { seed = s; };
 const dice = (min: number, max: number) => min + Math.floor(rng() * (max - min + 1));
-// Distribuição típica dos pontos ganhos (força, vitalidade, agilidade, resistência).
-const split: Record<BaseVocation, [number, number, number, number]> = { KNIGHT: [.6, .4, 0, 0], PALADIN: [.5, .2, .3, 0], SORCERER: [.1, .3, 0, .6], DRUID: [.1, .3, 0, .6] };
+
 const gearSlots = ['WEAPON', 'ARMOR', 'HELMET', 'LEGS', 'BOOTS', 'SHIELD', 'AMULET', 'RING', 'AMMO'];
 const power = (i: CatalogItem) => i.attack + (i.magicAttack ?? 0) + i.defense + i.armor + (i.criticalChance ?? 0) + (i.fireResistance ?? 0) / 2 + (i.speed ?? 0);
 export type Hero = ReturnType<typeof hero>;
@@ -18,8 +17,8 @@ export interface Foe { hp: number; attack: number; defense: number; isBoss?: boo
 
 // Personagem no nível, com os pontos distribuídos e o melhor equipamento da loja que ele pode usar.
 export function hero(voc: BaseVocation, level: number, items: CatalogItem[], tier = 0) {
-  const points = 3 + (level - 1) * levelGains.statPoints, [s, v, a, r] = split[voc].map(f => Math.floor(points * f));
-  const c = { strength: 10 + s, vitality: 10 + v, agility: 10 + a, resistance: 10 + r, level, vocation: level >= promotion.minLevel ? promotedOf[voc] : voc };
+  const t = typicalAttributes(voc, level), v = t.vitality - 10, r = t.resistance - 10;
+  const c = { ...t, level, vocation: level >= promotion.minLevel ? promotedOf[voc] : voc };
   const gear = gearSlots.flatMap(slot => {
     const best = items.filter(i => i.slot === slot && i.npcPrice > 0 && i.minLevel <= level && vocationAllowed(i.vocations ?? 'ALL', c.vocation)).sort((x, y) => power(y) - power(x))[0];
     return best ? [{ upgradeTier: tier, blueprint: { magicAttack: 0, criticalChance: 0, fireResistance: 0, speed: 0, ...best } }] : [];

@@ -1,6 +1,7 @@
 // Catálogo do jogo (itens e monstros). Lido pelo seed (upsert) e pelos simuladores de nível.
 // Atributos são balanceamento desta adaptação, não cópia automática da wiki. Sprites: TibiaWiki (manifest.json).
 import type { ItemSlot } from '@prisma/client';
+import { forgeMaterials } from '../../shared/forge';
 
 export interface CatalogItem { name: string; slot: ItemSlot; attack: number; defense: number; armor: number; npcPrice: number; minLevel: number;
   vocations?: string; magicAttack?: number; criticalChance?: number; fireResistance?: number; speed?: number; sprite?: string }
@@ -72,6 +73,8 @@ export const items: CatalogItem[] = [
   item('Worn Firewalker Boots', 'BOOTS', 140, 0, 0, 8, price(140), { fireResistance: 15 }), item('Worn Soft Boots', 'BOOTS', 190, 0, 0, 9, price(190), { speed: 6 }),
   item('Golden Amulet', 'AMULET', 150, 0, 0, 4, price(150), { criticalChance: 5 }),
   ...[250, 400, 550, 700, 850].flatMap(eraGear),
+  // Materiais do Ferreiro (shared/forge.ts): só caem de monstros e são trocados no Mercado; o NPC não compra nem vende.
+  ...forgeMaterials.map(m => item(m.name, 'LOOT', 1, 0, 0, 0, 0, { sprite: m.sprite })),
 ];
 
 // Fase 3 (Eras, 250–1000): um conjunto completo por Era, reaproveitando sprites clássicos com nome da Era.

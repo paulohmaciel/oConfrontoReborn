@@ -16,3 +16,12 @@ export function levelForExperience(experience: bigint, from = 1): number {
 }
 // XP que um monstro do nível deveria dar: ~31 lutas por nível contra a própria faixa, do 10 ao 1000.
 export const monsterXpTarget = (level: number) => Math.round(1.6 * level * level);
+
+// Distribuição típica dos pontos por vocação (força, vitalidade, agilidade, resistência).
+// É a base do simulador que equilibra os monstros e aparece como referência na tela de Atributos.
+export const typicalSplit = { KNIGHT: [.6, .4, 0, 0], PALADIN: [.5, .2, .3, 0], SORCERER: [.1, .3, 0, .6], DRUID: [.1, .3, 0, .6] } as const;
+export const BASE_ATTRIBUTE = 10;
+export function typicalAttributes(vocation: keyof typeof typicalSplit, level: number) {
+  const points = 3 + (level - 1) * levelGains.statPoints, [s, v, a, r] = typicalSplit[vocation].map(f => Math.floor(points * f));
+  return { strength: BASE_ATTRIBUTE + s, vitality: BASE_ATTRIBUTE + v, agility: BASE_ATTRIBUTE + a, resistance: BASE_ATTRIBUTE + r };
+}
