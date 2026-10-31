@@ -32,14 +32,6 @@ export function resolveDuelRound(round: number, pair: readonly [DuelFighter, Due
   };
   fighters.forEach((f, i) => { f.missed = chosen[i].auto ? f.missed + 1 : 0; });
 
-  // Abandono: duas rodadas seguidas sem escolher.
-  const gone = fighters.map(f => f.missed >= DUEL_MISSED_LIMIT);
-  if (gone[0] || gone[1]) {
-    if (gone[0] && gone[1]) { lines.push('Nenhum dos dois voltou à arena. O duelo termina empatado.'); return finish('DRAW', null); }
-    const loser = gone[0] ? 0 : 1, winner = 1 - loser;
-    lines.push(`${fighters[loser].name} não voltou à arena por duas rodadas e perde o duelo.`);
-    return finish('EXPIRED', fighters[winner].characterId);
-  }
   // Rendição.
   const flee = chosen.map(c => c.action === 'FLEE');
   if (flee[0] || flee[1]) {
@@ -50,6 +42,14 @@ export function resolveDuelRound(round: number, pair: readonly [DuelFighter, Due
     return finish('FORFEIT', fighters[1 - loser].characterId);
   }
 
+  // Abandono: duas rodadas seguidas sem escolher.
+  const gone = fighters.map(f => f.missed >= DUEL_MISSED_LIMIT);
+  if (gone[0] || gone[1]) {
+    if (gone[0] && gone[1]) { lines.push('Nenhum dos dois voltou à arena. O duelo termina empatado.'); return finish('DRAW', null); }
+    const loser = gone[0] ? 0 : 1, winner = 1 - loser;
+    lines.push(`${fighters[loser].name} não voltou à arena por duas rodadas e perde o duelo.`);
+    return finish('EXPIRED', fighters[winner].characterId);
+  }
   // Os dois pagam a mana do que escolheram.
   fighters.forEach((f, i) => { if (!chosen[i].auto) f.mana -= duelActionCosts(f.vocation)[chosen[i].action]; });
   const order = fighters[0].agility !== fighters[1].agility ? (fighters[0].agility > fighters[1].agility ? [0, 1] : [1, 0]) : (dice(0, 1) === 0 ? [0, 1] : [1, 0]);

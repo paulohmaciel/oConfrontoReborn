@@ -91,4 +91,6 @@ export const achievementDefinitions = [
   { key: 'boss-slayer', name: 'Quebra-gigantes', description: 'Derrote um chefe.', icon: 'Cyclops' },
   { key: 'group-hunter', name: 'Ninguém caça sozinho', description: 'Vença uma caçada em grupo com amigos.', icon: 'Mammoth' },
   { key: 'four-marks', name: 'As Quatro Marcas', description: 'Vença as quatro caçadas em grupo da campanha.', icon: 'Dragon Lord' },
+  { key: 'first-blood', name: 'Primeiro Sangue', description: 'Vença seu primeiro duelo contra um amigo.', icon: 'Fire Sword' },
+  { key: 'ten-duels', name: 'Dez Duelos', description: 'Termine dez duelos, vencendo ou perdendo.', icon: 'Warlord Sword' },
 ] as const;

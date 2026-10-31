@@ -54,7 +54,10 @@ test('Curar recupera vida e gasta mana', () => {
   assert.equal(r.fighters[0].mana, 180);
 });
 
-test('rendição entrega a vitória; os dois se rendendo é empate', () => {
+test('rendição entrega a vitória (mesmo contra quem sumiu); os dois se rendendo é empate', () => {
+  const absent = resolveDuelRound(3, [hero(1, { action: 'FLEE' }), hero(2, { action: null, missed: 1 })], mid);
+  assert.equal(absent.outcome, 'FORFEIT');
+  assert.equal(absent.winnerId, 2);
   const r = resolveDuelRound(3, [hero(1, { action: 'FLEE' }), hero(2)], mid);
   assert.equal(r.outcome, 'FORFEIT');
   assert.equal(r.winnerId, 2);
