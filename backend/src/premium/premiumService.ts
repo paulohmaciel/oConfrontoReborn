@@ -9,14 +9,19 @@ import { publicUrl } from '../core/mailer';
 const PENDING_REUSE_MS = 30 * 60_000;
 
 export async function premiumOverview(accountId: number) {
-  const [settings, status, account, orders] = await Promise.all([
+  const now = new Date();
+  const [settings, status, account, orders, ended, pending] = await Promise.all([
     loadSettings(prisma), premiumStatus(prisma, accountId),
     prisma.account.findUniqueOrThrow({ where: { id: accountId }, select: { emailVerifiedAt: true } }),
     prisma.premiumOrder.findMany({ where: { accountId }, orderBy: { id: 'desc' }, take: 10,
       select: { id: true, status: true, amountCents: true, days: true, createdAt: true, paidAt: true } }),
+    prisma.premiumPeriod.findFirst({ where: { accountId, revokedAt: null, endsAt: { lte: now } }, orderBy: { endsAt: 'desc' }, select: { endsAt: true } }),
+    prisma.premiumOrder.findFirst({ where: { accountId, status: 'PENDING', checkoutUrl: { not: null }, createdAt: { gt: new Date(now.getTime() - PENDING_REUSE_MS) } }, select: { id: true } }),
   ]);
   return { enabled: mpConfigured() && settings['premium.priceCents'] > 0, priceCents: settings['premium.priceCents'], days: settings['premium.days'],
-    active: status.active, until: status.until, emailVerified: !!account.emailVerifiedAt, orders };
+    active: status.active, until: status.until, upcoming: status.upcoming, lastEndedAt: ended?.endsAt ?? null,
+    pendingCheckout: !!pending, emailVerified: !!account.emailVerifiedAt, orders,
+    perks: { presetLimit: settings['premium.presetLimit'], charactersFree: settings['characters.free'], charactersPremium: settings['characters.premium'] } };
 }
 
 export async function startCheckout(accountId: number) {
