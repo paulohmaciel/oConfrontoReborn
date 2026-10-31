@@ -1,0 +1,44 @@
+/* Duelo (features/duel/DuelPanel). Reaproveita a arena, os grupos de habilidades e o quadro da rodada de styles/battle.css. */
+.duel-page{display:grid;gap:18px}
+.duel-intro p{max-width:520px}
+.duel-record{display:grid;grid-template-columns:repeat(3,minmax(72px,1fr));gap:10px;text-align:center}
+.duel-record div{padding:10px 8px;border:1px solid #48513d;border-radius:6px;background:#1c2621}
+.duel-record b{display:block;font-family:Georgia,serif;font-size:26px;color:#e0cf98}
+.duel-record span{font-size:12px;color:#9aab9c}
+.duel-arena .fighters>div>.sprite{height:72px}
+.duel-name{font-family:Georgia,serif;font-size:inherit;font-weight:700;color:inherit}
+.duel-skills{grid-template-columns:1.75fr 1fr}
+.skill-help{font-size:12px;line-height:1.4;color:#93a596;max-width:22ch}
+.duel-waiting{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px 18px;border:1px solid #4a5a4d;border-radius:6px;background:#1a2421}
+.duel-waiting>div{flex:1}.duel-waiting b{font-family:Georgia,serif;font-size:17px}.duel-waiting p{margin-top:4px}
+.duel-surrender{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:13px}
+.duel-surrender button{display:inline-flex;align-items:center;gap:8px;min-height:36px}
+.danger-button{background:#5a2a24;border-color:#a0503f;color:#f2d6cc}
+.danger-button:hover:not(:disabled){background:#6e322a;border-color:#c06048}
+.duel-lines{min-height:0;margin-top:12px;font-size:12px}
+.duel-rounds{margin-top:14px}
+.duel-rounds summary{cursor:pointer;color:#c6ae77;font-size:14px;padding:6px 0;min-height:24px}
+.duel-rank{min-width:2.5em;font-family:Georgia,serif;font-size:16px}
+.duel-page .section-title select{max-width:200px;font-size:13px}
+.duel-page .market-row p,.duel-page .section-title>span,.duel-page .muted{font-size:12px}
+.duel-page .market-row h3,.duel-page .market-row h3 .link-button{font-size:14px}
+.duel-page .market-row button{font-size:13px;min-height:36px}
+.duel-page .tag{font-size:11px}
+
+:root[data-theme="light"] .duel-record div{background:#f6e6c2;border-color:#d2a964}
+:root[data-theme="light"] .duel-record b{color:#633113}:root[data-theme="light"] .duel-record span{color:#6e4f26}
+:root[data-theme="light"] .skill-help{color:#6e4f26}
+:root[data-theme="light"] .duel-waiting{background:#f6e6c2;border-color:#d2a964}
+:root[data-theme="light"] .danger-button{background:#b5452c;border-color:#8a2a12;color:#fff4e0}
+:root[data-theme="light"] .danger-button:hover:not(:disabled){background:#9c3a22}
+:root[data-theme="light"] .duel-rounds summary{color:#742e12}
+
+@media(max-width:760px){
+  .duel-intro{flex-direction:column;align-items:stretch}
+  .duel-record b{font-size:21px}
+  .duel-skills{grid-template-columns:1fr}
+  .skill-help{display:none}
+  .duel-surrender{justify-content:flex-start}
+  .duel-page .market-row{flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){.duel-page *{transition:none!important}}

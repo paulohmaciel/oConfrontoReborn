@@ -8,6 +8,7 @@ import {tabs,adminTab,pathForTab,tabFromPath,paramFromPath,type Tab} from './lib
 import ProfilePanel from './features/profile/ProfilePanel';
 import ForumPanel from './features/forum/ForumPanel';
 import GroupHuntPanel from './features/group/GroupHuntPanel';
+import DuelPanel from './features/duel/DuelPanel';
 import NewsPanel from './features/news/NewsPanel';
 import NoticeBanner from './features/news/NoticeBanner';
 import {slotParam} from './ui/ItemTabs';
@@ -125,6 +126,7 @@ export default function App(){
  {tab==='atlas'&&<AtlasPanel/>}
  {tab==='news'&&<NewsPanel/>}
  {tab==='group'&&<GroupHuntPanel hero={hero} perform={perform} openProfile={openProfile}/>}
+ {tab==='duel'&&<DuelPanel hero={hero} openProfile={openProfile}/>}
  {tab==='forum'&&<ForumPanel hero={hero} postId={routeParam} openPost={openPost} openProfile={openProfile} perform={perform}/>}
  {tab==='profile'&&<ProfilePanel hero={hero} name={routeParam||hero.name} openProfile={openProfile} perform={perform}/>}
  </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div></div>;
