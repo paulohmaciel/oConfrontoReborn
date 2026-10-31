@@ -1,0 +1,87 @@
+/* Tela de batalha (features/adventure/HuntPanel + TurnLog): lutadores, habilidades em grupos e última rodada. */
+.arena{padding:0 4px}
+.arena-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:-14px;padding-bottom:12px;border-bottom:1px solid #3a473f}
+.arena-head b{margin-left:auto;font-family:Georgia,serif;font-size:19px;color:#d8c48f}
+.arena .fighters{background:none;border:0;border-bottom:1px solid #3a473f;border-radius:0;min-height:0;padding:22px 10px 18px;grid-template-columns:1fr 220px 1fr}
+.arena .fighters h3{font-size:28px;font-weight:700;margin:12px 0 14px}
+.arena .fighters .meter{max-width:310px}
+.arena .fighters .meter>div{gap:8px}.arena .fighters .meter>div>*{white-space:nowrap}
+.arena .fighters .meter+.meter{margin-top:-2px}
+.arena .fighters .meter>div{font-size:15px}.arena .fighters .meter b{font-size:15px}
+.arena .fighters .meter progress{height:8px}
+.arena .fighters p{font-size:14px}
+.arena .versus{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-size:16px;font-weight:700;letter-spacing:1px}
+.arena .versus:before,.arena .versus:after{content:'';position:absolute;top:30px;width:30%;border-top:1px solid #4b5a4c}
+.arena .versus:before{left:0}.arena .versus:after{right:0}
+.arena-title{display:flex;align-items:center;gap:18px;font-family:Georgia,serif;font-size:27px;margin:18px 0 12px}
+.arena-title:after{content:'';flex:1;border-top:1px solid #3a473f}
+.skill-groups{display:grid;grid-template-columns:1.75fr 1fr .95fr;gap:14px;align-items:stretch}
+.skill-group{margin:0;min-width:0;border:1px solid #3e4b41;border-radius:6px;padding:4px 20px 16px;display:flex;flex-direction:column}
+.skill-head{display:flex;align-items:center;gap:12px;padding:14px 2px 12px}
+.skill-head span{font-size:14px;font-weight:700;letter-spacing:4px;text-transform:uppercase}
+.skill-head:after{content:'';flex:1;border-top:1px solid currentColor;opacity:.35}
+.skill-grid{display:grid;gap:10px;flex:1}
+.skill-group.attack .skill-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.skill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;min-height:112px;border-radius:5px;background:#1a2421;border:1px solid #4a5a4d}
+.skill b{font-family:Georgia,serif;font-size:18px;color:#e2e5d8}
+.skill small{font-size:15px;color:#9aab9c}
+.skill-group.attack{background:#2e2321;border-color:#6d443b}.skill-group.attack .skill-head{color:#e0a08e}.skill-group.attack .skill{border-color:#6d4a40}
+.skill-group.support{background:#222e25;border-color:#4d6649}.skill-group.support .skill-head{color:#b2cf9f}.skill-group.support .skill{border-color:#4e6a4b}
+.skill-group.escape{background:#2e2a20;border-color:#6d5d3a}.skill-group.escape .skill-head{color:#d9bd80}.skill-group.escape .skill{border-color:#6e5d3c}
+.skill:hover:not(:disabled){background:#283431}
+
+.turn-log{margin-top:18px;padding-top:14px;border-top:1px solid #3a473f}
+.turn-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.turn-head h3{font-family:Georgia,serif;font-size:21px;font-weight:700}
+.turn-head .link-button{font-size:15px}
+.turn-duel{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;border:1px solid #4a5a4d;border-radius:6px;background:#18221f;padding:16px 22px}
+.turn-vs{display:flex;align-items:center;padding:0 22px;position:relative}
+.turn-vs:before{content:'';position:absolute;left:50%;top:-4px;bottom:-4px;border-left:1px solid #3e4b41}
+.turn-vs .sprite{position:relative;background:#18221f;padding:4px 0}
+.turn-side{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.turn-side small{display:block;font-size:15px;color:#a3b2a4}
+.turn-side b{display:block;font-family:Georgia,serif;font-size:22px;margin-top:2px}
+.turn-number{margin:6px 0 0 -26px;font-size:46px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+.turn-number .hit{color:#e07a6b}.turn-number .heal{color:#7fc48f}
+.turn-tag{margin:2px 0 0 -26px;font-size:13px;text-transform:uppercase;letter-spacing:4px;opacity:.85}
+.turn-side.crit .turn-number .hit{color:#f0b85a}
+.turn-side.heavy b{color:#f0a53a}
+.turn-side.down>img{filter:grayscale(1);opacity:.7}
+.turn-history{margin-top:12px}.turn-table td.crit{font-weight:700}
+
+:root[data-theme="light"] .arena-head,:root[data-theme="light"] .arena .fighters,:root[data-theme="light"] .arena-title:after,:root[data-theme="light"] .turn-log{border-color:#d2b47a}
+:root[data-theme="light"] .arena-title:after{border-top-color:#d2b47a}
+:root[data-theme="light"] .arena-head b{color:#633113}
+:root[data-theme="light"] .arena .fighters{background:none}
+:root[data-theme="light"] .arena .versus:before,:root[data-theme="light"] .arena .versus:after{border-color:#d2b47a}
+:root[data-theme="light"] .skill{background:#f8ebcc;border-color:#c58b52}
+:root[data-theme="light"] .skill b{color:#633113}:root[data-theme="light"] .skill small{color:#7a5a32}
+:root[data-theme="light"] .skill:hover:not(:disabled){background:#f2dba6}
+:root[data-theme="light"] .skill-group.attack{background:#f3d5bf;border-color:#e0a07a}:root[data-theme="light"] .skill-group.attack .skill-head{color:#9a3a1c}:root[data-theme="light"] .skill-group.attack .skill{border-color:#cf8a62}
+:root[data-theme="light"] .skill-group.support{background:#e8e3bd;border-color:#bfc38e}:root[data-theme="light"] .skill-group.support .skill-head{color:#4c5a22}:root[data-theme="light"] .skill-group.support .skill{border-color:#a9a66a}
+:root[data-theme="light"] .skill-group.escape{background:#f4e0b6;border-color:#e0ad66}:root[data-theme="light"] .skill-group.escape .skill-head{color:#7a4a12}:root[data-theme="light"] .skill-group.escape .skill{border-color:#cf9a52}
+:root[data-theme="light"] .turn-duel{background:#f6e6c2;border-color:#d2a964}
+:root[data-theme="light"] .turn-vs:before{border-color:#d2b47a}:root[data-theme="light"] .turn-vs .sprite{background:#f6e6c2}
+:root[data-theme="light"] .turn-side small{color:#6e4f26}:root[data-theme="light"] .turn-side b{color:#633113}
+:root[data-theme="light"] .turn-number .hit{color:#8a1c0e}:root[data-theme="light"] .turn-number .heal{color:#2f6b2a}
+:root[data-theme="light"] .turn-side.crit .turn-number .hit{color:#b4560c}:root[data-theme="light"] .turn-side.heavy b{color:#a4520c}
+:root[data-theme="light"] .turn-tag{color:#4a2a10}
+
+@media(max-width:1100px){.arena .fighters{grid-template-columns:1fr 120px 1fr}.arena .fighters>.versus>.sprite{width:36px;height:36px}.arena .versus:before,.arena .versus:after{top:18px;width:22%}.arena .fighters h3{font-size:22px}.arena .fighters .meter>div,.arena .fighters .meter b{font-size:12px}}
+@media(max-width:900px){.skill-groups{grid-template-columns:1fr 1fr}.skill-group.attack{grid-column:1/-1}}
+@media(max-width:760px){
+  .arena-head b{font-size:16px}
+  .arena .fighters{grid-template-columns:1fr 64px 1fr;padding:16px 0}
+  .arena .fighters h3{font-size:18px}.arena .fighters>div>.sprite{width:64px;height:64px}
+  .arena .fighters .meter>div,.arena .fighters .meter b,.arena .fighters p{font-size:11px}.arena .fighters .meter>div{flex-wrap:wrap;gap:2px 6px}
+  .arena .fighters>.versus>.sprite{width:32px;height:32px}.arena .versus:before,.arena .versus:after{display:none}
+  .arena-title{font-size:21px}
+  .skill-groups{grid-template-columns:1fr 1fr;gap:10px}.skill-group{padding:2px 10px 10px}
+  .skill{min-height:84px}.skill b{font-size:14px}.skill small{font-size:12px}
+  .skill-head span{font-size:12px;letter-spacing:2px}
+  .turn-head h3{font-size:16px}.turn-head .link-button{font-size:12px}
+  .turn-duel{grid-template-columns:1fr;padding:12px 14px;gap:12px}
+  .turn-vs{display:none}
+  .turn-side b{font-size:17px}.turn-side small{font-size:12px}
+  .turn-number{font-size:32px;margin-left:0}.turn-tag{margin-left:0;font-size:11px;letter-spacing:2px}
+}

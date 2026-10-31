@@ -7,6 +7,7 @@ import './styles/theme-classic.css';
 import './styles/theme-toggle.css';
 import './styles/adventure.css';
 import './styles/operations.css';
+import './styles/battle.css';
 import './styles/fire.css';
 import './styles/cover.css';
 import { applyMotion, applyTheme, savedMotion, savedTheme } from './lib/theme';
