@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import {Limited} from '../../ui/ShowMore';
 import {api} from '../../lib/api';
 import {when} from '../../lib/format';
 import {useAction,Feedback} from '../../ui/Feedback';
@@ -19,7 +20,7 @@ export default function SupportPanel() {
         <label>Mensagem<textarea value={body} onChange={e=>setBody(e.target.value)} minLength={10} maxLength={2000} rows={5} required/></label>
         <button className="primary" disabled={busy}>Enviar</button></form></section>
     <section className="panel"><div className="section-title"><h2>Seus atendimentos</h2><span>{tickets.length}</span></div>
-      {tickets.map(t=><div className="market-row" key={t.id}><div><h3>#{t.id} · {t.subject}</h3><p>{t.kind==='REPORT'?'Denúncia':'Suporte'} · {ticketStatus[t.status]??t.status} · {when(t.updatedAt)}</p></div><button onClick={()=>void open(t.id)}>Abrir</button></div>)}
+      <Limited items={tickets} label="Ver mais atendimentos" render={t=><div className="market-row" key={t.id}><div><h3>#{t.id} · {t.subject}</h3><p>{t.kind==='REPORT'?'Denúncia':'Suporte'} · {ticketStatus[t.status]??t.status} · {when(t.updatedAt)}</p></div><button onClick={()=>void open(t.id)}>Abrir</button></div>}/>
       {!tickets.length&&<p className="empty">Nenhum atendimento aberto.</p>}</section>
     {view&&<section className="panel"><div className="section-title"><h2>#{view.id} · {view.subject}</h2><span>{ticketStatus[view.status]??view.status}</span></div>
       <div className="thread">{view.messages.map(m=><div key={m.id} className={m.fromStaff?'bubble staff':'bubble'}><small>{m.fromStaff?'Equipe':'Você'} · {when(m.createdAt)}</small><p>{m.body}</p></div>)}</div>

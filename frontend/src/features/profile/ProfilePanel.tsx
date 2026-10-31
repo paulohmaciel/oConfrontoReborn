@@ -2,6 +2,7 @@ import {useEffect,useState} from 'react';
 import {api} from '../../lib/api';
 import type {Hero,Perform} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
+import {Limited} from '../../ui/ShowMore';
 import {classLabel} from '../../../../shared/adventure';
 import {titleName} from '../../../../shared/premium';
 import {freeAvatars,premiumAvatars,limits} from '../../../../shared/community';
@@ -34,7 +35,7 @@ export default function ProfilePanel({hero,name,openProfile,perform}:{hero:Hero;
         </section>
         {editing&&mine&&<Editor mine={mine} act={act} onDone={()=>setEditing(false)}/>}
         <section className="panel"><div className="section-title"><h2>Amigos</h2><span>{p.friendCount}</span></div>
-          <div className="friend-grid">{p.friends.map(f=><button key={f.id} className="friend" onClick={()=>openProfile(f.name)} title={`${f.name} · Nv. ${f.level}`}><Avatar c={f} size={36}/><small>{f.name}</small></button>)}</div>
+          <div className="friend-grid"><Limited items={p.friends} label="Ver mais amigos" render={f=><button key={f.id} className="friend" onClick={()=>openProfile(f.name)} title={`${f.name} · Nv. ${f.level}`}><Avatar c={f} size={36}/><small>{f.name}</small></button>}/></div>
           {!p.friends.length&&<p className="muted">{p.owner?'Você ainda não tem amigos aqui. Procure jogadores na busca acima.':'Ainda sem amigos.'}</p>}
         </section>
       </aside>
@@ -70,9 +71,9 @@ function Scraps({p,hero,act,openProfile}:{p:Profile;hero:Hero;act:Act;openProfil
     <form className="ops-form profile-write" onSubmit={e=>{e.preventDefault();void act('scraps',{to:p.profile.name,text},()=>setText(''));}}>
       <label>{p.owner?'Escrever no seu mural':`Deixar um recado para ${p.profile.name}`} ({text.length}/{limits.scrap})<textarea value={text} onChange={e=>setText(e.target.value)} maxLength={limits.scrap} rows={3} required/></label>
       <button className="primary">Enviar recado</button></form>
-    {p.scraps.map(s=><article className="post" key={s.id}><button className="post-avatar" onClick={()=>openProfile(s.author.name)} aria-label={`Perfil de ${s.author.name}`}><Avatar c={s.author}/></button>
+    <Limited items={p.scraps} label="Ver mais recados" render={s=><article className="post" key={s.id}><button className="post-avatar" onClick={()=>openProfile(s.author.name)} aria-label={`Perfil de ${s.author.name}`}><Avatar c={s.author}/></button>
       <div><p className="post-head"><button className="link-button" onClick={()=>openProfile(s.author.name)}>{s.author.name}</button> <small>{date(s.createdAt)}</small></p><p className="post-text">{s.text}</p>
-        <p className="post-actions">{(p.owner||s.author.id===hero.id)&&<button className="link-button" onClick={()=>{if(window.confirm('Apagar este recado?'))void act(`scraps/${s.id}/delete`,{});}}>Apagar</button>}{s.author.id!==hero.id&&<Report kind="scrap" id={s.id} act={act}/>}</p></div></article>)}
+        <p className="post-actions">{(p.owner||s.author.id===hero.id)&&<button className="link-button" onClick={()=>{if(window.confirm('Apagar este recado?'))void act(`scraps/${s.id}/delete`,{});}}>Apagar</button>}{s.author.id!==hero.id&&<Report kind="scrap" id={s.id} act={act}/>}</p></div></article>}/>
     {!p.scraps.length&&<p className="empty">Nenhum recado ainda.</p>}
   </>;
 }
@@ -85,22 +86,22 @@ function Testimonials({p,act,openProfile}:{p:Profile;act:Act;openProfile:(n:stri
       <p className="muted">O depoimento só aparece depois que {p.profile.name} aprovar. Se você já escreveu um, este substitui o anterior.</p>
       <button className="primary">Enviar depoimento</button></form>}
     {p.owner&&pending.length>0&&<h3 className="profile-subtitle">Esperando sua aprovação</h3>}
-    {[...(p.owner?pending:[]),...approved].map(t=><article className={`post ${t.status==='PENDING'?'pending':''}`} key={t.id}><button className="post-avatar" onClick={()=>openProfile(t.author.name)} aria-label={`Perfil de ${t.author.name}`}><Avatar c={t.author}/></button>
+    <Limited items={[...(p.owner?pending:[]),...approved]} label="Ver mais depoimentos" render={t=><article className={`post ${t.status==='PENDING'?'pending':''}`} key={t.id}><button className="post-avatar" onClick={()=>openProfile(t.author.name)} aria-label={`Perfil de ${t.author.name}`}><Avatar c={t.author}/></button>
       <div><p className="post-head"><button className="link-button" onClick={()=>openProfile(t.author.name)}>{t.author.name}</button> <small>{date(t.createdAt)}</small></p><p className="post-text">{t.text}</p>
         <p className="post-actions">{p.owner&&t.status==='PENDING'&&<><button className="link-button" onClick={()=>void act(`testimonials/${t.id}/approve`,{})}>Aprovar</button><button className="link-button" onClick={()=>void act(`testimonials/${t.id}/reject`,{})}>Recusar</button></>}
           {p.owner&&t.status==='APPROVED'&&<button className="link-button" onClick={()=>{if(window.confirm('Tirar este depoimento do seu perfil?'))void act(`testimonials/${t.id}/delete`,{});}}>Remover</button>}
-          {!p.owner&&<Report kind="testimonial" id={t.id} act={act}/>}</p></div></article>)}
+          {!p.owner&&<Report kind="testimonial" id={t.id} act={act}/>}</p></div></article>}/>
     {!approved.length&&!(p.owner&&pending.length)&&<p className="empty">Nenhum depoimento ainda.</p>}
   </>;
 }
 function Visits({p,mine,act,openProfile}:{p:Profile;mine:Mine;act:Act;openProfile:(n:string)=>void}){
   return <>
-    {mine.incoming.length>0&&<><h3 className="profile-subtitle">Pedidos de amizade</h3>{mine.incoming.map(f=><div className="market-row" key={f.id}><Avatar c={f.from}/><div><h3><button className="link-button" onClick={()=>openProfile(f.from.name)}>{f.from.name}</button></h3><p>{classLabel(f.from.vocation,f.from.classTier)} · Nv. {f.from.level}</p></div>
-      <button className="primary" onClick={()=>void act(`friends/${f.id}/accept`,{})}>Aceitar</button><button onClick={()=>void act(`friends/${f.id}/decline`,{})}>Recusar</button></div>)}</>}
+    {mine.incoming.length>0&&<><h3 className="profile-subtitle">Pedidos de amizade</h3><Limited items={mine.incoming} label="Ver mais pedidos" render={f=><div className="market-row" key={f.id}><Avatar c={f.from}/><div><h3><button className="link-button" onClick={()=>openProfile(f.from.name)}>{f.from.name}</button></h3><p>{classLabel(f.from.vocation,f.from.classTier)} · Nv. {f.from.level}</p></div>
+      <button className="primary" onClick={()=>void act(`friends/${f.id}/accept`,{})}>Aceitar</button><button onClick={()=>void act(`friends/${f.id}/decline`,{})}>Recusar</button></div>}/></>}
     {mine.outgoing.length>0&&<p className="muted">Pedidos enviados esperando resposta: {mine.outgoing.map(f=>f.to.name).join(', ')}.</p>}
     <h3 className="profile-subtitle">Quem visitou seu perfil</h3>
     <label className="price-label"><input type="checkbox" checked={mine.profileHideVisits} onChange={e=>void act('profile',{hideVisits:e.target.checked})}/> Visitar perfis sem aparecer na lista dos outros</label>
-    <div className="friend-grid">{p.visitors.map(v=><button key={v.visitor.id} className="friend" onClick={()=>openProfile(v.visitor.name)} title={date(v.visitedAt)}><Avatar c={v.visitor} size={36}/><small>{v.visitor.name}</small></button>)}</div>
+    <div className="friend-grid"><Limited items={p.visitors} label="Ver mais visitas" render={v=><button key={v.visitor.id} className="friend" onClick={()=>openProfile(v.visitor.name)} title={date(v.visitedAt)}><Avatar c={v.visitor} size={36}/><small>{v.visitor.name}</small></button>}/></div>
     {!p.visitors.length&&<p className="muted">Ninguém visitou ainda.</p>}
   </>;
 }
@@ -109,8 +110,8 @@ function Editor({mine,act,onDone}:{mine:Mine;act:Act;onDone:()=>void}){
   return <section className="panel"><div className="section-title"><h2>Editar perfil</h2></div>
     <form className="ops-form" onSubmit={e=>{e.preventDefault();void act('profile',{avatar:avatar||null,about},onDone);}}>
       <fieldset className="avatar-picker"><legend>Imagem de perfil</legend>
-        {freeAvatars.map(a=><button type="button" key={a} title={a} aria-label={a} aria-pressed={avatar===a} className={avatar===a?'selected':''} onClick={()=>setAvatar(a)}><Icon name={a} size={36}/></button>)}
-        {premiumAvatars.map(a=><button type="button" key={a} title={mine.premium?a:`${a} (Premium)`} aria-label={`${a}${mine.premium?'':' — Premium'}`} aria-pressed={avatar===a} disabled={!mine.premium} className={`${avatar===a?'selected':''} legendary`} onClick={()=>setAvatar(a)}><Icon name={a} size={36}/>{!mine.premium&&<i aria-hidden="true">👑</i>}</button>)}
+        <Limited items={freeAvatars} label="Ver mais imagens" render={a=><button type="button" key={a} title={a} aria-label={a} aria-pressed={avatar===a} className={avatar===a?'selected':''} onClick={()=>setAvatar(a)}><Icon name={a} size={36}/></button>}/>
+        <Limited items={premiumAvatars} label="Ver mais lendárias" render={a=><button type="button" key={a} title={mine.premium?a:`${a} (Premium)`} aria-label={`${a}${mine.premium?'':' — Premium'}`} aria-pressed={avatar===a} disabled={!mine.premium} className={`${avatar===a?'selected':''} legendary`} onClick={()=>setAvatar(a)}><Icon name={a} size={36}/>{!mine.premium&&<i aria-hidden="true">👑</i>}</button>}/>
       </fieldset>
       {!mine.premium&&<p className="muted">As imagens com coroa (lendárias) e a descrição de até {limits.aboutPremium} caracteres fazem parte do Premium.</p>}
       <label>Sobre você ({about.length}/{mine.aboutLimit})<textarea value={about} onChange={e=>setAbout(e.target.value)} maxLength={mine.aboutLimit} rows={5}/></label>

@@ -38,7 +38,7 @@ readRoutes.get('/characters/:id/inventory', asyncRoute(async (req, res) => {
   if ((q || onlyFavorites) && !await isPremium(prisma, res.locals.accountId)) throw new GameError(402, 'Busca e favoritos fazem parte do Premium.');
   const blueprint: Prisma.ItemBlueprintWhereInput = { ...(slot ? { slot: slot as ItemSlot } : {}), ...(q ? { name: { contains: q } } : {}) };
   const where: Prisma.InventoryItemWhereInput = { characterId: id, isEquipped: false, ...(Object.keys(blueprint).length ? { blueprint } : {}), ...(onlyFavorites ? { favorite: true } : {}) };
-  const [items,total] = await Promise.all([prisma.inventoryItem.findMany({ where, include: { blueprint: true, rareItem: { select: { id: true, serial: true, status: true } } }, orderBy: { id: 'asc' }, take: 20, skip: (page-1)*20 }),prisma.inventoryItem.count({ where })]);
+  const [items,total] = await Promise.all([prisma.inventoryItem.findMany({ where, include: { blueprint: true, rareItem: { select: { id: true, serial: true, status: true } } }, orderBy: { id: 'asc' }, take: 10, skip: (page-1)*10 }),prisma.inventoryItem.count({ where })]);
   res.json({ items, total, page });
 }));
 readRoutes.get('/monsters', asyncRoute(async (_req,res) => { res.json(await prisma.monster.findMany({ orderBy: { level: 'asc' }, take: 200 })); }));

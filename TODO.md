@@ -106,7 +106,7 @@
 - [x] 8 classes por vocação (20, 100, 250, 400, 550, 700, 850, 1000): +3% ataque/defesa e +1 crítico por classe após a promoção, custo = promoção × (nível ÷ 20)², migração aditiva `202610310001_class_tiers`, monstros recalibrados (2026-10-31)
 - [x] Perfil de comunidade grátis (/perfil, /perfil/Nome): galeria do TibiaWiki (10 lendárias no Premium), descrição (500; Premium 2.000), recados com intervalo, depoimentos com aprovação, amigos, visitas com modo invisível, denúncia → atendimento REPORT, remoção pela equipe com auditoria; migração `202610310002_community_profile`; menu lateral em seções (2026-10-31)
 - [x] Fórum estilo Reddit (/forum, /forum/id): 6 categorias, votos ▲▼, Em alta/Novos/Mais votados, busca, 10 por página, comentários com respostas, "resolvido" nas dúvidas, intervalo contra spam, denúncia e remoção pela equipe com auditoria; migração `202610310003_forum` (2026-10-31)
-- [ ] Regra do site: nenhuma lista com mais de 10 itens de uma vez ("Ver mais" e/ou busca) em todas as telas; missões agrupadas por faixa de nível com drill-down
+- [x] Regra do site: nenhuma lista com mais de 10 itens de uma vez ("Ver mais" e/ou busca) — `ui/ShowMore.tsx` (Limited, LimitedRows) em todas as telas; Missões em 10 faixas de nível com drill-down e busca; Mercador com busca; regiões ordenadas (liberadas mais altas primeiro); mochila com 10 por página (2026-10-31)
 - [ ] Caçada em grupo com amigos a partir de um nível — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
 
 ### Depois de validar o jogo
