@@ -1,11 +1,11 @@
 // Benefícios Premium: organização, personalização e conveniência. Nenhum altera as regras de combate.
 export const premiumBenefits = [
-  { key: 'appearance', title: 'Aparência', description: 'Molduras para o retrato do personagem.' },
-  { key: 'presets', title: 'Conjuntos de equipamento', description: 'Salve e troque conjuntos fora de combate.' },
-  { key: 'bag', title: 'Organização da mochila', description: 'Favoritos, busca e filtros avançados.' },
-  { key: 'diary', title: 'Diário detalhado', description: 'Estatísticas de caçadas, ganhos e desempenho.' },
-  { key: 'profile', title: 'Perfil personalizado', description: 'Título, emblema e apresentação.' },
-  { key: 'characters', title: 'Mais personagens', description: 'Experimente outras vocações em personagens extras.' },
+  { key: 'appearance', icon: 'Crown Helmet', title: 'Aparência', description: 'Molduras para o retrato do personagem.' },
+  { key: 'presets', icon: 'Golden Armor', title: 'Conjuntos de equipamento', description: 'Salve e troque conjuntos fora de combate.' },
+  { key: 'bag', icon: 'Backpack', title: 'Organização da mochila', description: 'Favoritos, busca e filtros avançados.' },
+  { key: 'diary', icon: 'Strange Talisman', title: 'Diário detalhado', description: 'Estatísticas de caçadas, ganhos e desempenho.' },
+  { key: 'profile', icon: 'Mastermind Shield', title: 'Perfil personalizado', description: 'Título, emblema e apresentação.' },
+  { key: 'characters', icon: 'Hero', title: 'Mais personagens', description: 'Experimente outras vocações em personagens extras.' },
 ] as const;
 export const frames = [
   { key: 'none', name: 'Sem moldura' }, { key: 'gold', name: 'Dourada' }, { key: 'emerald', name: 'Esmeralda' },
@@ -16,6 +16,7 @@ export const profileTitles = [
   { key: 'explorer', name: 'Explorador' }, { key: 'guardian', name: 'Guardião de Thais' }, { key: 'dragonbane', name: 'Terror dos Dragões' },
 ] as const;
 export const emblems = ['Sword', 'Mastermind Shield', 'Dragon', 'Demon', 'Cyclops', 'Magic Longsword', 'Backpack', 'Ring of the Sky'] as const;
+export const titleName = (key: string | null | undefined) => profileTitles.find(t => t.key === key)?.name ?? '';
 export const premiumPlan = { source: 'PURCHASE', currency: 'BRL', provider: 'MERCADOPAGO' } as const;
 
 const DAY = 86_400_000;
@@ -34,4 +35,17 @@ export function layoutPeriods(periods: PeriodRow[]): PeriodSlot[] {
     cursor = endsAt;
   }
   return result;
+}
+
+// Fase do passe para a interface: avisa quando faltam poucos dias e separa quem nunca assinou de quem já assinou.
+export const expiringSoonDays = 3;
+export type PremiumPhase = 'free' | 'active' | 'expiring' | 'queued' | 'ended';
+type When = Date | string | null;
+export function premiumPhase(s: { active: boolean; until: When; upcoming?: When; lastEndedAt?: When }, now = new Date()): { phase: PremiumPhase; daysLeft: number } {
+  if (s.active && s.until) {
+    const daysLeft = Math.max(0, Math.ceil((new Date(s.until).getTime() - now.getTime()) / DAY));
+    return { phase: daysLeft <= expiringSoonDays ? 'expiring' : 'active', daysLeft };
+  }
+  if (s.upcoming) return { phase: 'queued', daysLeft: 0 };
+  return { phase: s.lastEndedAt ? 'ended' : 'free', daysLeft: 0 };
 }

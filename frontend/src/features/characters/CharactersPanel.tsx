@@ -8,7 +8,7 @@ import type {Command} from '../../ui/Feedback';
 import Icon from '../../ui/GameIcon';
 import {vocations,vocationLabel,isPromoted,promotion,type BaseVocation} from '../../../../shared/adventure';
 type CharList={characters:{id:number;name:string;level:number;vocation:string}[];limit:number;premium:boolean};
-export default function CharactersPanel({hero,config,command,onSelect,onCreated}:{hero:Hero;config:GameConfig|null;command:Command;onSelect:(id:number)=>void;onCreated:(id:number)=>void}) {
+export default function CharactersPanel({hero,config,command,onPremium,onSelect,onCreated}:{hero:Hero;config:GameConfig|null;command:Command;onPremium:()=>void;onSelect:(id:number)=>void;onCreated:(id:number)=>void}) {
   const [list,setList]=useState<CharList|null>(null),[name,setName]=useState(''),[vocation,setVocation]=useState<BaseVocation>('KNIGHT'),{busy,error,ok,run}=useAction();
   const load=()=>api<CharList>('/characters').then(setList).catch(()=>{});
   useEffect(()=>{void load();},[hero.id,hero.vocation]);
@@ -22,7 +22,7 @@ export default function CharactersPanel({hero,config,command,onSelect,onCreated}
         <label>Nome<input value={name} onChange={e=>setName(e.target.value)} minLength={3} maxLength={24} required/></label>
         <VocationPicker value={vocation} onChange={setVocation} disabled={busy}/>
         <button className="primary" disabled={busy}>Criar personagem</button></form>}
-      {list&&list.characters.length>=list.limit&&<p className="muted">{list.premium?'Você atingiu o limite de personagens do Premium.':'Sua conta gratuita tem 1 personagem. O Premium libera personagens extras para experimentar outras vocações — suas classes e progressão continuam independentes.'}</p>}
+      {list&&list.characters.length>=list.limit&&<p className="muted">{list.premium?'Você atingiu o limite de personagens do Premium.':<>Sua conta gratuita tem {list.limit} {list.limit===1?'personagem':'personagens'}. O Premium libera personagens extras para experimentar outras vocações — suas classes e progressão continuam independentes. <button type="button" className="link-button" onClick={onPremium}>Conhecer o Premium →</button></>}</p>}
     </section>
     <section className="panel"><div className="section-title"><h2>Classe e promoção</h2><span>{vocationLabel(hero.vocation)}</span></div>
       {isPromoted(hero.vocation)?<p>Seu personagem foi promovido: <b>+10% de ataque e defesa</b> e <b>+{promotion.critical}% de crítico</b>.</p>:<>
