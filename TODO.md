@@ -95,8 +95,8 @@
   - Achado do simulador: até o nível 40 as lutas acabam em 1–2 turnos (monstros fracos demais para o personagem da faixa); só o Demon (60) é desafiador. Rebalancear vida/ataque na Fase 1.
 - [x] Fase 1: conteúdo até o nível 100 (sprites do manifesto) — 41 monstros, 4 regiões novas, 49 equipamentos, `levels:calibrate` (2026-10-31)
 - [ ] **Você:** `npm run seed` no seu banco depois de juntar a Fase 1 (o `iniciar.bat` já faz)
-- [ ] Rever equilíbrio do Arqueiro (perde ~2× mais vida no simulador) e importar armas de mago (35+) e de Arqueiro (65+)
-- [ ] Fase 2: conteúdo até o nível 250 (Infernatil)
+- [ ] Rever equilíbrio do Arqueiro (perde ~2× mais vida no simulador; é defesa/vida, não ataque). Armas de mago e Arqueiro resolvidas na Fase 2 com munição/foco
+- [x] Fase 2: conteúdo até o nível 250 (Infernatil) — 17 monstros, 3 regiões (a última é o Vale da Perdição de Capriel), 38 equipamentos, munição/foco para Arqueiro e magos (2026-10-31)
 - [ ] Fase 3: 250–1000 conforme a decisão ❓4
 
 ### Depois de validar o jogo

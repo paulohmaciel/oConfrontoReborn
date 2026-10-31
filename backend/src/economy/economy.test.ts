@@ -6,6 +6,7 @@ import { goldReasons, itemReasons, settingDefs, settingKeys, validSetting, defau
 import { can, permissionsOf, roles } from '../../../shared/permissions';
 import { vocationAllowed, isPromoted, promotedOf, baseVocation, vocationLabel, promotion } from '../../../shared/adventure';
 import { combatStats } from '../game/combatStats';
+import { isStackable } from './economy';
 
 test('taxas usam inteiros; taxa ligada cobra no mínimo 1 e nunca mais que o preço', () => {
   assert.equal(saleFee(100n, 5), 5n);
@@ -140,4 +141,8 @@ test('item raro: nome do criador some quando ele pede anonimato, inclusive no te
   assert.equal(open.label, 'Espada do Eclipse +10 — Nº 000042'); assert.equal(open.creator, 'Paulo'); assert.equal(open.destroyed, true);
   const hidden = publicRare({ ...base, creator: { name: 'Paulo', fameHidden: true } });
   assert.equal(hidden.creator, null); assert.equal(hidden.anonymous, true); assert(!JSON.stringify(hidden).includes('Paulo'));
+});
+test('só loot e consumíveis empilham; munição e foco são equipamento permanente', () => {
+  assert.equal(isStackable('LOOT'), true); assert.equal(isStackable('CONSUMABLE'), true);
+  for (const slot of ['AMMO', 'WEAPON', 'ARMOR', 'RING']) assert.equal(isStackable(slot), false, slot);
 });
