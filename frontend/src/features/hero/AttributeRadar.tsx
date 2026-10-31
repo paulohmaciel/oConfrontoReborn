@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {fmt} from '../../lib/format';
 import type {Hero} from '../../lib/types';
-import {baseVocation,vocationLabel} from '../../../../shared/adventure';
+import {baseVocation,classLabel} from '../../../../shared/adventure';
 import {typicalAttributes} from '../../../../shared/progression';
 const axes=[['strength','Força'],['vitality','Vitalidade'],['agility','Agilidade'],['resistance','Resistência']] as const;
 type Key=typeof axes[number][0];
@@ -15,7 +15,7 @@ export default function AttributeRadar({hero}:{hero:Hero}){
   const you:Record<Key,number>={strength:hero.strength,vitality:hero.vitality,agility:hero.agility,resistance:hero.resistance};
   const typical=hero.vocationChosen?typicalAttributes(baseVocation(hero.vocation),hero.level):null;
   const max=Math.max(1,...axes.flatMap(([k])=>[you[k],typical?.[k]??0]));
-  const vocation=vocationLabel(hero.vocation);
+  const vocation=classLabel(hero.vocation,hero.classTier);
   return <div className="attr-radar">
     <div className="radar-legend" aria-hidden="true"><span><i className="swatch you"/>Você</span>{typical&&<span><i className="swatch typical"/>Típico de {vocation} no nível {hero.level}</span>}</div>
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Radar dos atributos: ${axes.map(([k,l])=>`${l} ${you[k]}`).join(', ')}${typical?`. Típico: ${axes.map(([k,l])=>`${l} ${typical[k]}`).join(', ')}`:''}.`} onMouseLeave={()=>setHover(null)}>

@@ -50,3 +50,24 @@ test('MySQL: atributos em lote e redistribuição paga', async t => {
   });
   await prisma.$disconnect();
 });
+test('MySQL: classes sobem uma por vez, exigem o nível do marco e cobram o custo', async t => {
+  const { promoteCharacter } = await import('../src/game/characterService');
+  const { classCost } = await import('../../shared/adventure');
+  const tag = randomUUID().slice(0, 8);
+  const acc = await prisma.account.create({ data: { email: `classes-${tag}@example.invalid`, password: await hashPassword('Classes-test-2026!'),
+    characters: { create: { name: `Classes ${tag}`, vocation: 'SORCERER', vocationChosen: true, level: 120, goldInHand: 0n } } }, include: { characters: true } });
+  const a = acc.id, c = acc.characters[0].id, settings = await loadSettings(prisma);
+  await prisma.character.update({ where: { id: c }, data: { goldInHand: 10_000_000n } });
+  await prisma.goldLedger.create({ data: { characterId: c, delta: 10_000_000n, balanceAfter: 10_000_000n, reason: 'ADMIN_GRANT' } });
+  await t.test('1ª classe (promoção) e 2ª classe no nível 100', async () => {
+    const r1 = await promoteCharacter(a, c), r2 = await promoteCharacter(a, c);
+    assert.equal(r1.className, 'Mestre Feiticeiro'); assert.equal(r2.className, 'Arquimago');
+    const h = await prisma.character.findUniqueOrThrow({ where: { id: c } });
+    assert.equal(h.vocation, 'MASTER_SORCERER'); assert.equal(h.classTier, 2);
+    assert.equal(h.goldInHand, 10_000_000n - classCost(1, settings['class.promotionGold']) - classCost(2, settings['class.promotionGold']));
+  });
+  await t.test('3ª classe exige nível 250', async () => {
+    await assert.rejects(() => promoteCharacter(a, c), /nível 250/);
+  });
+  await prisma.$disconnect();
+});

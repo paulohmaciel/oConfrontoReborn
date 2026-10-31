@@ -18,6 +18,27 @@ export const promotedOf: Record<BaseVocation, string> = { KNIGHT: 'ELITE_KNIGHT'
 export const promotedNames: Record<string, string> = { ELITE_KNIGHT: 'Cavaleiro de Elite', ROYAL_PALADIN: 'Arqueiro Real', MASTER_SORCERER: 'Mestre Feiticeiro', ELDER_DRUID: 'Druida Ancião' };
 export function isPromoted(value: string) { return Object.prototype.hasOwnProperty.call(promotedNames, value); }
 export function vocationLabel(value: string) { return promotedNames[value] ?? vocations[baseVocation(value)].name; }
+// Classes: a promoção do nível 20 é a 1ª; depois, uma nova classe em cada marco até o 1000 (Character.classTier guarda da 2ª em diante).
+export const classLevels = [20, 100, 250, 400, 550, 700, 850, 1000] as const;
+export const classNames: Record<BaseVocation, readonly string[]> = {
+  KNIGHT: ['Cavaleiro de Elite', 'Cavaleiro Guardião', 'Campeão da Vanguarda', 'Senhor da Muralha', 'Cavaleiro Rúnico', 'Comandante Imortal', 'Lâmina de Capriel', 'Escudo Eterno de Capriel'],
+  PALADIN: ['Arqueiro Real', 'Paladino Atirador', 'Paladino Sagrado', 'Caçador de Sombras', 'Olho do Falcão', 'Arqueiro Celeste', 'Mira de Capriel', 'Flecha Eterna de Capriel'],
+  SORCERER: ['Mestre Feiticeiro', 'Arquimago', 'Senhor das Tempestades', 'Conjurador Rúnico', 'Arquimago do Vazio', 'Mago Imortal', 'Tempestade de Capriel', 'Chama Eterna de Capriel'],
+  DRUID: ['Druida Ancião', 'Guardião da Floresta', 'Voz da Natureza', 'Druida Rúnico', 'Senhor das Estações', 'Druida Imortal', 'Bosque de Capriel', 'Raiz Eterna de Capriel'],
+};
+// Cada classe depois da 1ª soma +3% de ataque e defesa e +1 de crítico (a 1ª é a promoção: +10% e +2).
+export const classBonus = { attack: .03, defense: .03, critical: 1 } as const;
+export const MAX_CLASS_TIER = classLevels.length;
+export function classTierOf(vocation: string, storedTier = 0) { return Math.max(storedTier, isPromoted(vocation) ? 1 : 0); }
+export function classLabel(vocation: string, storedTier = 0) {
+  const tier = classTierOf(vocation, storedTier);
+  return tier > 0 ? classNames[baseVocation(vocation)][tier - 1] : vocations[baseVocation(vocation)].name;
+}
+// Custo da classe N: custo da promoção × (nível da classe ÷ 20)² — 5.000 no 20, 125.000 no 100, 12,5 milhões no 1000 com o padrão.
+export function classCost(tier: number, promotionGold: number): bigint {
+  const level = BigInt(classLevels[tier - 1]);
+  return BigInt(promotionGold) * level * level / 400n;
+}
 // Itens com vocations "ALL" servem a todos. Listas usam a vocação base: um Cavaleiro de Elite usa itens de KNIGHT.
 export function vocationAllowed(allowed: string, vocation: string) {
   const list = allowed.split(',').map(v => v.trim());

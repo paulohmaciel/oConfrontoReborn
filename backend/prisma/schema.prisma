@@ -107,6 +107,7 @@ model Character {
   pvpWins        Int              @default(0)
   pvpLosses      Int              @default(0)
   promotedAt     DateTime?
+  classTier      Int              @default(0)
   profileTitle   String?          @db.VarChar(24)
   profileEmblem  String?          @db.VarChar(40)
   profileBio     String?          @db.VarChar(160)

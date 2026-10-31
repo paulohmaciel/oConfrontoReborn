@@ -12,7 +12,7 @@ import { forgeableSlots } from '../../../shared/forge';
 import { combatStats } from './combatStats';
 export const readRoutes = Router();
 readRoutes.get('/me', asyncRoute(async (_req, res) => {
-  const characters = await prisma.character.findMany({ where: { accountId: res.locals.accountId }, select: { id: true, name: true, level: true, vocation: true } });
+  const characters = await prisma.character.findMany({ where: { accountId: res.locals.accountId }, select: { id: true, name: true, level: true, vocation: true, classTier: true } });
   res.json({ characters });
 }));
 readRoutes.get('/characters/:id', asyncRoute(async (req, res) => {

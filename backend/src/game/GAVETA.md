@@ -21,6 +21,7 @@ Depende de `core`, `economy` e `premium` (só `isPremium`).
 Subida de nível só por `gainExperience` (`gameRules.ts`), que usa `shared/progression.ts` (teto `MAX_LEVEL`, ganhos por nível). Conteúdo novo de nível passa antes por `npm run levels:simulate`.
 Ferreiro: regras em `shared/forge.ts` (material por faixa), preços e quantidades em `forge.*` e `shop.maxEquipmentLevel` (`loadSettings`). Raros (+10) não são reforjados nem desmontados. Teste: `backend/tests/forge-integration.ts`.
 Itens e monstros ficam em `backend/prisma/catalog.ts` (o seed só grava). Monstro novo: entra no catálogo com XP/ouro da curva e `npm run levels:calibrate -- --write` define vida, ataque e defesa.
+Classes: `shared/adventure.ts` (`classLevels`, `classNames`, `classBonus`, `classCost`); a 1ª é a promoção (muda a vocação), da 2ª à 8ª ficam em `Character.classTier`. `promoteCharacter` sobe uma por vez.
 Fórmulas de atributos só em `combatStats.ts`. Vocações/regiões em `shared/adventure.ts`. Melhoria: sorteio no servidor, chance e quebra configuráveis, resultado repetível pela chave.
 
 ## Testes
