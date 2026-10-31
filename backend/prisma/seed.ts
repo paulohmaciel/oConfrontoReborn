@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import manifest from '../../frontend/public/assets/tibia/manifest.json';
 import { items, monsters } from './catalog';
+import { bestPotionFor } from '../../shared/potions';
 import { materialForLevel } from '../../shared/forge';
 const prisma = new PrismaClient();
 const sprite = (name: string) => manifest.entries.find(e => e.name === name)?.path ?? '';
@@ -26,8 +27,9 @@ async function main() {
     if (original.has(m.name)) await loot(monster.id, m.level < 12 ? 'Health Potion' : 'Fire Sword', .15);
     else {
       // Poções comuns e, raramente, um equipamento da própria faixa (sorteado entre os da faixa pela ordem do catálogo).
-      await loot(monster.id, 'Health Potion', .15);
-      await loot(monster.id, 'Mana Potion', .1);
+      // Poção da faixa do monstro (ex.: nível 300 deixa Ultimate Health/Mana Potion).
+      await loot(monster.id, bestPotionFor(m.level, 'hp'), .15);
+      await loot(monster.id, bestPotionFor(m.level, 'mana'), .1);
       const band = gear.filter(i => i.minLevel <= m.level && i.minLevel > m.level - 25);
       if (band.length) await loot(monster.id, band[index % band.length].name, m.isBoss ? .08 : .02);
     }

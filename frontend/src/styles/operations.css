@@ -177,3 +177,11 @@
 .compare{font-size:11px;margin:3px 0 0;opacity:.9}.compare span{margin-right:8px;white-space:nowrap}
 .compare .up{color:#7fc48f}.compare .down{color:#e07a6b}
 :root[data-theme="light"] .compare .up{color:#2f6b2a}:root[data-theme="light"] .compare .down{color:#8a2a12}
+/* Abas por tipo de item (Mercador e Mercado) e item recomendado */
+.item-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.item-tabs button{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;font-size:12px}
+.shop-list article.recommended{outline:1px solid #c5a569;outline-offset:-1px}
+.shop-list h3 .tag{margin-left:6px;vertical-align:middle}
+.region-levels{margin:6px 0 0;font-size:13px}
+:root[data-theme="light"] .shop-list article.recommended{outline-color:#8a5a1a}
+@media(max-width:760px){.item-tabs button span{font-size:11px}}

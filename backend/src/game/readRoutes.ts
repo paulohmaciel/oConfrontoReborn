@@ -31,12 +31,13 @@ readRoutes.get('/characters/:id/inventory', asyncRoute(async (req, res) => {
   const page = integer(Number(req.query.page ?? 1));
   const character = await prisma.character.findFirst({ where: { id, accountId: res.locals.accountId }, select: { id: true } });
   if (!character) throw new GameError(404, 'Personagem não encontrado.');
-  const slot = typeof req.query.slot === 'string' && /^[A-Z]{3,12}$/.test(req.query.slot) ? req.query.slot : undefined;
+  // Um ou mais tipos separados por vírgula (as abas juntam tipos, ex.: AMULET,RING em Joias).
+  const slot = typeof req.query.slot === 'string' ? req.query.slot.split(',').filter(s => /^[A-Z]{3,12}$/.test(s)).slice(0, 12) as ItemSlot[] : [];
   const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 40) : '';
   const onlyFavorites = req.query.favorites === '1';
   // Busca por nome e favoritos fazem parte da organização avançada da mochila (Premium).
   if ((q || onlyFavorites) && !await isPremium(prisma, res.locals.accountId)) throw new GameError(402, 'Busca e favoritos fazem parte do Premium.');
-  const blueprint: Prisma.ItemBlueprintWhereInput = { ...(slot ? { slot: slot as ItemSlot } : {}), ...(q ? { name: { contains: q } } : {}) };
+  const blueprint: Prisma.ItemBlueprintWhereInput = { ...(slot.length ? { slot: { in: slot } } : {}), ...(q ? { name: { contains: q } } : {}) };
   const where: Prisma.InventoryItemWhereInput = { characterId: id, isEquipped: false, ...(Object.keys(blueprint).length ? { blueprint } : {}), ...(onlyFavorites ? { favorite: true } : {}) };
   const [items,total] = await Promise.all([prisma.inventoryItem.findMany({ where, include: { blueprint: true, rareItem: { select: { id: true, serial: true, status: true } } }, orderBy: { id: 'asc' }, take: 10, skip: (page-1)*10 }),prisma.inventoryItem.count({ where })]);
   res.json(paged(items, total, page));
@@ -52,11 +53,12 @@ readRoutes.get('/market', asyncRoute(async (req,res) => {
   const { page, skip, take } = pageOf(req.query), q = String(req.query.q ?? '').trim().slice(0, 40);
   // Filtros opcionais: tipo de item (slot), nível máximo de uso e melhoria mínima.
   const slots = ['WEAPON', 'ARMOR', 'HELMET', 'LEGS', 'BOOTS', 'SHIELD', 'AMULET', 'RING', 'AMMO', 'BACKPACK', 'LOOT', 'CONSUMABLE'];
-  const slot = slots.includes(String(req.query.slot)) ? String(req.query.slot) as ItemSlot : undefined;
+  // Um ou mais tipos separados por vírgula (ex.: HELMET,ARMOR,LEGS,BOOTS para a aba Armaduras).
+  const slot = String(req.query.slot ?? '').split(',').filter(x => slots.includes(x)) as ItemSlot[];
   const maxLevel = req.query.maxLevel ? Math.min(1000, integer(Number(req.query.maxLevel))) : undefined, minTier = req.query.minTier ? Math.min(10, integer(Number(req.query.minTier), 0)) : 0;
   await expireListings(20);
   // Mais recentes primeiro; a busca filtra pelo nome do item.
-  const blueprint: Prisma.ItemBlueprintWhereInput = { ...(q ? { name: { contains: q } } : {}), ...(slot ? { slot } : {}), ...(maxLevel ? { minLevel: { lte: maxLevel } } : {}) };
+  const blueprint: Prisma.ItemBlueprintWhereInput = { ...(q ? { name: { contains: q } } : {}), ...(slot.length ? { slot: { in: slot } } : {}), ...(maxLevel ? { minLevel: { lte: maxLevel } } : {}) };
   const where: Prisma.MarketListingWhereInput = { status: 'OPEN', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }], ...(Object.keys(blueprint).length ? { blueprint } : {}), ...(minTier ? { upgradeTier: { gte: minTier } } : {}) };
   const [items, total] = await Promise.all([prisma.marketListing.findMany({ where, include: { blueprint: true, seller: { select: { name: true } } }, orderBy: { id: 'desc' }, skip, take }), prisma.marketListing.count({ where })]);
   res.json(paged(items, total, page));

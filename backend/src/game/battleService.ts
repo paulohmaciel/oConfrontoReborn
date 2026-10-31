@@ -12,6 +12,7 @@ import { scaleInt } from '../../../shared/economy';
 import { vocationAllowed, skillCosts } from '../../../shared/adventure';
 import { defeatAdvice, type DefeatAdvice } from './defeatAdvice';
 import { inGroupBattle } from './groupHuntService';
+import { healthPotionNames } from '../../../shared/potions';
 const dice = (min: number, max: number) => randomInt(min, max + 1);
 
 export class BattleService {
@@ -92,7 +93,7 @@ export class BattleService {
         rewardGold:BigInt(gold),rewardExperience:xpGain,rewardRecorded:result.status!=='ONGOING' } });
       let defeat: DefeatAdvice | null = null;
       if (result.status === 'DEFEAT') {
-        const healthPotions = await tx.inventoryItem.aggregate({ where: { characterId, isEquipped: false, blueprint: { name: 'Health Potion' } }, _sum: { quantity: true } });
+        const healthPotions = await tx.inventoryItem.aggregate({ where: { characterId, isEquipped: false, blueprint: { name: { in: healthPotionNames } } }, _sum: { quantity: true } });
         defeat = defeatAdvice({ heroLevel: c.level, monsterLevel: b.monster.level, monsterHp: result.monsterHp, monsterMaxHp: b.monster.hp,
           statPoints: c.statPoints, isBoss: b.monster.isBoss, lastIntent: monsterIntent(b.monster, b.turnVersion).kind, lastAction: action,
           monsterElement: b.monster.element, fireResistance: stats.fireResistance, healthPotions: healthPotions._sum.quantity ?? 0,
