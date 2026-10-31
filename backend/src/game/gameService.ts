@@ -8,26 +8,54 @@ import { addGold, recordItem } from '../economy/economy';
 import { loadSettings } from '../core/settings';
 import { randomInt } from 'node:crypto';
 import { makeRare, retireRare, RARE_TIER } from '../economy/rare';
-import { npcSellPrice, percentOf, resolveUpgrade, upgradeSuccessPercent, PROTECTION_STONE, type UpgradeOutcome, type UpgradeResult } from '../../../shared/economy';
+import { BASE_ATTRIBUTE } from '../../../shared/progression';
+// Cada ponto em Vitalidade dá +15 de vida máxima; em Resistência, +15 de mana máxima.
+const STAT_BONUS = 15;
+import { statsResetCost, npcSellPrice, percentOf, resolveUpgrade, upgradeSuccessPercent, PROTECTION_STONE, type UpgradeOutcome, type UpgradeResult } from '../../../shared/economy';
 
 export async function requireIdle(tx: Prisma.TransactionClient, characterId: number) {
   if (await tx.battle.findFirst({ where: { characterId, isFinished: false }, select: { id: true } }))
     throw new GameError(409, 'Encerre o combate antes desta operação.');
 }
 
-export async function addStat(accountId: number, characterId: number, rawStat: unknown, key: string) {
+// Distribui um ou vários pontos de uma vez no mesmo atributo.
+export async function addStat(accountId: number, characterId: number, rawStat: unknown, key: string, amount = 1) {
   const stat = parseStat(rawStat);
+  integer(amount);
   return transaction(async tx => {
     const c = await lockCharacter(tx, accountId, characterId);
-    return once(tx, characterId, key, ["stat", stat], async () => {
+    return once(tx, characterId, key, ["stat", stat, amount], async () => {
     await requireIdle(tx, characterId);
     if (c.statPoints <= 0) throw new GameError(409, 'Sem pontos disponíveis.');
-    const data: Prisma.CharacterUpdateInput = { statPoints: { decrement: 1 } };
-    data[stat] = { increment: 1 };
-    if (stat === 'vitality') { data.maxHp = { increment: 15 }; data.hp = { increment: 15 }; }
-    if (stat === 'resistance') { data.maxMana = { increment: 15 }; data.mana = { increment: 15 }; }
+    if (amount > c.statPoints) throw new GameError(409, `Você tem só ${c.statPoints} pontos disponíveis.`);
+    const data: Prisma.CharacterUpdateInput = { statPoints: { decrement: amount } };
+    data[stat] = { increment: amount };
+    if (stat === 'vitality') { data.maxHp = { increment: STAT_BONUS * amount }; data.hp = { increment: STAT_BONUS * amount }; }
+    if (stat === 'resistance') { data.maxMana = { increment: STAT_BONUS * amount }; data.mana = { increment: STAT_BONUS * amount }; }
     await tx.character.update({ where: { id: characterId }, data });
-    return { stat, value: c[stat] + 1, statPoints: c.statPoints - 1 };
+    return { stat, value: c[stat] + amount, statPoints: c.statPoints - amount, message: amount > 1 ? `+${amount.toLocaleString('pt-BR')} pontos distribuídos.` : undefined };
+    });
+  });
+}
+
+// Devolve todos os pontos distribuídos (atributos voltam à base) mediante ouro. Vida e mana máximas perdem o bônus de Vitalidade e Resistência.
+export async function resetStats(accountId: number, characterId: number, key: string) {
+  return transaction(async tx => {
+    const c = await lockCharacter(tx, accountId, characterId);
+    return once(tx, characterId, key, ['stats-reset'], async () => {
+      await requireIdle(tx, characterId);
+      const spent = { strength: Math.max(0, c.strength - BASE_ATTRIBUTE), vitality: Math.max(0, c.vitality - BASE_ATTRIBUTE), agility: Math.max(0, c.agility - BASE_ATTRIBUTE), resistance: Math.max(0, c.resistance - BASE_ATTRIBUTE) };
+      const total = spent.strength + spent.vitality + spent.agility + spent.resistance;
+      if (!total) throw new GameError(409, 'Nenhum ponto distribuído para devolver.');
+      const settings = await loadSettings(tx), cost = statsResetCost(c.level, settings['stats.resetBaseGold'], settings['stats.resetGoldPerLevelSquared']);
+      if (c.goldInHand < cost) throw new GameError(409, `Redistribuir custa ${cost.toLocaleString('pt-BR')} ouro.`);
+      await addGold(tx, characterId, -cost, 'STATS_RESET');
+      const maxHp = Math.max(1, c.maxHp - spent.vitality * STAT_BONUS), maxMana = Math.max(0, c.maxMana - spent.resistance * STAT_BONUS);
+      await tx.character.update({ where: { id: characterId }, data: { strength: c.strength - spent.strength, vitality: c.vitality - spent.vitality, agility: c.agility - spent.agility, resistance: c.resistance - spent.resistance,
+        statPoints: { increment: total }, maxHp, maxMana, hp: Math.min(c.hp, maxHp), mana: Math.min(c.mana, maxMana) } });
+      const said = `${total.toLocaleString('pt-BR')} ${total === 1 ? 'ponto devolvido' : 'pontos devolvidos'} por ${cost.toLocaleString('pt-BR')} ouro`;
+      await event(tx, characterId, 'STATS', 'Atributos redistribuídos', `${said}.`);
+      return { message: `${said}. Distribua de novo como quiser.`, statPoints: c.statPoints + total, cost: cost.toString() };
     });
   });
 }

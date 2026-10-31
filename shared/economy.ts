@@ -4,7 +4,7 @@ export type FlowKind = 'source' | 'sink' | 'transfer';
 export const goldReasons = {
   MONSTER: 'source', TASK: 'source', JOURNEY: 'source', NPC_SELL: 'source', STARTER: 'source', ADMIN_GRANT: 'source',
   NPC_BUY: 'sink', UPGRADE: 'sink', PROMOTION: 'sink', MARKET_FEE: 'sink', MARKET_LISTING_FEE: 'sink', ADMIN_REMOVE: 'sink',
-  FORGE_CRAFT: 'sink', FORGE_REFORGE: 'sink',
+  FORGE_CRAFT: 'sink', FORGE_REFORGE: 'sink', STATS_RESET: 'sink',
   MARKET_SALE: 'transfer', MARKET_PURCHASE: 'transfer',
 } as const satisfies Record<string, FlowKind>;
 export type GoldReason = keyof typeof goldReasons;
@@ -35,6 +35,8 @@ export const settingDefs = {
   'forge.craftMaterials': { default: 5, min: 1, max: 100, label: 'Materiais da faixa para fabricar ou reforjar um item', unit: 'un.', group: 'Ferreiro' },
   'forge.salvageMaterials': { default: 2, min: 0, max: 100, label: 'Materiais devolvidos ao desmontar (+1 a cada 3 melhorias)', unit: 'un.', group: 'Ferreiro' },
   'shop.maxEquipmentLevel': { default: 100, min: 1, max: 1000, label: 'O Mercador vende equipamentos até este nível (acima, só Ferreiro e loot)', unit: 'nível', group: 'Preços' },
+  'stats.resetBaseGold': { default: 500, min: 0, max: 100_000_000, label: 'Redistribuir atributos: custo fixo', unit: 'ouro', group: 'Classes' },
+  'stats.resetGoldPerLevelSquared': { default: 5, min: 0, max: 100_000, label: 'Redistribuir atributos: ouro × nível² (nível 100 = 50.000 com o padrão)', unit: 'ouro', group: 'Classes' },
   'class.promotionGold': { default: 5000, min: 0, max: 100_000_000, label: 'Custo da promoção de classe', unit: 'ouro', group: 'Classes' },
   'characters.free': { default: 1, min: 1, max: 10, label: 'Personagens por conta gratuita', unit: '', group: 'Personagens' },
   'characters.premium': { default: 4, min: 1, max: 20, label: 'Personagens por conta Premium', unit: '', group: 'Personagens' },
@@ -76,6 +78,11 @@ export function settingsConflict(values: Pick<Settings, 'economy.npcBuyPercent' 
   if (craft !== undefined && salvage !== undefined && salvage >= craft)
     return 'Desmontar não pode devolver tantos materiais quanto fabricar gasta, ou o jogador cria material do nada fabricando e desmontando.';
   return null;
+}
+
+// Redistribuir atributos custa cerca de um nível de caçadas: fixo + ouro × nível² (o ouro dos monstros também cresce com o quadrado do nível).
+export function statsResetCost(level: number, baseGold: number, perLevelSquared: number): bigint {
+  return BigInt(baseGold) + BigInt(perLevelSquared) * BigInt(level) * BigInt(level);
 }
 
 // ----- Melhoria de equipamentos (risco) -----

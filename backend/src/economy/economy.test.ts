@@ -163,3 +163,8 @@ test('configuração: desmontar não pode devolver tanto material quanto fabrica
   assert.equal(settingsConflict({ ...npc, 'forge.craftMaterials': 5, 'forge.salvageMaterials': 2 }), null);
   assert.match(settingsConflict({ ...npc, 'forge.craftMaterials': 3, 'forge.salvageMaterials': 3 }) ?? '', /do nada/);
 });
+test('redistribuir atributos: custo fixo + ouro × nível²', async () => {
+  const { statsResetCost } = await import('../../../shared/economy');
+  assert.equal(statsResetCost(1, 500, 5), 505n); assert.equal(statsResetCost(100, 500, 5), 50_500n); assert.equal(statsResetCost(1000, 500, 5), 5_000_500n);
+  assert.equal(goldReasons.STATS_RESET, 'sink');
+});

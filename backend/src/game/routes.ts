@@ -3,7 +3,7 @@ import { BattleService } from './battleService';
 import { GameError, integer } from '../core/engine';
 import { recordError } from '../core/monitor';
 import { buyNpc, equip } from './inventoryService';
-import { addStat, heal, sellNpc, unequip, upgrade, usePotion } from './gameService';
+import { addStat, heal, resetStats, sellNpc, unequip, upgrade, usePotion } from './gameService';
 import { craft, forgeOverview, reforge, salvage } from './forgeService';
 
 // O middleware de autenticação DEVE validar sessão/token e preencher res.locals.accountId.
@@ -27,7 +27,8 @@ export function gameRouter() {
   router.post('/characters/:characterId/equip', handle((a, c, req) => equip(a, c, integer(req.body?.itemId))));
   router.post('/characters/:characterId/shop', handle((a, c, req) => buyNpc(a, c, integer(req.body?.blueprintId), integer(req.body?.quantity), req.get('idempotency-key') ?? '')));
   router.post('/characters/:characterId/unequip', handle((a, c, req) => unequip(a, c, integer(req.body?.itemId))));
-  router.post('/characters/:characterId/stats', handle((a, c, req) => addStat(a, c, req.body?.stat, req.get('idempotency-key') ?? '')));
+  router.post('/characters/:characterId/stats', handle((a, c, req) => addStat(a, c, req.body?.stat, req.get('idempotency-key') ?? '', integer(req.body?.amount ?? 1))));
+  router.post('/characters/:characterId/stats/reset', handle((a, c, req) => resetStats(a, c, req.get('idempotency-key') ?? '')));
   router.post('/characters/:characterId/temple', handle((a, c) => heal(a, c)));
   router.post('/characters/:characterId/sell', handle((a, c, req) => sellNpc(a, c, integer(req.body?.itemId), req.body?.confirmUpgraded === true)));
   router.post('/characters/:characterId/upgrade', handle((a, c, req) => upgrade(a, c, integer(req.body?.itemId), integer(req.body?.expectedTier, 0), String(req.get('idempotency-key') ?? ''), req.body?.useProtection === true)));
