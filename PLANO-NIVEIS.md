@@ -55,8 +55,8 @@ Cada faixa = 1 região nova em `shared/adventure.ts` + monstros + 1 chefe com go
 | 1–20 (completar) | Arredores / Pedreira | Bug, Snake, Spider, Goblin, Skeleton, Troll, Dwarf, Elf | já existe | Short Sword, Studded Armor, Brass Helmet/Legs, Steel Shield |
 | 20–60 (completar) | Ruínas / Abismo | Orc Warrior, Orc Berserker, Orc Shaman, Minotaur Archer/Guard/Mage, Dwarf Soldier/Guard, Elf Scout/Arcanist, Amazon, Valkyrie, Mummy, Bonelord, Stone Golem | Orc Leader | Knight Armor/Legs, Plate Armor/Legs, Battle Shield, Spike Sword, Dragon Lance |
 | 60–100 | Terras Geladas | Frost Troll, Winter Wolf, Polar Bear, Mammoth, Swamp Troll, Killer Caiman, Witch | Giant Spider | Crown Armor/Legs/Helmet, Crown Shield, Ice Rapier, Dragon Scale Mail |
-| 100–150 | Cripta Esquecida | Necromancer, Demon Skeleton, Wailing Widow, Black Knight, Hero, Warlock | Warlock (chefe) | Golden Armor, Golden Legs, Royal Helmet, Guardian Shield, Giant Sword, Warlord Sword |
-| 150–250 | Santuário Elemental | Fire Elemental, Water Elemental, Fire Devil, Young Sea Serpent | Infernatil | Magic Plate Armor, Demon Helmet, Mastermind Shield, Royal Draken Mail, Royal Scale Robe, Fire Sword |
+| 100–150 | Cripta Esquecida | Necromancer, Wailing Widow, Black Knight, Hero | Warlock | ainda livres no manifesto: Noble Armor, Dark Armor, Winged Helmet, Ornamented Shield, Great Axe, Obsidian Lance, Naginata |
+| 150–250 | Santuário Elemental | Water Elemental, Young Sea Serpent (Fire Devil e Fire Elemental já usados na Fase 1) | Infernatil | ainda livres: Fiery/Icy/Energy/Earth Barbarian Axe, Guardian Axe, Ice Rapier, Serpent Sword, Rose Shield; armas de mago e de Arqueiro precisam ser **importadas** |
 | 250–1000 | ❓ ver abaixo | **importar** (verificar no TibiaWiki): Hydra, Serpent Spawn, Behemoth, Hellhound, Juggernaut, Grim Reaper, Destroyer, Frost Dragon, Undead Dragon… | Verminor (500), Apocalypse (1000) | **importar** |
 
 Os três arquidemônios **Infernatil, Verminor e Apocalypse** já têm sprite: servem de marcos (250, 500 e 1000).
@@ -95,6 +95,22 @@ O que o simulador mostrou com os monstros atuais (personagem no nível do monstr
 - **A XP já segue a curva** a partir do nível 8; Dragon e Dragon Lord dão um pouco menos que o alvo.
 - **As lutas são curtas demais** até o 40: o monstro morre em 1–2 golpes, então o combate por turnos quase não acontece. A Fase 1 precisa subir vida e ataque dos monstros da faixa (meta de 4–8 turnos) antes de criar monstros novos.
 - Pela curva-alvo, a 100 lutas por hora: nível 100 em ~38 h, 250 em ~86 h, 1000 em ~322 h.
+
+## Resultado da Fase 1 (2026-10-31)
+
+Feito, só com sprites que já estavam no manifesto:
+- **Catálogo em um arquivo** (`backend/prisma/catalog.ts`): o seed, o simulador e o calibrador leem a mesma lista. Seed continua por upsert e agora se recusa a rodar se faltar sprite.
+- **41 monstros** (11 originais rebalanceados + 30 novos), do Rat (1) à Aranha Gigante (chefe, 100). Comum mais alto: Witch (90).
+- **4 regiões novas:** Acampamento Orc (15, chefe Orc Leader), Labirinto dos Minotauros (30), Terras Geladas (60) e Pântano Sombrio (80, chefe Giant Spider). Demon Skeleton, Fire Devil e Fire Elemental foram para os Portões do Abismo (44–56), então saem da lista da Fase 2.
+- **49 equipamentos novos** até o nível 100. As armas novas têm vocação: espadas para Cavaleiro, lanças/besta/estrela para Arqueiro, cajados para magos; robes e chapéus dão magia. Preço = 12 × nível² + 200.
+- **`npm run levels:calibrate`** acha vida, ataque e defesa de cada monstro pelo motor do jogo (meta: 5 turnos e ~12% da vida; chefes ~10 turnos e ~40%; começo mais leve). `-- --write` regrava o catálogo.
+- XP: curva-alvo com piso de 18 × nível no começo; chefes novos dão o dobro. Ouro: nível × (3 + nível/8) até o dobro.
+- Loot dos originais não mudou. Os novos derrubam poções e, raramente, um equipamento da própria faixa (2%; chefes 8%). Cada monstro novo ganhou tarefa automática.
+
+Achados para depois:
+- **Arqueiro perde ~2× mais vida** que as outras vocações (chefes: até 73%, 94% de vitórias no Orc Leader). Pode ser a distribuição de pontos que o simulador supõe (20% em vitalidade) ou a classe. Rever o equilíbrio entre classes.
+- **Armas de mago param no nível 35** (Skull Staff) **e de Arqueiro no 65** (Throwing Star): não há outros sprites no manifesto. Robes/chapéus compensam os magos; para 100+ é preciso importar varinhas, cajados e arcos.
+- **Antes de jogar no seu banco:** `npm run seed` (o `iniciar.bat` já roda). Personagens existentes não perdem nada; os monstros antigos ficam mais resistentes.
 
 ## 6. Decisões do dono
 
