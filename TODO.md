@@ -96,8 +96,8 @@
 - [x] Fase 1: conteúdo até o nível 100 (sprites do manifesto) — 41 monstros, 4 regiões novas, 49 equipamentos, `levels:calibrate` (2026-10-31)
 - [ ] **Você:** `npm run seed` no seu banco depois de juntar a Fase 1 (o `iniciar.bat` já faz)
 - [ ] Rever equilíbrio do Arqueiro (perde ~2× mais vida no simulador; é defesa/vida, não ataque). Armas de mago e Arqueiro resolvidas na Fase 2 com munição/foco
-- [x] Fase 2: conteúdo até o nível 250 (Infernatil) — 17 monstros, 3 regiões (a última é o Vale da Perdição de Capriel), 38 equipamentos, munição/foco para Arqueiro e magos (2026-10-31)
-- [ ] Fase 3: 250–1000 conforme a decisão ❓4
+- [x] Fase 2: conteúdo até o nível 250 (Infernatil) — 17 monstros, 3 regiões (a última é o Vale da Perdição), 38 equipamentos, munição/foco para Arqueiro e magos (2026-10-31)
+- [x] Fase 3: 250–1000 com Eras (decisão ❓4 = B) — 5 Eras, 55 monstros, 65 equipamentos, Apocalypse no 1000; Vale da Perdição é a região final (2026-10-31)
 
 ### Depois de validar o jogo
 - [ ] **[Astra 3]** Talentos / especializações / redistribuição com custo

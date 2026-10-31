@@ -42,7 +42,7 @@ readRoutes.get('/characters/:id/inventory', asyncRoute(async (req, res) => {
 }));
 readRoutes.get('/monsters', asyncRoute(async (_req,res) => { res.json(await prisma.monster.findMany({ orderBy: { level: 'asc' }, take: 200 })); }));
 readRoutes.get('/shop', asyncRoute(async (_req,res) => {
-  const [items, settings] = await Promise.all([prisma.itemBlueprint.findMany({ where: { npcPrice: { gt: 0 } }, orderBy: { npcPrice: 'asc' }, take: 200 }), loadSettings(prisma)]);
+  const [items, settings] = await Promise.all([prisma.itemBlueprint.findMany({ where: { npcPrice: { gt: 0 } }, orderBy: { npcPrice: 'asc' }, take: 400 }), loadSettings(prisma)]);
   res.json(items.map(i => ({ ...i, price: Number(npcBuyPrice(i.npcPrice, settings['economy.npcBuyPercent'])) })));
 }));
 readRoutes.get('/market', asyncRoute(async (req,res) => {

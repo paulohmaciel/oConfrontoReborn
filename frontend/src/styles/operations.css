@@ -18,3 +18,4 @@
 @media(max-width:760px){.ledger-row{grid-template-columns:1fr auto}.ledger-row span:first-child{grid-column:1/-1;opacity:.7;font-size:12px}}
 
 .legal-links{margin-top:14px;text-align:center;font-size:11px}
+.shop-filter{display:flex;align-items:center;gap:8px;font-size:12px;margin:-6px 0 6px;cursor:pointer}.shop-filter input{width:auto;flex:0 0 auto}
