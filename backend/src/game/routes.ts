@@ -4,6 +4,7 @@ import { GameError, integer } from '../core/engine';
 import { recordError } from '../core/monitor';
 import { buyNpc, equip } from './inventoryService';
 import { addStat, heal, sellNpc, unequip, upgrade, usePotion } from './gameService';
+import { craft, forgeOverview, reforge, salvage } from './forgeService';
 
 // O middleware de autenticação DEVE validar sessão/token e preencher res.locals.accountId.
 // Não use IDs recebidos em headers/query/body como identidade autenticada.
@@ -31,6 +32,10 @@ export function gameRouter() {
   router.post('/characters/:characterId/sell', handle((a, c, req) => sellNpc(a, c, integer(req.body?.itemId), req.body?.confirmUpgraded === true)));
   router.post('/characters/:characterId/upgrade', handle((a, c, req) => upgrade(a, c, integer(req.body?.itemId), integer(req.body?.expectedTier, 0), String(req.get('idempotency-key') ?? ''), req.body?.useProtection === true)));
   router.post('/characters/:characterId/use', handle((a, c, req) => usePotion(a, c, integer(req.body?.itemId), req.get('idempotency-key') ?? '')));
+  router.get('/characters/:characterId/forge', handle((a, c) => forgeOverview(a, c)));
+  router.post('/characters/:characterId/forge/craft', handle((a, c, req) => craft(a, c, integer(req.body?.blueprintId), req.get('idempotency-key') ?? '')));
+  router.post('/characters/:characterId/forge/reforge', handle((a, c, req) => reforge(a, c, integer(req.body?.itemId), integer(req.body?.targetId), req.get('idempotency-key') ?? '')));
+  router.post('/characters/:characterId/forge/salvage', handle((a, c, req) => salvage(a, c, integer(req.body?.itemId), req.body?.confirmUpgraded === true, req.get('idempotency-key') ?? '')));
   return router;
 }
 export const gameErrorHandler: ErrorRequestHandler = (error, req, res, _next) => {

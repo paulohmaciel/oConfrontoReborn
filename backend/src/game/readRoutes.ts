@@ -8,6 +8,7 @@ import { buyListing, cancelListing, listItem, expireListings } from '../economy/
 import { loadSettings } from '../core/settings';
 import { isPremium } from '../premium/premium';
 import { npcBuyPrice } from '../../../shared/economy';
+import { forgeableSlots } from '../../../shared/forge';
 import { combatStats } from './combatStats';
 export const readRoutes = Router();
 readRoutes.get('/me', asyncRoute(async (_req, res) => {
@@ -42,7 +43,9 @@ readRoutes.get('/characters/:id/inventory', asyncRoute(async (req, res) => {
 }));
 readRoutes.get('/monsters', asyncRoute(async (_req,res) => { res.json(await prisma.monster.findMany({ orderBy: { level: 'asc' }, take: 200 })); }));
 readRoutes.get('/shop', asyncRoute(async (_req,res) => {
-  const [items, settings] = await Promise.all([prisma.itemBlueprint.findMany({ where: { npcPrice: { gt: 0 } }, orderBy: { npcPrice: 'asc' }, take: 400 }), loadSettings(prisma)]);
+  // Equipamento acima do nível configurado só sai do Ferreiro (fabricar/reforjar) ou do loot.
+  const settings = await loadSettings(prisma);
+  const items = await prisma.itemBlueprint.findMany({ where: { npcPrice: { gt: 0 }, OR: [{ slot: { notIn: [...forgeableSlots] } }, { minLevel: { lte: settings['shop.maxEquipmentLevel'] } }] }, orderBy: { npcPrice: 'asc' }, take: 400 });
   res.json(items.map(i => ({ ...i, price: Number(npcBuyPrice(i.npcPrice, settings['economy.npcBuyPercent'])) })));
 }));
 readRoutes.get('/market', asyncRoute(async (req,res) => {

@@ -10,7 +10,7 @@ import { randomInt } from 'node:crypto';
 import { makeRare, retireRare, RARE_TIER } from '../economy/rare';
 import { npcSellPrice, percentOf, resolveUpgrade, upgradeSuccessPercent, PROTECTION_STONE, type UpgradeOutcome, type UpgradeResult } from '../../../shared/economy';
 
-async function requireIdle(tx: Prisma.TransactionClient, characterId: number) {
+export async function requireIdle(tx: Prisma.TransactionClient, characterId: number) {
   if (await tx.battle.findFirst({ where: { characterId, isFinished: false }, select: { id: true } }))
     throw new GameError(409, 'Encerre o combate antes desta operação.');
 }

@@ -146,3 +146,20 @@ test('só loot e consumíveis empilham; munição e foco são equipamento perman
   assert.equal(isStackable('LOOT'), true); assert.equal(isStackable('CONSUMABLE'), true);
   for (const slot of ['AMMO', 'WEAPON', 'ARMOR', 'RING']) assert.equal(isStackable(slot), false, slot);
 });
+test('Ferreiro: material por faixa, melhoria guardada ao reforjar e retorno ao desmontar', async () => {
+  const { materialForLevel, reforgeKeptTier, salvageReturn, forgeMaterials, isForgeable } = await import('../../../shared/forge');
+  assert.equal(materialForLevel(1).name, 'Minério de Ferro'); assert.equal(materialForLevel(24).name, 'Minério de Ferro');
+  assert.equal(materialForLevel(25).name, 'Rubi Bruto'); assert.equal(materialForLevel(1000).name, 'Essência Demoníaca');
+  assert.deepEqual(forgeMaterials.map(m => m.minLevel), [...forgeMaterials.map(m => m.minLevel)].sort((a, b) => a - b), 'faixas em ordem');
+  assert.equal(reforgeKeptTier(7), 3); assert.equal(reforgeKeptTier(1), 0);
+  assert.equal(salvageReturn(2, 0), 2); assert.equal(salvageReturn(2, 6), 4);
+  assert.equal(isForgeable('AMMO'), true); assert.equal(isForgeable('LOOT'), false); assert.equal(isForgeable('CONSUMABLE'), false);
+  for (const r of ['FORGE_CRAFT', 'FORGE_REFORGE']) assert.equal(goldReasons[r as keyof typeof goldReasons], 'sink');
+  for (const r of ['FORGE_MATERIAL_USE', 'FORGE_REFORGE_OUT', 'FORGE_SALVAGE']) assert.equal(itemReasons[r as keyof typeof itemReasons], 'sink');
+});
+test('configuração: desmontar não pode devolver tanto material quanto fabricar gasta', async () => {
+  const { settingsConflict } = await import('../../../shared/economy');
+  const npc = { 'economy.npcBuyPercent': 100, 'economy.npcSellPercent': 50 };
+  assert.equal(settingsConflict({ ...npc, 'forge.craftMaterials': 5, 'forge.salvageMaterials': 2 }), null);
+  assert.match(settingsConflict({ ...npc, 'forge.craftMaterials': 3, 'forge.salvageMaterials': 3 }) ?? '', /do nada/);
+});

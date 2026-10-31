@@ -12,7 +12,7 @@
     "check": "tsc --noEmit",
     "build": "vite build --config frontend/vite.config.ts",
     "test": "tsx --test backend/src/core/engine.test.ts backend/src/core/password.test.ts backend/src/game/adventure.test.ts backend/src/game/defeatAdvice.test.ts backend/src/economy/economy.test.ts backend/src/premium/premium.test.ts backend/src/core/monitor.test.ts",
-    "test:integration": "tsx --test backend/tests/integration.ts backend/tests/adventure-integration.ts backend/tests/operations-integration.ts",
+    "test:integration": "tsx --test backend/tests/integration.ts backend/tests/adventure-integration.ts backend/tests/operations-integration.ts backend/tests/forge-integration.ts",
     "backup": "node scripts/backup.mjs",
     "backup:verify": "node scripts/backup-verify.mjs",
     "economy:reconcile": "tsx backend/prisma/reconcile.ts",

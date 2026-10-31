@@ -5,6 +5,7 @@ import { addGold, addItem, isStackable } from '../economy/economy';
 import { loadSettings } from '../core/settings';
 import { npcBuyPrice } from '../../../shared/economy';
 import { vocationAllowed } from '../../../shared/adventure';
+import { isForgeable } from '../../../shared/forge';
 
 export async function equip(accountId: number, characterId: number, itemId: number) {
   integer(itemId);
@@ -33,6 +34,8 @@ export async function buyNpc(accountId: number, characterId: number, blueprintId
     const blueprint = await tx.itemBlueprint.findUnique({ where: { id: blueprintId } });
     if (!blueprint || blueprint.npcPrice <= 0) throw new GameError(404, 'Item indisponível.');
     const settings = await loadSettings(tx), cost = npcBuyPrice(blueprint.npcPrice, settings['economy.npcBuyPercent']) * BigInt(quantity);
+    if (isForgeable(blueprint.slot) && blueprint.minLevel > settings['shop.maxEquipmentLevel'])
+      throw new GameError(409, `O Mercador só vende equipamentos até o nível ${settings['shop.maxEquipmentLevel']}. Fabrique ${blueprint.name} no Ferreiro.`);
     if (c.goldInHand < cost) throw new GameError(409, 'Ouro insuficiente.');
     const ref = { type: 'blueprint', id: blueprintId };
     await addGold(tx, characterId, -cost, 'NPC_BUY', ref);

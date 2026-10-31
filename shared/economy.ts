@@ -4,6 +4,7 @@ export type FlowKind = 'source' | 'sink' | 'transfer';
 export const goldReasons = {
   MONSTER: 'source', TASK: 'source', JOURNEY: 'source', NPC_SELL: 'source', STARTER: 'source', ADMIN_GRANT: 'source',
   NPC_BUY: 'sink', UPGRADE: 'sink', PROMOTION: 'sink', MARKET_FEE: 'sink', MARKET_LISTING_FEE: 'sink', ADMIN_REMOVE: 'sink',
+  FORGE_CRAFT: 'sink', FORGE_REFORGE: 'sink',
   MARKET_SALE: 'transfer', MARKET_PURCHASE: 'transfer',
 } as const satisfies Record<string, FlowKind>;
 export type GoldReason = keyof typeof goldReasons;
@@ -11,6 +12,8 @@ export const itemReasons = {
   LOOT: 'source', JOURNEY: 'source', NPC_BUY: 'source', STARTER: 'source', ADMIN_GRANT: 'source',
   NPC_SELL: 'sink', POTION_USE: 'sink', ADMIN_REMOVE: 'sink', UPGRADE_BREAK: 'sink', PROTECTION_USE: 'sink', OPENING: 'source',
   MARKET_LIST: 'transfer', MARKET_RETURN: 'transfer', MARKET_BUY: 'transfer',
+  // Ferreiro: fabricar cria o item e gasta materiais; reforjar troca o item antigo pelo novo; desmontar destrói o item e devolve materiais.
+  FORGE_CRAFT: 'source', FORGE_MATERIAL_USE: 'sink', FORGE_REFORGE_OUT: 'sink', FORGE_REFORGE_IN: 'source', FORGE_SALVAGE: 'sink', FORGE_SALVAGE_MATERIAL: 'source',
 } as const satisfies Record<string, FlowKind>;
 export type ItemReason = keyof typeof itemReasons;
 
@@ -27,6 +30,11 @@ export const settingDefs = {
   'upgrade.safeUntilTier': { default: 3, min: 0, max: 10, label: 'Melhorias seguras até o nível (+N nunca falha)', unit: '+N', group: 'Ferreiro' },
   'upgrade.breakFromTier': { default: 6, min: 0, max: 10, label: 'Só pode quebrar ao tentar sair de +N ou mais (6 = a partir da tentativa de chegar ao +7)', unit: '+N', group: 'Ferreiro' },
   'upgrade.breakOnFailPercent': { default: 50, min: 0, max: 100, label: 'Chance de o item quebrar quando a melhoria falha', unit: '%', group: 'Ferreiro' },
+  'forge.craftPricePercent': { default: 80, min: 0, max: 500, label: 'Fabricar: ouro cobrado sobre o preço de loja do item', unit: '%', group: 'Ferreiro' },
+  'forge.reforgePricePercent': { default: 40, min: 0, max: 500, label: 'Reforjar: ouro cobrado sobre o preço de loja do item novo', unit: '%', group: 'Ferreiro' },
+  'forge.craftMaterials': { default: 5, min: 1, max: 100, label: 'Materiais da faixa para fabricar ou reforjar um item', unit: 'un.', group: 'Ferreiro' },
+  'forge.salvageMaterials': { default: 2, min: 0, max: 100, label: 'Materiais devolvidos ao desmontar (+1 a cada 3 melhorias)', unit: 'un.', group: 'Ferreiro' },
+  'shop.maxEquipmentLevel': { default: 100, min: 1, max: 1000, label: 'O Mercador vende equipamentos até este nível (acima, só Ferreiro e loot)', unit: 'nível', group: 'Preços' },
   'class.promotionGold': { default: 5000, min: 0, max: 100_000_000, label: 'Custo da promoção de classe', unit: 'ouro', group: 'Classes' },
   'characters.free': { default: 1, min: 1, max: 10, label: 'Personagens por conta gratuita', unit: '', group: 'Personagens' },
   'characters.premium': { default: 4, min: 1, max: 20, label: 'Personagens por conta Premium', unit: '', group: 'Personagens' },
@@ -60,9 +68,13 @@ export function npcSellPrice(npcPrice: number, percent: number): bigint { return
 
 // Regras entre configurações: cada valor pode estar no seu intervalo e a combinação ainda criar ouro do nada.
 // Comprar no NPC e revender ao NPC nunca pode dar lucro (venda <= compra), senão o jogador imprime dinheiro em loop.
-export function settingsConflict(values: Pick<Settings, 'economy.npcBuyPercent' | 'economy.npcSellPercent'>): string | null {
+export function settingsConflict(values: Pick<Settings, 'economy.npcBuyPercent' | 'economy.npcSellPercent'> & Partial<Pick<Settings, 'forge.craftMaterials' | 'forge.salvageMaterials'>>): string | null {
   if (values['economy.npcSellPercent'] > values['economy.npcBuyPercent'])
     return 'O NPC não pode pagar mais por um item do que cobra por ele (a venda ao NPC não pode superar o preço da loja), ou o jogador imprime ouro comprando e revendendo.';
+  // Mesma ideia com materiais: desmontar não pode devolver tanto quanto fabricar gasta, senão fabricar e desmontar cria material do nada.
+  const craft = values['forge.craftMaterials'], salvage = values['forge.salvageMaterials'];
+  if (craft !== undefined && salvage !== undefined && salvage >= craft)
+    return 'Desmontar não pode devolver tantos materiais quanto fabricar gasta, ou o jogador cria material do nada fabricando e desmontando.';
   return null;
 }
 
