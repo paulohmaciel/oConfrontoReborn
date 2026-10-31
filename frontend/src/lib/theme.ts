@@ -10,3 +10,16 @@ export function applyTheme(theme: Theme, persist = true) {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#ddc89c' : '#171c20');
   if (persist) { try { localStorage.setItem(THEME_KEY, theme); } catch { /* Tema funciona mesmo sem armazenamento. */ } }
 }
+
+// "Reduzir movimento": sem escolha salva, segue o sistema (prefers-reduced-motion); aplicado antes da renderização, como o tema.
+export type Motion = 'reduce' | 'full';
+export const MOTION_KEY = 'oconfronto-motion';
+export function savedMotion(): Motion {
+  try { const v = localStorage.getItem(MOTION_KEY); if (v === 'reduce' || v === 'full') return v; } catch { /* segue o sistema */ }
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduce' : 'full';
+}
+export function applyMotion(motion: Motion, persist = true) {
+  if (motion === 'reduce') document.documentElement.dataset.motion = 'reduce'; else delete document.documentElement.dataset.motion;
+  if (persist) { try { localStorage.setItem(MOTION_KEY, motion); } catch { /* funciona sem armazenamento */ } }
+}
+export const smooth = (): ScrollBehavior => document.documentElement.dataset.motion === 'reduce' ? 'auto' : 'smooth';
