@@ -16,6 +16,8 @@ import { statsResetCost, npcSellPrice, percentOf, resolveUpgrade, upgradeSuccess
 export async function requireIdle(tx: Prisma.TransactionClient, characterId: number) {
   if (await tx.battle.findFirst({ where: { characterId, isFinished: false }, select: { id: true } }))
     throw new GameError(409, 'Encerre o combate antes desta operação.');
+  if (await tx.groupBattleFighter.findUnique({ where: { activeCharacterId: characterId }, select: { id: true } }))
+    throw new GameError(409, 'Termine a caçada em grupo antes desta operação.');
 }
 
 // Distribui um ou vários pontos de uma vez no mesmo atributo.

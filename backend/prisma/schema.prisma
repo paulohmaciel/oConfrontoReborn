@@ -123,6 +123,9 @@ model Character {
   forumPosts             ForumPost[]
   forumComments          ForumComment[]
   forumVotes             ForumVote[]
+  partiesLed             HuntParty[]            @relation("PartyLeader")
+  partyMemberships       HuntPartyMember[]
+  groupFights            GroupBattleFighter[]
   profileTitle           String?                @db.VarChar(24)
   profileEmblem          String?                @db.VarChar(40)
   profileBio             String?                @db.VarChar(160)
@@ -673,4 +676,74 @@ model ForumVote {
 
   @@unique([characterId, postId])
   @@unique([characterId, commentId])
+}
+
+// Caçada em grupo (A Caçada das Quatro Marcas). Grupo de 2 a 4 amigos; batalha em rodadas com prazo.
+model HuntParty {
+  id        Int               @id @default(autoincrement())
+  leaderId  Int
+  leader    Character         @relation("PartyLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  huntKey   String            @db.VarChar(32)
+  status    String            @default("FORMING") @db.VarChar(12) // FORMING | FIGHTING | CLOSED
+  createdAt DateTime          @default(now())
+  members   HuntPartyMember[]
+  battles   GroupBattle[]
+
+  @@index([leaderId, status])
+}
+
+model HuntPartyMember {
+  id                Int       @id @default(autoincrement())
+  partyId           Int
+  party             HuntParty @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  characterId       Int
+  character         Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  status            String    @default("INVITED") @db.VarChar(12) // INVITED | JOINED
+  // Preenchido enquanto o personagem está num grupo aberto: garante um grupo por vez.
+  activeCharacterId Int?      @unique
+  createdAt         DateTime  @default(now())
+
+  @@unique([partyId, characterId])
+  @@index([characterId, status])
+}
+
+model GroupBattle {
+  id         Int                  @id @default(autoincrement())
+  partyId    Int
+  party      HuntParty            @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  huntKey    String               @db.VarChar(32)
+  round      Int                  @default(1)
+  bossHp     Int
+  bossMaxHp  Int
+  state      Json
+  deadlineAt DateTime
+  isFinished Boolean              @default(false)
+  outcome    String               @default("ONGOING") @db.VarChar(12)
+  log        Json?
+  createdAt  DateTime             @default(now())
+  fighters   GroupBattleFighter[]
+
+  @@index([huntKey, isFinished])
+}
+
+model GroupBattleFighter {
+  id                Int         @id @default(autoincrement())
+  battleId          Int
+  battle            GroupBattle @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  characterId       Int
+  character         Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  vocation          String      @db.VarChar(16)
+  hp                Int
+  maxHp             Int
+  mana              Int
+  maxMana           Int
+  action            String?     @db.VarChar(16)
+  // Preenchido enquanto a batalha está em andamento: um combate em grupo por vez.
+  activeCharacterId Int?        @unique
+  rewardGold        BigInt      @default(0)
+  rewardExperience  Int         @default(0)
+  rewarded          Boolean     @default(false)
+
+  @@unique([battleId, characterId])
+  @@index([characterId, rewarded])
 }

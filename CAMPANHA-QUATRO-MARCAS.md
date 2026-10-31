@@ -1,6 +1,6 @@
 # A Caçada das Quatro Marcas — campanha da caçada em grupo
 
-> Ideia do dono do jogo (2026-10-31), revisada para as vocações do jogo. Base da **caçada em grupo com amigos**; ainda não implementada.
+> Ideia do dono do jogo (2026-10-31), revisada para as vocações do jogo. Base da **caçada em grupo com amigos**. Fase 1 implementada (2026-10-31): grupos, convites, rodadas com prazo e a 1ª caçada (Serra Vermelha), na página "Caçada em grupo" (/cacada-em-grupo).
 > O **Paladino** é o atacante à distância (no jogo, a vocação PALADIN, hoje exibida como "Arqueiro").
 
 ## História
