@@ -33,14 +33,14 @@ export default function TurnLog({turns,log,turnVersion,heroName,heroIcon,monster
     <div className="turn-head"><span className="eyebrow">Turno {last.turn}</span></div>
     <div className="turn-cards">
       <article className={`turn-card hero-side ${last.crit?'crit':''}`}>
-        <header><Icon name={actionIcon[last.action]??heroIcon} size={32}/><div><small>Seu turno · {heroName}</small><b>{labels[last.action]??last.action}</b></div></header>
+        <header><Icon name={actionIcon[last.action]??heroIcon} size={32}/><div><small>Seu golpe · {heroName}</small><b>{labels[last.action]??last.action}</b></div></header>
         <p className="turn-number">{last.action==='HEAL'?<span className="heal">+{n(last.healed)}</span>:last.action==='FLEE'?<span>Fuga</span>:last.action==='DEFEND_SHIELD'&&!last.dealt?<span>Defesa</span>:<span className="hit">−{n(last.dealt)}</span>}</p>
-        <p className="turn-tag">{last.action==='HEAL'?'vida recuperada':last.action==='FLEE'?'você saiu do combate':`no monstro${last.crit?' · CRÍTICO!':''}`}</p>
-        <div className="mini-bar"><span style={{width:pct(last.monsterHp,last.monsterMaxHp)}}/></div><small>Monstro: {n(last.monsterHp)} / {n(last.monsterMaxHp)}</small>
+        <p className="turn-tag">{last.action==='HEAL'?'vida recuperada':last.action==='FLEE'?'você saiu do combate':`na criatura${last.crit?' · CRÍTICO!':''}`}</p>
+        <div className="mini-bar"><span style={{width:pct(last.monsterHp,last.monsterMaxHp)}}/></div><small>Criatura: {n(last.monsterHp)} / {n(last.monsterMaxHp)}</small>
       </article>
       <span className="turn-vs" aria-hidden="true">⚔</span>
       <article className={`turn-card foe-side ${last.foe==='HEAVY'?'heavy':''} ${foeDown(last)?'down':''}`}>
-        <header><Icon name={monsterName} src={monsterSprite} size={32}/><div><small>Turno do monstro · {monsterName}</small><b>{last.foe==='HEAVY'?'Golpe pesado':last.foe==='CHARGE'?'Concentração':last.foe==='INTERRUPTED'?'Interrompido':foeDown(last)?'Derrotado!':last.foe==='NONE'?'Ficou para trás':'Ataque'}</b></div></header>
+        <header><Icon name={monsterName} src={monsterSprite} size={32}/><div><small>Golpe da criatura · {monsterName}</small><b>{last.foe==='HEAVY'?'Golpe pesado':last.foe==='CHARGE'?'Concentração':last.foe==='INTERRUPTED'?'Interrompido':foeDown(last)?'Derrotado!':last.foe==='NONE'?'Ficou para trás':'Ataque'}</b></div></header>
         <p className="turn-number">{last.foe==='ATTACK'||last.foe==='HEAVY'?(last.dodged?<span>Esquiva!</span>:<span className="hit">−{n(last.received)}</span>):foeDown(last)?<span className="heal">Vitória</span>:last.action==='FLEE'?<span>Fuga</span>:<span>0</span>}</p>
         <p className="turn-tag">{last.foe==='ATTACK'||last.foe==='HEAVY'?(last.dodged?'você desviou do golpe':'em você'):foeDown(last)?'não resistiu ao seu golpe':last.action==='FLEE'?'você escapou do combate':theirs(last)}</p>
         <div className="mini-bar mine"><span style={{width:pct(last.hp,last.maxHp)}}/></div><small>Você: {n(last.hp)} / {n(last.maxHp)}</small>
@@ -49,7 +49,7 @@ export default function TurnLog({turns,log,turnVersion,heroName,heroIcon,monster
     <button type="button" className="link-button turn-toggle" aria-expanded={all} onClick={()=>setAll(!all)}>{all?'Esconder histórico':`Ver histórico completo (${turns.length} ${turns.length===1?'turno':'turnos'})`}</button>
     {all&&<div className="turn-history">
       <div className="stat-tiles"><div><b>{n(total.dealt)}</b><span>dano causado</span></div><div><b>{n(total.received)}</b><span>dano recebido</span></div><div><b>{n(total.healed)}</b><span>vida curada</span></div><div><b>{total.crits}</b><span>críticos</span></div><div><b>{total.dodges}</b><span>esquivas</span></div></div>
-      <table className="admin-table turn-table"><thead><tr><th>Turno</th><th>Você</th><th>Monstro</th><th>Sua vida</th></tr></thead><tbody>
+      <table className="admin-table turn-table"><thead><tr><th>Turno</th><th>Você</th><th>Criatura</th><th>Sua vida</th></tr></thead><tbody>
         <LimitedRows items={[...turns].reverse()} cols={4} render={t=><tr key={t.turn}><td>{t.turn}</td><td className={t.crit?'crit':''}>{mine(t,labels)}</td><td>{theirs(t)}</td><td>{n(t.hp)} / {n(t.maxHp)}</td></tr>}/>
       </tbody></table></div>}
   </div>;

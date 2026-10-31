@@ -24,7 +24,7 @@ test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
   async function winRat(){const b=await BattleService.start(a.id,c.id,rat.id);let status='ONGOING';for(let v=0;v<30&&status==='ONGOING';v++)status=(await BattleService.turn(a.id,c.id,b.id,v,'ATTACK')).status;assert.equal(status,'VICTORY');}
   try {
     const login=await request('/auth/login',{email:a.email,password});assert.equal(login.status,200);cookie=login.headers.get('set-cookie')!.split(';')[0];
-    await t.test('região bloqueada é validada pelo servidor',async()=>{await assert.rejects(()=>BattleService.start(a.id,c.id,boss.id),/Região bloqueada/);});
+    await t.test('região bloqueada é validada pelo servidor',async()=>{await assert.rejects(()=>BattleService.start(a.id,c.id,boss.id),/terras ainda estão fechadas/);});
     await t.test('vocação de personagem existente preserva os itens',async()=>{
       await chooseVocation(a.id,c.id,'PALADIN');assert(await prisma.inventoryItem.findUnique({where:{id:original.id}}));
       assert.equal((await prisma.character.findUniqueOrThrow({where:{id:c.id}})).vocation,'PALADIN');
@@ -56,7 +56,7 @@ test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
       const b=await BattleService.start(a.id,c.id,boss.id);
       await BattleService.turn(a.id,c.id,b.id,0,'ATTACK');
       const charge=await BattleService.turn(a.id,c.id,b.id,1,'ATTACK');assert.equal(charge.intent.kind,'HEAVY');
-      const interrupt=await BattleService.turn(a.id,c.id,b.id,2,'INTERRUPT');assert.equal(interrupt.received,0);assert.match(interrupt.log.join(' '),/interrompeu/);
+      const interrupt=await BattleService.turn(a.id,c.id,b.id,2,'INTERRUPT');assert.equal(interrupt.received,0);assert.match(interrupt.log.join(' '),/interrompe o golpe/);
       let version=3;for(let i=0;i<60;i++){const r=await BattleService.turn(a.id,c.id,b.id,version++,'ATTACK');if(r.status==='VICTORY')break;}
       assert.equal((await prisma.battle.findUniqueOrThrow({where:{id:b.id}})).outcome,'VICTORY');
     });
