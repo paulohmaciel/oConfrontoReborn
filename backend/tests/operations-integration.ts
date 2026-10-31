@@ -221,7 +221,10 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       const outcomes = await Promise.allSettled([buyListing(buyer.id, buyerChar.id, listingId), buyListing(premiumAcc.id, buyer2.id, listingId)]);
       assert.equal(outcomes.filter(o => o.status === 'fulfilled').length, 1);
       assert.equal((await prisma.marketListing.findUniqueOrThrow({ where: { id: listingId } })).status, 'SOLD');
-      assert.equal(await prisma.inventoryItem.count({ where: { id: item.id } }), 1);
+      // O mercado guarda o item em custódia e entrega uma linha nova ao comprador: conferir pelo livro de itens.
+      const deliveries = await prisma.itemLedger.findMany({ where: { reason: 'MARKET_BUY', refType: 'listing', refId: listingId } });
+      assert.equal(deliveries.length, 1);
+      assert.equal(deliveries[0].delta, 1);
     });
     await t.test('economia: o mesmo dono não compra de si mesmo, config perigosa é recusada e o ouro confere com o livro-razão', async () => {
       const alt = await prisma.character.create({ data: { accountId: buyer.id, name: `Alt ${tag}`, goldInHand: 5000n, hp: 100, maxHp: 100 } });
@@ -293,7 +296,7 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       const winners: number[] = [];
       for (let n = 0; n < 60 && winners.length < 3; n++) {
         const it = await prisma.inventoryItem.create({ data: { characterId: smith.id, blueprintId: blueprint.id, upgradeTier: 9 } });
-        const r = await upgrade(victim.id, smith.id, it.id, 9, randomUUID(), true);
+        const r = await upgrade(victim.id, smith.id, it.id, 9, randomUUID()); // sem Pedra de Proteção: quebras não atrapalham, cada tentativa usa um item novo
         if (r.outcome === 'SUCCESS') { winners.push(it.id); assert(r.rareSerial); }
       }
       assert.equal(winners.length, 3);
