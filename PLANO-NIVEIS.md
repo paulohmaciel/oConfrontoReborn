@@ -101,7 +101,7 @@ O que o simulador mostrou com os monstros atuais (personagem no nível do monstr
 Feito, só com sprites que já estavam no manifesto:
 - **Catálogo em um arquivo** (`backend/prisma/catalog.ts`): o seed, o simulador e o calibrador leem a mesma lista. Seed continua por upsert e agora se recusa a rodar se faltar sprite.
 - **41 monstros** (11 originais rebalanceados + 30 novos), do Rat (1) à Aranha Gigante (chefe, 100). Comum mais alto: Witch (90).
-- **4 regiões novas:** Acampamento Orc (15, chefe Orc Leader), Labirinto dos Minotauros (30), Terras Geladas (60) e Pântano Sombrio (80, chefe Giant Spider). Demon Skeleton, Fire Devil e Fire Elemental foram para os Portões do Abismo (44–56), então saem da lista da Fase 2.
+- **4 regiões novas:** Acampamento Orc (15, chefe Orc Leader), Labirinto dos Minotauros (30), Terras Geladas (60) e Vale da Perdição de Capriel (80, chefe Giant Spider — a região mais perigosa). Demon Skeleton, Fire Devil e Fire Elemental foram para os Portões do Abismo (44–56), então saem da lista da Fase 2.
 - **49 equipamentos novos** até o nível 100. As armas novas têm vocação: espadas para Cavaleiro, lanças/besta/estrela para Arqueiro, cajados para magos; robes e chapéus dão magia. Preço = 12 × nível² + 200.
 - **`npm run levels:calibrate`** acha vida, ataque e defesa de cada monstro pelo motor do jogo (meta: 5 turnos e ~12% da vida; chefes ~10 turnos e ~40%; começo mais leve). `-- --write` regrava o catálogo.
 - XP: curva-alvo com piso de 18 × nível no começo; chefes novos dão o dobro. Ouro: nível × (3 + nível/8) até o dobro.
