@@ -5,6 +5,7 @@ export const goldReasons = {
   MONSTER: 'source', TASK: 'source', JOURNEY: 'source', NPC_SELL: 'source', STARTER: 'source', ADMIN_GRANT: 'source',
   NPC_BUY: 'sink', UPGRADE: 'sink', PROMOTION: 'sink', MARKET_FEE: 'sink', MARKET_LISTING_FEE: 'sink', ADMIN_REMOVE: 'sink',
   FORGE_CRAFT: 'sink', FORGE_REFORGE: 'sink', STATS_RESET: 'sink',
+  GROUP_HUNT: 'source',
   MARKET_SALE: 'transfer', MARKET_PURCHASE: 'transfer',
 } as const satisfies Record<string, FlowKind>;
 export type GoldReason = keyof typeof goldReasons;
@@ -14,6 +15,7 @@ export const itemReasons = {
   MARKET_LIST: 'transfer', MARKET_RETURN: 'transfer', MARKET_BUY: 'transfer',
   // Ferreiro: fabricar cria o item e gasta materiais; reforjar troca o item antigo pelo novo; desmontar destrói o item e devolve materiais.
   FORGE_CRAFT: 'source', FORGE_MATERIAL_USE: 'sink', FORGE_REFORGE_OUT: 'sink', FORGE_REFORGE_IN: 'source', FORGE_SALVAGE: 'sink', FORGE_SALVAGE_MATERIAL: 'source',
+  GROUP_HUNT: 'source',
 } as const satisfies Record<string, FlowKind>;
 export type ItemReason = keyof typeof itemReasons;
 
@@ -37,6 +39,12 @@ export const settingDefs = {
   'shop.maxEquipmentLevel': { default: 100, min: 1, max: 1000, label: 'O Mercador vende equipamentos até este nível (acima, só Ferreiro e loot)', unit: 'nível', group: 'Preços' },
   'stats.resetBaseGold': { default: 500, min: 0, max: 100_000_000, label: 'Redistribuir atributos: custo fixo', unit: 'ouro', group: 'Classes' },
   'stats.resetGoldPerLevelSquared': { default: 5, min: 0, max: 100_000, label: 'Redistribuir atributos: ouro × nível² (nível 100 = 50.000 com o padrão)', unit: 'ouro', group: 'Classes' },
+  'group.energyCost': { default: 10, min: 0, max: 100, label: 'Caçada em grupo: energia gasta por participante', unit: 'energia', group: 'Caçada em grupo' },
+  'group.roundSeconds': { default: 60, min: 15, max: 600, label: 'Caçada em grupo: prazo de cada rodada (quem não escolher, defende)', unit: 's', group: 'Caçada em grupo' },
+  'group.rewardPercent': { default: 100, min: 10, max: 500, label: 'Caçada em grupo: XP e ouro da fera para cada participante', unit: '%', group: 'Caçada em grupo' },
+  'group.freedBonusPercent': { default: 25, min: 0, max: 200, label: 'Caçada em grupo: bônus se o grupo libertar a fera do laço', unit: '%', group: 'Caçada em grupo' },
+  'group.materials': { default: 3, min: 0, max: 100, label: 'Caçada em grupo: materiais do Ferreiro por participante', unit: 'un.', group: 'Caçada em grupo' },
+  'group.weeklyRewards': { default: 3, min: 1, max: 50, label: 'Caçada em grupo: vitórias com recompensa por caçada a cada 7 dias', unit: '', group: 'Caçada em grupo' },
   'class.promotionGold': { default: 5000, min: 0, max: 100_000_000, label: 'Custo da promoção de classe', unit: 'ouro', group: 'Classes' },
   'characters.free': { default: 1, min: 1, max: 10, label: 'Personagens por conta gratuita', unit: '', group: 'Personagens' },
   'characters.premium': { default: 4, min: 1, max: 20, label: 'Personagens por conta Premium', unit: '', group: 'Personagens' },

@@ -7,6 +7,7 @@ import {emptyPage,type Page} from './ui/Pager';
 import {tabs,adminTab,pathForTab,tabFromPath,paramFromPath,type Tab} from './lib/tabs';
 import ProfilePanel from './features/profile/ProfilePanel';
 import ForumPanel from './features/forum/ForumPanel';
+import GroupHuntPanel from './features/group/GroupHuntPanel';
 import HuntPanel from './features/adventure/HuntPanel';
 import {JourneyPanel,JournalPanel} from './features/adventure/AdventurePanels';
 import {type BaseVocation} from '../../shared/adventure';
@@ -116,6 +117,7 @@ export default function App(){
  {tab==='tasks'&&<TasksPanel hero={hero} tasks={tasks} config={config} busy={busy} fighting={fighting} command={command}/>}
  {tab==='stats'&&<StatsPanel hero={hero} config={config} busy={busy} fighting={fighting} command={command} perform={perform}/>}
  {tab==='atlas'&&<AtlasPanel/>}
+ {tab==='group'&&<GroupHuntPanel hero={hero} perform={perform} openProfile={openProfile}/>}
  {tab==='forum'&&<ForumPanel hero={hero} postId={routeParam} openPost={openPost} openProfile={openProfile} perform={perform}/>}
  {tab==='profile'&&<ProfilePanel hero={hero} name={routeParam||hero.name} openProfile={openProfile} perform={perform}/>}
  </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command}/></div></div>;
