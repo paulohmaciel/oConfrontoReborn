@@ -4,12 +4,19 @@ const API = 'https://api.mercadopago.com';
 export const mpConfigured = () => !!(process.env.MP_ACCESS_TOKEN && process.env.MP_WEBHOOK_SECRET);
 
 // Manifesto documentado pelo Mercado Pago: id:<data.id em minúsculas>;request-id:<x-request-id>;ts:<ts>;
-export function verifySignature(input: { xSignature: string | undefined; xRequestId: string | undefined; dataId: string | undefined; secret: string }): boolean {
+// `maxAgeSeconds` (opcional) recusa notificações cujo `ts` esteja longe demais de `now` (replay). O Mercado Pago manda o ts
+// em milissegundos na prática e em segundos em parte da documentação: valores acima de 10^12 são tratados como ms.
+export function verifySignature(input: { xSignature: string | undefined; xRequestId: string | undefined; dataId: string | undefined; secret: string; maxAgeSeconds?: number; now?: number }): boolean {
   if (!input.xSignature) return false;
   const fields: Record<string, string> = {};
   for (const part of input.xSignature.split(',')) { const i = part.indexOf('='); if (i > 0) fields[part.slice(0, i).trim()] = part.slice(i + 1).trim(); }
   const { ts, v1 } = fields;
   if (!ts || !v1 || !/^[a-f0-9]{64}$/i.test(v1)) return false;
+  if (input.maxAgeSeconds !== undefined) {
+    if (!/^[0-9]{1,16}$/.test(ts)) return false;
+    const tsMs = Number(ts) > 1e12 ? Number(ts) : Number(ts) * 1000;
+    if (Math.abs((input.now ?? Date.now()) - tsMs) > input.maxAgeSeconds * 1000) return false;
+  }
   const parts: string[] = [];
   if (input.dataId) parts.push(`id:${input.dataId.toLowerCase()}`);
   if (input.xRequestId) parts.push(`request-id:${input.xRequestId}`);

@@ -84,7 +84,8 @@ export default function App(){
  }catch(e){notifyError(e);if(heroId.current)await refresh(heroId.current,bagPage.current).catch(()=>{});}finally{lock.current=false;setBusy(false);}}
  const command=(action:string,body:unknown={})=>perform(()=>api(`/characters/${heroId.current}/${action}`,body,crypto.randomUUID()));
  async function authenticateDev(){await perform(async()=>{await api('/auth/dev-login',{});await enter();},'Bem-vindo, Mestre.');}
- async function authenticate(form:HTMLFormElement){const values={...Object.fromEntries(new FormData(form)),...(register?{vocation:signupVocation}:{})};await perform(async()=>{await api(`/auth/${register?'register':'login'}`,values);await enter();},'Bem-vindo ao Confronto.');}
+ // Cadastro com e-mail já usado responde como sucesso "pendente" (sem revelar que a conta existe): mostra o aviso e não entra.
+ async function authenticate(form:HTMLFormElement){const values={...Object.fromEntries(new FormData(form)),...(register?{vocation:signupVocation}:{})};await perform(async()=>{const r=await api<{ok:boolean;pending?:boolean;message?:string}>(`/auth/${register?'register':'login'}`,values);if(r.pending){setLanding(r.message??'Confira seu e-mail para continuar.');return '';}await enter();},'Bem-vindo ao Confronto.');}
  async function turn(action:string){if(!battle)return;await perform(async()=>{const result=await api<Battle>(`/characters/${heroId.current}/battles/${battle.battleId}/turns`,{action,expectedTurn:battle.turnVersion});setBattle(result);},'');}
  const start=(m:Monster)=>perform(async()=>{const b=await api<{id:number}>(`/characters/${heroId.current}/battles`,{monsterId:m.id});setBattle(await api<Battle>(`/characters/${heroId.current}/battles/${b.id}`));},'');
  if(checking)return <div className="loading-screen">Abrindo os portões…</div>;

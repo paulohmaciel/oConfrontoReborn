@@ -116,9 +116,16 @@ ${item.body}` : item.body });
 adminRoutes.post('/admin/punishments/:id/revoke', need('punish.apply'), asyncRoute(async (req, res) => {
   const id = integer(Number(req.params.id)), reason = reasonOf(req.body);
   await transaction(async tx => {
-    const p = await tx.punishment.findUnique({ where: { id } });
+    const p = await tx.punishment.findUnique({ where: { id }, include: { account: { select: { role: true } } } });
     if (!p) throw new GameError(404, 'Punição não encontrada.');
     if (p.revokedAt) return;
+    // Mesmas regras da aplicação: só quem tem cargo acima do alvo revoga; banimento sem prazo ou punição aplicada
+    // por um cargo superior ao seu só ADMIN revoga.
+    const isAdmin = can(res.locals.role, 'settings.write');
+    if (rank[p.account.role] >= rank[res.locals.role]) throw new GameError(403, 'Você não pode revogar a punição de uma conta com cargo igual ou superior ao seu.');
+    if (p.kind === 'BAN' && p.expiresAt === null && !isAdmin) throw new GameError(403, 'Apenas administradores revogam banimento permanente.');
+    const creator = await tx.account.findUnique({ where: { id: p.createdById }, select: { role: true } });
+    if (creator && rank[creator.role] > rank[res.locals.role] && !isAdmin) throw new GameError(403, 'Esta punição foi aplicada por um cargo superior ao seu; peça a um administrador.');
     await tx.punishment.update({ where: { id }, data: { revokedAt: new Date(), revokedById: actor(res), revokeReason: reason } });
     await audit(tx, actor(res), 'PUNISH_REVOKE', 'ACCOUNT', p.accountId, reason, { punishmentId: id });
   });

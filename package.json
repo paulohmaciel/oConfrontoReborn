@@ -23,6 +23,7 @@
     "mp:sim": "node scripts/mp-webhook-sim.mjs",
     "icons": "node scripts/import-icons.mjs",
     "start": "tsx backend/src/server.ts",
+    "start:prod": "node scripts/start-prod.mjs",
     "test:icons": "node --test scripts/import-icons.test.mjs",
     "levels:simulate": "tsx scripts/simulate-levels.ts",
     "group:simulate": "tsx scripts/simulate-group.ts",
