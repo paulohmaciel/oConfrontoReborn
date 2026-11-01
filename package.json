@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "tsx backend/src/server.ts",
     "web": "vite --config frontend/vite.config.ts",
-    "generate": "prisma generate --schema backend/prisma/schema.prisma",
+    "generate": "node scripts/prisma-generate.mjs",
     "db:deploy": "prisma migrate deploy --schema backend/prisma/schema.prisma",
     "seed": "tsx backend/prisma/seed.ts",
     "master:create": "tsx backend/prisma/create-master.ts",

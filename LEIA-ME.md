@@ -90,6 +90,8 @@ npm run build
 npm start
 ```
 
+Se aparecer `EPERM: operation not permitted, unlink ...query_engine-windows.dll.node`, é o jogo aberto segurando o motor do Prisma. `npm run generate` já contorna isso (afasta o arquivo em uso e gera o novo); o jogo aberto continua com a versão antiga até ser reiniciado pelo `iniciar.bat`.
+
 O seed é repetível para os registros do catálogo, tabelas de loot e tarefas. Ele não cria contas nem modifica personagens existentes. Durante atualizações, revise mudanças de balanceamento do catálogo antes de executá-lo.
 
 Para desenvolver com atualização instantânea, configure `APP_ORIGIN=http://localhost:5173` no `.env`, inicie `npm run dev` em um terminal e `npm run web` em outro. Abra `http://localhost:5173`. Para voltar à interface construída, restaure APP_ORIGIN para `http://localhost:3333` e execute `npm run build` e `npm start`.
