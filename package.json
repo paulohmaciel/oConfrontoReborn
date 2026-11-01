@@ -29,7 +29,8 @@
     "levels:simulate": "tsx scripts/simulate-levels.ts",
     "group:simulate": "tsx scripts/simulate-group.ts",
     "levels:calibrate": "tsx scripts/calibrate-monsters.ts",
-    "dev:market-demo": "tsx scripts/dev-market-demo.ts"
+    "dev:market-demo": "tsx scripts/dev-market-demo.ts",
+    "duel:stakes": "tsx scripts/simulate-duel-stakes.ts"
   },
   "dependencies": {
     "@prisma/client": "5.19.0",
