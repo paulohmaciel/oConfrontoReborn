@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {api,ApiError} from './lib/api';
+import {trackPageView,trackSelect} from './lib/analytics';
 import {fmt} from './lib/format';
 import ThemeToggle from './ui/ThemeToggle';
 import Icon from './ui/GameIcon';
@@ -51,6 +52,8 @@ export default function App(){
   // Endereço desconhecido (ex.: /xyz) é corrigido sem criar entrada no histórico.
   if(tabFromPath(location.pathname)===null)history.replaceState(null,'',path);else history.pushState(null,'',path);},[tab,routeParam]);
  useEffect(()=>{const back=()=>{setTab(tabFromPath(location.pathname)??'journey');setRouteParam(paramFromPath(location.pathname));};window.addEventListener('popstate',back);return()=>window.removeEventListener('popstate',back);},[]);
+ useEffect(()=>{if(signed)trackPageView(location.pathname);},[signed,tab,routeParam]);
+ useEffect(()=>{if(!signed)return;const onChange=(event:Event)=>{if(event.target instanceof HTMLSelectElement)trackSelect(event.target);};document.addEventListener('change',onChange);return()=>document.removeEventListener('change',onChange);},[signed]);
  useEffect(()=>{const label=[...tabs,adminTab].find(t=>t[0]===tab)?.[1];document.title=label&&tab!=='journey'?`${label} · O Confronto`:'O Confronto · Crônicas de um aventureiro';},[tab]);
  const bagPage=useRef(1); const lock=useRef(false);const heroId=useRef<number|null>(null);
  const notifyError=(e:unknown)=>{setError(e instanceof Error?e.message:'Ocorreu um erro.');if(e instanceof ApiError&&e.status===401){setSigned(false);setHero(null);heroId.current=null;}};

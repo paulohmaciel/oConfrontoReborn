@@ -200,6 +200,20 @@ adminRoutes.post('/admin/notices/:id/end', need('notices.manage'), asyncRoute(as
 
 // ----- Economia -----
 adminRoutes.get('/admin/economy/reconcile', need('economy.read'), asyncRoute(async (_req, res) => { res.json({ drift: await goldDrift(prisma, 100), itemDrift: await itemDrift(prisma, 100) }); }));
+// Produto: painel de validação e leitura da telemetria. Os eventos são gravados pela rota autenticada /analytics/events.
+adminRoutes.get('/admin/analytics', need('analytics.read'), asyncRoute(async (req, res) => {
+  const days = [1, 7, 30].includes(Number(req.query.days)) ? Number(req.query.days) : 7;
+  const since = new Date(Date.now() - days * 86_400_000), { page, skip, take } = pageOf(req.query);
+  const where = { createdAt: { gte: since } };
+  const [total, events, byName, byPage, testEvents] = await Promise.all([
+    prisma.analyticsEvent.count({ where }),
+    prisma.analyticsEvent.findMany({ where, orderBy: { id: 'desc' }, skip, take, select: { id: true, name: true, page: true, contentType: true, contentId: true, isTest: true, createdAt: true, accountId: true } }),
+    prisma.analyticsEvent.groupBy({ by: ['name'], where, _count: { _all: true }, orderBy: { _count: { name: 'desc' } }, take: 10 }),
+    prisma.analyticsEvent.groupBy({ by: ['page'], where: { ...where, page: { not: null } }, _count: { _all: true }, orderBy: { _count: { page: 'desc' } }, take: 10 }),
+    prisma.analyticsEvent.count({ where: { ...where, isTest: true } }),
+  ]);
+  res.json({ days, total, testEvents, byName: byName.map(r => ({ name: r.name, count: r._count._all })), byPage: byPage.map(r => ({ page: r.page, count: r._count._all })), events: paged(events, total, page) });
+}));
 adminRoutes.get('/admin/settings', need('settings.read'), asyncRoute(async (_req, res) => {
   const values = await loadSettings(prisma);
   res.json(settingKeys.map(key => ({ key, value: values[key], ...settingDefs[key] })));

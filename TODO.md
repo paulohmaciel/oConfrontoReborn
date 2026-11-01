@@ -61,7 +61,7 @@
 - [x] Aviso de mudança do Ferreiro aos jogadores (entrada em Novidades)
 - [ ] Mensagem/limite contra cliques repetidos conferidos em todas as telas novas
 - [ ] SMTP real para e-mails (hoje só log)
-- [ ] Métricas de onboarding/retenção (tempo até 1ª conquista, motivo de derrota, abandono após quebra)
+- [x] Métricas de onboarding/retenção: page_view e select_content registrados, com tela de validação e disparo em lote (2026-11-01)
 
 ### Durante o beta
 - [x] **[Astra 1]** Histórico pessoal de tentativas do Ferreiro (aba Meu histórico: sucessos, falhas, quebras, Pedra, ouro gasto, em páginas) (2026-10-31)
