@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { effectiveDuelAction, resolveDuelRound, type DuelFighter } from './duelEngine';
-import { canChallenge, DUEL_MAX_ROUNDS } from '../../../shared/pvp';
+import { arenaFee, canChallenge, DUEL_MAX_ROUNDS, honorDelta, lootEligible, wagerCap } from '../../../shared/pvp';
 
 // Dado previsível: valor médio do intervalo; para chances (1..100) devolve 100, ou seja, sem crítico e sem esquiva.
 const mid = (min: number, max: number) => max === 100 && min === 1 ? 100 : Math.floor((min + max) / 2);
@@ -95,4 +95,30 @@ test('faixa de nível e nível mínimo', () => {
   assert.match(canChallenge({ level: 19, vocationChosen: true }, { level: 20, vocationChosen: true }, rules) ?? '', /nível 20/);
   assert.match(canChallenge({ level: 30, vocationChosen: true }, { level: 30, vocationChosen: false }, rules) ?? '', /oponente/);
   assert.equal(canChallenge({ level: 20, vocationChosen: true }, { level: 21, vocationChosen: true }, rules), null, 'folga mínima de 1 nível');
+});
+
+test('honra tipo Elo: vencer quem tem mais honra vale mais; nunca menos de 1', () => {
+  assert.equal(honorDelta(1000, 1000, 32), 16);
+  assert.ok(honorDelta(1000, 1400, 32) > honorDelta(1400, 1000, 32));
+  assert.equal(honorDelta(3000, 100, 32), 1);
+});
+
+test('aposta: teto pelo mais pobre; taxa da arena com mínimo de 1', () => {
+  assert.equal(wagerCap(10_000n, 2_000n, 10), 200n);
+  assert.equal(wagerCap(0n, 5_000n, 10), 0n);
+  assert.equal(arenaFee(400n, 5), 20n);
+  assert.equal(arenaFee(10n, 5), 1n);
+  assert.equal(arenaFee(400n, 0), 0n);
+});
+
+test('espólio: nunca equipado, favorito, raro, melhorado demais ou empilhável', () => {
+  const base = { isEquipped: false, favorite: false, rareItemId: null, upgradeTier: 0, quantity: 1, slot: 'WEAPON' };
+  assert.equal(lootEligible(base, 7), true);
+  assert.equal(lootEligible({ ...base, isEquipped: true }, 7), false);
+  assert.equal(lootEligible({ ...base, favorite: true }, 7), false);
+  assert.equal(lootEligible({ ...base, rareItemId: 3 }, 7), false);
+  assert.equal(lootEligible({ ...base, upgradeTier: 7 }, 7), false);
+  assert.equal(lootEligible({ ...base, upgradeTier: 6 }, 7), true);
+  assert.equal(lootEligible({ ...base, slot: 'CONSUMABLE', quantity: 5 }, 7), false);
+  assert.equal(lootEligible({ ...base, slot: 'LOOT' }, 7), false);
 });
