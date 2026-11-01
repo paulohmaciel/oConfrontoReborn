@@ -7,6 +7,8 @@ export const goldReasons = {
   FORGE_CRAFT: 'sink', FORGE_REFORGE: 'sink', STATS_RESET: 'sink',
   GROUP_HUNT: 'source',
   MARKET_SALE: 'transfer', MARKET_PURCHASE: 'transfer',
+  // Duelo: aposta sai dos dois, prêmio entra no vencedor (soma zero); a taxa da arena é ralo. Resgate de espólio: perdedor paga o vencedor.
+  DUEL_WAGER: 'transfer', DUEL_PRIZE: 'transfer', DUEL_REFUND: 'transfer', DUEL_FEE: 'sink', DUEL_RANSOM: 'transfer',
 } as const satisfies Record<string, FlowKind>;
 export type GoldReason = keyof typeof goldReasons;
 export const itemReasons = {
@@ -16,6 +18,8 @@ export const itemReasons = {
   // Ferreiro: fabricar cria o item e gasta materiais; reforjar troca o item antigo pelo novo; desmontar destrói o item e devolve materiais.
   FORGE_CRAFT: 'source', FORGE_MATERIAL_USE: 'sink', FORGE_REFORGE_OUT: 'sink', FORGE_REFORGE_IN: 'source', FORGE_SALVAGE: 'sink', FORGE_SALVAGE_MATERIAL: 'source',
   GROUP_HUNT: 'source',
+  // Espólio de duelo e resgate: o item muda de dono (soma zero).
+  DUEL_LOOT_OUT: 'transfer', DUEL_LOOT_IN: 'transfer', DUEL_RANSOM_OUT: 'transfer', DUEL_RANSOM_IN: 'transfer',
 } as const satisfies Record<string, FlowKind>;
 export type ItemReason = keyof typeof itemReasons;
 
@@ -50,6 +54,16 @@ export const settingDefs = {
   'pvp.dailyLimit': { default: 10, min: 1, max: 100, label: 'Duelo: duelos por personagem a cada 24 horas', unit: '', group: 'Duelo' },
   'pvp.roundHours': { default: 24, min: 1, max: 72, label: 'Duelo: prazo de cada rodada (quem não escolher, defende; duas seguidas = derrota)', unit: 'h', group: 'Duelo' },
   'pvp.inviteHours': { default: 24, min: 1, max: 168, label: 'Duelo: validade do desafio', unit: 'h', group: 'Duelo' },
+  'pvp.wagerMaxPercent': { default: 10, min: 0, max: 50, label: 'Duelo: aposta máxima (% do ouro em mãos do mais pobre dos dois; 0 = sem apostas)', unit: '%', group: 'Duelo' },
+  'pvp.wagerFeePercent': { default: 5, min: 0, max: 50, label: 'Duelo: taxa da arena sobre o pote da aposta (sai do jogo)', unit: '%', group: 'Duelo' },
+  'pvp.lootChancePercent': { default: 25, min: 0, max: 100, label: 'Duelo: chance de o vencedor levar um item no duelo de espólio (0 = desligado)', unit: '%', group: 'Duelo' },
+  'pvp.lootProtectTier': { default: 7, min: 1, max: 11, label: 'Duelo: itens com esta melhoria ou mais nunca caem no espólio', unit: '+N', group: 'Duelo' },
+  'pvp.ransomHours': { default: 48, min: 1, max: 336, label: 'Duelo: prazo para resgatar um item perdido no espólio', unit: 'h', group: 'Duelo' },
+  'pvp.ransomPercent': { default: 100, min: 0, max: 500, label: 'Duelo: preço do resgate (% do preço de loja do item, pago ao vencedor)', unit: '%', group: 'Duelo' },
+  'pvp.pairDailyLimit': { default: 3, min: 0, max: 50, label: 'Duelo: duelos com ouro ou espólio entre o mesmo par a cada 24 horas', unit: '', group: 'Duelo' },
+  'pvp.honorK': { default: 32, min: 1, max: 200, label: 'Duelo: pontos de honra em jogo por duelo (fator K)', unit: '', group: 'Duelo' },
+  'pvp.honorMarksWin': { default: 10, min: 0, max: 1000, label: 'Duelo: marcas de honra por vitória (só cosméticos)', unit: '', group: 'Duelo' },
+  'pvp.honorMarksLoss': { default: 4, min: 0, max: 1000, label: 'Duelo: marcas de honra por derrota ou empate', unit: '', group: 'Duelo' },
   'pvp.damagePercent': { default: 100, min: 10, max: 300, label: 'Duelo: dano entre aventureiros (100 = mesmo do combate)', unit: '%', group: 'Duelo' },
   'class.promotionGold': { default: 5000, min: 0, max: 100_000_000, label: 'Custo da promoção de classe', unit: 'ouro', group: 'Classes' },
   'characters.free': { default: 1, min: 1, max: 10, label: 'Personagens por conta gratuita', unit: '', group: 'Personagens' },
