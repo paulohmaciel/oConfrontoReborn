@@ -6,6 +6,7 @@ import Icon from '../../ui/GameIcon';
 import {Feedback} from '../../ui/Feedback';
 import {LimitedRows} from '../../ui/ShowMore';
 import {Pager,usePaged} from '../../ui/Pager';
+import FriendsBox from './FriendsBox';
 import {classLabel,classNames,baseVocation} from '../../../../shared/adventure';
 import {duelActionLabels,modeHelp,modeLabels,outcomeLabels,type DuelAction,type DuelMode,type DuelMove,type DuelOutcome,type DuelRoundRecord} from '../../../../shared/pvp';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
@@ -66,6 +67,10 @@ export default function DuelPanel({hero,openProfile}:{hero:Hero;openProfile:(nam
   useEffect(()=>{if(d&&fighting&&left<=0&&advanced.current!==d.round){advanced.current=d.round;void api(`/characters/${hero.id}/duel/${d.id}/advance`,{round:d.round}).catch(()=>{}).then(()=>load());}},[left<=0,d?.round,d?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if(!s)return <section className="panel">{error?<p className="error" role="alert">{error}</p>:'Abrindo a arena…'}</section>;
+  // Por que o botão Desafiar está desligado (além do motivo de cada amigo, que aparece na linha dele).
+  const blockedWhy=s.today>=s.rules.dailyLimit?`Você já duelou ${s.rules.dailyLimit} vezes nas últimas 24 horas.`
+    :mode==='GOLD'&&!wager?'Digite quanto quer apostar para liberar o Desafiar.'
+    :mode==='LOOT'&&!lootOk?'Marque que entende o risco do espólio para liberar o Desafiar.':'';
   return <div className="duel-page">
     <section className="panel intro-banner duel-intro"><div><span className="eyebrow">DUELO</span><h2>Arena de Capriel</h2>
       <p>Desafie um amigo para um duelo de honra. Os dois escolhem em segredo o golpe de cada rodada; quem tem mais agilidade age primeiro.</p>
@@ -106,14 +111,19 @@ export default function DuelPanel({hero,openProfile}:{hero:Hero;openProfile:(nam
       <div className="duel-modes" role="radiogroup" aria-label="O que está em jogo">{s.rules.modes.map(m=><button key={m} type="button" role="radio" aria-checked={mode===m} className={mode===m?'active-chip':''} onClick={()=>{setMode(m);setLootOk(false);}}>
         <Icon name={m==='HONOR'?'Warlord Sword':m==='GOLD'?'Gold Coin':'Backpack'} size={22}/><span>{modeLabels[m]}</span></button>)}</div>
       <p className={mode==='HONOR'?'duel-stake':'duel-stake risky'}>{modeHelp[mode]}{mode!=='HONOR'?` Até ${s.rules.pairDailyLimit} duelos assim com o mesmo amigo por dia.`:''}</p>
-      {mode==='GOLD'&&<label className="price-label">Aposta proposta (ouro)<input inputMode="numeric" value={wager} maxLength={16} onChange={e=>setWager(e.target.value.replace(/\D/g,''))} placeholder={`você tem ${gold(s.gold)}`}/>
-        <span className="muted">No aceite vale no máximo {s.rules.wagerMaxPercent}% do ouro do mais pobre; a taxa da arena é {s.rules.wagerFeePercent}% do pote.</span></label>}
+      {mode==='GOLD'&&<div className="duel-wager">
+        <label className="price-label">Aposta proposta (ouro)<input inputMode="numeric" value={wager} maxLength={16} onChange={e=>setWager(e.target.value.replace(/\D/g,''))} placeholder="Quanto quer apostar?"/></label>
+        <div className="duel-wager-quick" aria-label="Valores rápidos">{[1,5,10].map(pc=>{const v=BigInt(s.gold)*BigInt(pc)/100n;return v>0n&&<button key={pc} type="button" onClick={()=>setWager(v.toString())}>{pc}% · {gold(v)}</button>;})}</div>
+        <p className="muted">Você tem {gold(s.gold)} de ouro. No aceite, a aposta de cada um vira no máximo {s.rules.wagerMaxPercent}% do ouro do mais pobre dos dois (pode ficar menor que o proposto); a taxa da arena é {s.rules.wagerFeePercent}% do pote.</p>
+        {wager&&BigInt(wager)>BigInt(s.gold)&&<p className="error" role="alert">Você não tem esse ouro: tem {gold(s.gold)}.</p>}</div>}
       {mode==='LOOT'&&<label className="duel-confirm"><input type="checkbox" checked={lootOk} onChange={e=>setLootOk(e.target.checked)}/> Entendo que, se eu perder, posso perder um item da minha mochila ({s.rules.lootChancePercent}% de chance).</label>}
       <input className="mission-search" aria-label="Buscar amigo" placeholder="Buscar amigo pelo nome…" value={q} maxLength={24} onChange={e=>setQ(e.target.value)}/>
       {s.friends.map(f=><div className="market-row" key={f.id}><Avatar c={f}/><div><h3><button className="link-button" onClick={()=>openProfile(f.name)}>{f.name}</button></h3>
         <p>{classLabel(f.vocation,f.classTier)} · Nv. {f.level}</p>{f.blocked&&<p className="muted">{f.blocked}</p>}</div>
-        <button className="primary" disabled={busy||!!f.blocked||s.today>=s.rules.dailyLimit||(mode==='GOLD'&&!wager)||(mode==='LOOT'&&!lootOk)} onClick={()=>void act('challenge',{name:f.name,mode,...(mode==='GOLD'?{wager}:{})})}>Desafiar</button></div>)}
-      {!s.friends.length&&<p className="muted">{q.trim()?'Nenhum amigo com esse nome.':'Você ainda não tem amigos para desafiar. Faça amizades pelo perfil e pelo fórum.'}</p>}</section>}
+        <button className="primary" disabled={busy||!!f.blocked||s.today>=s.rules.dailyLimit||(mode==='GOLD'&&(!wager||BigInt(wager)>BigInt(s.gold)))||(mode==='LOOT'&&!lootOk)} onClick={()=>void act('challenge',{name:f.name,mode,...(mode==='GOLD'?{wager}:{})})}>Desafiar</button></div>)}
+      {s.friends.length>0&&blockedWhy&&<p className="muted duel-why">{blockedWhy}</p>}
+      {!s.friends.length&&<p className="muted">{q.trim()?'Nenhum amigo com esse nome.':'Você ainda não tem amigos para desafiar. Adicione amigos na seção Amigos, logo abaixo.'}</p>}</section>}
+    <FriendsBox hero={hero} changed={()=>void load()} openProfile={openProfile}/>
 
     <section className="panel"><div className="section-title"><h2>Seus duelos</h2><span>{history.total}</span></div>
       {history.error&&<p className="error" role="alert">{history.error}</p>}

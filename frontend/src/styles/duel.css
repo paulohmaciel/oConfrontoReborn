@@ -60,3 +60,16 @@
 :root[data-theme="light"] .duel-stake{background:#eef0d2;border-color:#a9a66a}
 :root[data-theme="light"] .duel-stake.risky{background:#f6dcc4;border-color:#cf8a62}
 @media(max-width:760px){.duel-record{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* Aposta de ouro: valores rápidos e aviso. Amigos: busca e pedidos dentro do Duelo. */
+.duel-wager{margin:6px 0 10px}
+.duel-wager .price-label{margin-bottom:8px}
+.duel-wager-quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.duel-wager-quick button{font-size:13px;min-height:34px;padding:6px 12px}
+.duel-wager .error{margin-top:6px}
+.duel-why{margin-top:8px}
+.friends-search{display:block;font-size:13px;margin:12px 0 4px}
+.friends-search input{display:block;margin-top:6px;max-width:420px}
+.friends-box .profile-subtitle{margin-top:14px}
+.friends-box .market-row h3,.friends-box .market-row h3 .link-button{font-size:14px}
+.friends-box .market-row p{font-size:12px}
+.friends-box .market-row button{font-size:13px;min-height:36px}
