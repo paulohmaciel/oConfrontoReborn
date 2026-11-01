@@ -12,7 +12,7 @@
 .admin-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;align-items:center}.admin-table{width:100%;border-collapse:collapse;font-size:13px}.admin-table th,.admin-table td{text-align:left;padding:7px 6px;border-bottom:1px solid color-mix(in srgb,currentColor 14%,transparent);vertical-align:top;overflow-wrap:anywhere}
 .admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.setting-row{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px;align-items:center;padding:6px 0}.setting-row small{opacity:.7}
 .pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;border:1px solid color-mix(in srgb,currentColor 35%,transparent)}
-.frame-gold .crest{box-shadow:0 0 0 3px #d9a93c,0 0 14px #d9a93c88}.frame-emerald .crest{box-shadow:0 0 0 3px #2fae6a,0 0 14px #2fae6a88}.frame-ruby .crest{box-shadow:0 0 0 3px #c43a4b,0 0 14px #c43a4b88}.frame-azure .crest{box-shadow:0 0 0 3px #3d7ad9,0 0 14px #3d7ad988}
+.frame-honor .crest{box-shadow:0 0 0 3px #8c6d3a,0 0 0 5px #c9b06a,0 0 16px #c9b06a88}.frame-gold .crest{box-shadow:0 0 0 3px #d9a93c,0 0 14px #d9a93c88}.frame-emerald .crest{box-shadow:0 0 0 3px #2fae6a,0 0 14px #2fae6a88}.frame-ruby .crest{box-shadow:0 0 0 3px #c43a4b,0 0 14px #c43a4b88}.frame-azure .crest{box-shadow:0 0 0 3px #3d7ad9,0 0 14px #3d7ad988}
 .char-switch{width:100%;margin-top:10px;padding:8px;border-radius:8px;border:1px solid color-mix(in srgb,currentColor 30%,transparent);background:color-mix(in srgb,currentColor 6%,transparent);color:inherit;font:inherit}
 .hero-title{display:block;font-size:12px;opacity:.8}
 @media(max-width:760px){.ledger-row{grid-template-columns:1fr auto}.ledger-row span:first-child{grid-column:1/-1;opacity:.7;font-size:12px}}
@@ -161,7 +161,8 @@
 :root[data-theme="light"] .game-notice.maintenance{background:#ecc98a;border-color:#8a3d0c}
 :root[data-theme="light"] .game-notice.news{background:#efe0bd;border-color:#9a7a3a}
 :root[data-theme="light"] .changelog-entry{border-color:#b9892f;background:#f4e2bd}
-/* "Menos movimento" (botão ao lado do tema; sem escolha salva, segue o sistema) */
+.settings-panel .settings-option{grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:12px 0;border-top:1px solid #ffffff14}.settings-panel .settings-option small{display:block;margin-top:4px;line-height:1.4}@media(max-width:640px){.settings-panel .settings-option{grid-template-columns:1fr}}
+/* "Menos movimento" (opção Animações em Configurações; sem escolha salva, segue o sistema) */
 :root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 :root[data-motion="reduce"] .fire-icon::after{background-image:url(/assets/fx/fire-frame-static.png)!important}
 /* Brilho por faixa de melhoria (ui/GameIcon): +7/+8 discreto, +9 forte; +10 usa o fogo de fire.css. Sem movimento: brilho parado. */

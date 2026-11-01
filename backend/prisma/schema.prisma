@@ -129,6 +129,12 @@ model Character {
   duelsChallenged        Duel[]                 @relation("DuelChallenger")
   duelsReceived          Duel[]                 @relation("DuelOpponent")
   duelFights             DuelFighter[]
+  // Honra do duelo: pontos tipo Elo (ranking) e marcas que só compram aparência.
+  honorPoints            Int                    @default(1000)
+  honorMarks             Int                    @default(0)
+  cosmetics              CharacterCosmetic[]
+  duelLootsLost          DuelLoot[]             @relation("DuelLootLoser")
+  duelLootsWon           DuelLoot[]             @relation("DuelLootWinner")
   profileTitle           String?                @db.VarChar(24)
   profileEmblem          String?                @db.VarChar(40)
   profileBio             String?                @db.VarChar(160)
@@ -766,10 +772,17 @@ model Duel {
   log             Json?
   outcome         String        @default("PENDING") @db.VarChar(12)
   winnerId        Int?
+  // O que está em jogo (HONOR | GOLD | LOOT). wager = aposta proposta; stake = aposta travada de cada um no aceite; fee = taxa da arena.
+  mode            String        @default("HONOR") @db.VarChar(8)
+  wager           BigInt        @default(0)
+  stake           BigInt        @default(0)
+  fee             BigInt        @default(0)
+  honorDelta      Int           @default(0)
   createdAt       DateTime      @default(now())
   startedAt       DateTime?
   finishedAt      DateTime?
   fighters        DuelFighter[]
+  loots           DuelLoot[]
 
   @@index([challengerId, status])
   @@index([opponentId, status])
@@ -796,6 +809,39 @@ model DuelFighter {
 
   @@unique([duelId, characterId])
   @@index([characterId])
+}
+
+// Item que mudou de dono num duelo de espólio. O perdedor pode resgatá-lo até expiresAt (OPEN → RANSOMED | EXPIRED | GONE).
+model DuelLoot {
+  id              Int           @id @default(autoincrement())
+  duelId          Int
+  duel            Duel          @relation(fields: [duelId], references: [id], onDelete: Cascade)
+  loserId         Int
+  loser           Character     @relation("DuelLootLoser", fields: [loserId], references: [id], onDelete: Cascade)
+  winnerId        Int
+  winner          Character     @relation("DuelLootWinner", fields: [winnerId], references: [id], onDelete: Cascade)
+  inventoryItemId Int
+  blueprintId     Int
+  upgradeTier     Int           @default(0)
+  ransomPrice     BigInt
+  status          String        @default("OPEN") @db.VarChar(10)
+  expiresAt       DateTime
+  createdAt       DateTime      @default(now())
+  resolvedAt      DateTime?
+
+  @@index([loserId, status])
+  @@index([winnerId, status])
+}
+
+// Aparências compradas com marcas de honra (títulos e molduras). Só cosmético.
+model CharacterCosmetic {
+  id          Int       @id @default(autoincrement())
+  characterId Int
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  key         String    @db.VarChar(32)
+  createdAt   DateTime  @default(now())
+
+  @@unique([characterId, key])
 }
 
 // Avisos da equipe para todos os jogadores (manutenção, eventos). Aparecem também na tela de entrada.

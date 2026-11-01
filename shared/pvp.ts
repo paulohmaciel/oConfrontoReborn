@@ -57,3 +57,45 @@ export interface DuelMove {
   dealt: number; crit: boolean; dodged: boolean; healed: number; interrupted: boolean; hp: number; maxHp: number; mana: number; maxMana: number;
 }
 export interface DuelRoundRecord { round: number; moves: DuelMove[]; lines: string[] }
+
+// ----- O que está em jogo (Comando 9 de PVP-COMANDOS.md) -----
+// HONOR: só honra (pontos tipo Elo e marcas cosméticas). GOLD: os dois apostam o mesmo ouro; o vencedor leva o pote menos a taxa da arena.
+// LOOT: o vencedor tem uma chance de levar UM item da mochila do perdedor, que pode resgatá-lo pagando o preço de loja.
+// Todas as formas também dão honra. Números em loadSettings (pvp.*).
+export const duelModes = ['HONOR', 'GOLD', 'LOOT'] as const;
+export type DuelMode = typeof duelModes[number];
+export const modeLabels: Record<DuelMode, string> = { HONOR: 'Honra', GOLD: 'Aposta de ouro', LOOT: 'Espólio' };
+export const modeHelp: Record<DuelMode, string> = {
+  HONOR: 'Só honra: pontos no ranking e marcas de honra. Ninguém perde ouro nem itens.',
+  GOLD: 'Os dois apostam o mesmo ouro. Quem vencer leva o pote, menos a taxa da arena. Empate devolve.',
+  LOOT: 'Quem vencer pode levar UM item da mochila do outro. Nunca o equipado, favorito, melhorado demais ou raro. Quem perder pode resgatar o item pagando o preço de loja.',
+};
+// Pontos de honra no estilo Elo: vencer quem tem mais honra vale mais.
+export function honorDelta(winner: number, loser: number, k: number) {
+  const expected = 1 / (1 + 10 ** ((loser - winner) / 400));
+  return Math.max(1, Math.round(k * (1 - expected)));
+}
+// Teto da aposta: N% do ouro em mãos do mais pobre dos dois (calculado no servidor, no aceite).
+export function wagerCap(goldA: bigint, goldB: bigint, percent: number) {
+  const poorer = goldA < goldB ? goldA : goldB;
+  return poorer <= 0n ? 0n : poorer * BigInt(percent) / 100n;
+}
+export function arenaFee(pot: bigint, percent: number) {
+  if (pot <= 0n || percent <= 0) return 0n;
+  const fee = pot * BigInt(percent) / 100n;
+  return fee > 0n ? fee : 1n;
+}
+// Item que pode cair no espólio: da mochila (não equipado), não favorito, sem item raro, abaixo da melhoria protegida, e não empilhável.
+export interface LootCandidate { isEquipped: boolean; favorite: boolean; rareItemId: number | null; upgradeTier: number; quantity: number; slot: string }
+export const lootEligible = (i: LootCandidate, protectTier: number) =>
+  !i.isEquipped && !i.favorite && i.rareItemId === null && i.upgradeTier < protectTier && i.quantity === 1 && !['LOOT', 'CONSUMABLE'].includes(i.slot);
+
+// Loja da honra: marcas compram só aparência (títulos e moldura). Nunca itens, ouro ou atributos.
+export const honorCosmetics = [
+  { key: 'duelist', kind: 'TITLE', name: 'Duelista', marks: 50 },
+  { key: 'arena-master', kind: 'TITLE', name: 'Mestre da Arena', marks: 200 },
+  { key: 'honor', kind: 'FRAME', name: 'Moldura da Honra', marks: 300 },
+  { key: 'capriel-legend', kind: 'TITLE', name: 'Lenda de Capriel', marks: 600 },
+] as const;
+export type HonorCosmetic = typeof honorCosmetics[number];
+export const honorCosmetic = (key: string | null | undefined) => honorCosmetics.find(c => c.key === key);

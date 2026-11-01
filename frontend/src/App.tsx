@@ -28,6 +28,7 @@ import MarketPanel,{marketQuery,type MarketPage} from './features/market/MarketP
 import ForgePanel from './features/forge/ForgePanel';
 import TasksPanel from './features/tasks/TasksPanel';
 import AtlasPanel from './features/atlas/AtlasPanel';
+import SettingsPanel from './features/settings/SettingsPanel';
 import CharactersPanel from './features/characters/CharactersPanel';
 import PremiumPanel from './features/premium/PremiumPanel';
 import LedgerPanel from './features/ledger/LedgerPanel';
@@ -124,6 +125,7 @@ export default function App(){
  {tab==='tasks'&&<TasksPanel hero={hero} tasks={tasks} config={config} busy={busy} fighting={fighting} command={command}/>}
  {tab==='stats'&&<StatsPanel hero={hero} config={config} busy={busy} fighting={fighting} command={command} perform={perform}/>}
  {tab==='atlas'&&<AtlasPanel/>}
+ {tab==='settings'&&<SettingsPanel/>}
  {tab==='news'&&<NewsPanel/>}
  {tab==='group'&&<GroupHuntPanel hero={hero} perform={perform} openProfile={openProfile}/>}
  {tab==='duel'&&<DuelPanel hero={hero} openProfile={openProfile}/>}

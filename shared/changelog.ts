@@ -1,6 +1,16 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-10-31-duelo-valendo', date: '2026-10-31', title: 'Duelo valendo: ouro, espólio e honra', items: [
+    'Ao desafiar, escolha o que está em jogo: Honra, Aposta de ouro ou Espólio. O convite mostra o risco antes de aceitar, e o Espólio pede confirmação.',
+    'Aposta de ouro: os dois depositam o mesmo valor (até 10% do ouro do mais pobre). Quem vence leva o pote, menos a taxa da arena; empate devolve.',
+    'Espólio: quem vence tem 25% de chance de levar um item da mochila do outro. Nunca o equipado, favorito, +7 ou mais ou raro; uma Pedra de Proteção salva o item. Dá para resgatar em 48 h pelo preço de loja.',
+    'Honra virou pontuação (vencer quem tem mais honra vale mais) e cada duelo dá marcas, que compram títulos e a Moldura da Honra na Loja da honra.',
+  ] },
+  { id: '2026-10-31-configuracoes', date: '2026-10-31', title: 'Menu Configurações', items: [
+    'Nova aba Configurações (no grupo Conta): tema claro ou escuro e animações ligadas ou desligadas, com a explicação do que cada escolha muda.',
+    'O botão "Menos movimento" saiu do cabeçalho; agora é a opção Animações em Configurações.',
+  ] },
   { id: '2026-10-31-duelo', date: '2026-10-31', title: 'Duelo entre amigos', items: [
     'Nova aba Duelo: desafie um amigo do seu nível (até 10% de diferença) para um duelo de honra. Os dois escolhem em segredo o golpe de cada rodada; quem tem mais agilidade age primeiro.',
     'Nada se perde: vida, mana, ouro, XP e itens ficam iguais. Só vitórias e derrotas entram no registro, com sequência, histórico e o ranking de Honra por classe.',

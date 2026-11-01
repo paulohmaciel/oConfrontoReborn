@@ -82,7 +82,8 @@ test('MySQL: duelo entre amigos', async t => {
     await assert.rejects(() => advanceDuel(knight.a, knight.c, duelId, 2), /ainda está aberta/);
     await chooseDuelAction(knight.a, knight.c, duelId, 2, 'ATTACK');
     await prisma.duel.update({ where: { id: duelId }, data: { deadlineAt: new Date(Date.now() - 1000) } });
-    assert.ok(await expireDuels() >= 1);
+    // Outro teste em paralelo pode ter rodado a varredura antes; o que importa é a rodada ter fechado.
+    await expireDuels();
     const s = await state(druid);
     assert.equal(s.duel?.round, 3);
     const auto = s.duel?.rounds.at(-1)?.moves.find(m => m.characterId === druid.c);

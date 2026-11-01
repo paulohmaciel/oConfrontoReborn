@@ -6,6 +6,7 @@ import { isPremium } from './premium';
 import { premiumOverview, startCheckout } from './premiumService';
 import { loadSettings } from '../core/settings';
 import { frames, profileTitles, emblems } from '../../../shared/premium';
+import { honorCosmetics } from '../../../shared/pvp';
 import { vocationAllowed } from '../../../shared/adventure';
 
 export const premiumRoutes = Router();
@@ -90,9 +91,12 @@ premiumRoutes.post('/characters/:id/profile', asyncRoute(async (req, res) => {
   const { title, emblem, frame } = req.body ?? {};
   const bio = typeof req.body?.bio === 'string' ? req.body.bio.replace(/[\u0000-\u001f\u007f]/g, ' ').trim() : '';
   if (bio.length > 160) throw new GameError(400, 'A apresentação pode ter até 160 caracteres.');
-  if (title !== null && title !== undefined && !profileTitles.some(t => t.key === title)) throw new GameError(400, 'Título inválido.');
+  // Título e moldura da honra só valem se o personagem os comprou com marcas (duelo).
+  const honorOwned = async (key: unknown, kind: 'TITLE' | 'FRAME') => typeof key === 'string' && honorCosmetics.some(h => h.key === key && h.kind === kind)
+    && !!await prisma.characterCosmetic.findUnique({ where: { characterId_key: { characterId, key } } });
+  if (title !== null && title !== undefined && !profileTitles.some(t => t.key === title) && !await honorOwned(title, 'TITLE')) throw new GameError(400, 'Título inválido.');
   if (emblem !== null && emblem !== undefined && !(emblems as readonly string[]).includes(emblem)) throw new GameError(400, 'Emblema inválido.');
-  if (frame !== null && frame !== undefined && !frames.some(f => f.key === frame)) throw new GameError(400, 'Moldura inválida.');
+  if (frame !== null && frame !== undefined && !frames.some(f => f.key === frame) && !await honorOwned(frame, 'FRAME')) throw new GameError(400, 'Moldura inválida.');
   await prisma.character.update({ where: { id: characterId }, data: { profileTitle: title ?? null, profileEmblem: emblem ?? null, profileFrame: frame && frame !== 'none' ? frame : null, profileBio: bio || null } });
   res.json({ ok: true });
 }));
