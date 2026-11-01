@@ -6,12 +6,15 @@ import { asyncRoute } from '../core/http';
 import { GameError } from '../core/engine';
 import { hashPassword, verifyPassword } from '../core/password';
 import { vocations, type BaseVocation } from '../../../shared/adventure';
+import { BASE_ATTRIBUTE, expForLevel, levelGains, typicalAttributes } from '../../../shared/progression';
 import { createCharacterKit, parseCharacterName } from '../game/characterService';
 import { sendVerification } from './accountTokens';
 import { notifyMail, publicUrl } from '../core/mailer';
 export const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 // Conta de desenvolvimento local. Nunca recebe e-mail de redefinição e só existe fora de produção.
 export const MASTER_EMAIL = 'mestre@localhost.dev';
+// Segundo jogador de teste (só desenvolvimento): para duelar contra o Mestre jogando pelos dois lados.
+export const RIVAL_EMAIL = 'rival@localhost.dev';
 export const isLoopbackHost = (host = '127.0.0.1') => ['127.0.0.1', '::1', 'localhost'].includes(host.trim().toLowerCase());
 
 function tokenFromCookie(cookie = '') { return cookie.split(';').map(s => s.trim()).find(s => s.startsWith('oc_session='))?.slice(11) ?? ''; }
@@ -109,6 +112,7 @@ const devQuickLogin = (req: Parameters<RequestHandler>[0]) =>
 authRouter.get('/dev-login', (req, res) => { res.json({ enabled: devQuickLogin(req) }); });
 authRouter.post('/dev-login', asyncRoute(async (req, res) => {
   if (!devQuickLogin(req)) throw new GameError(404, 'Rota não encontrada.');
+  if (req.body?.who === 'rival') { await loginCookie(res, await devRival()); res.json({ ok: true }); return; }
   let account = await prisma.account.findUnique({ where: { email: MASTER_EMAIL } });
   if (!account) {
     const hash = await hashPassword(randomBytes(24).toString('hex'));
@@ -123,6 +127,29 @@ authRouter.post('/dev-login', asyncRoute(async (req, res) => {
   await loginCookie(res, account.id);
   res.json({ ok: true });
 }));
+// Rival de Treino: conta comum (PLAYER), no nível do Mestre (para caber na faixa do duelo), amigo dele e com ouro para testar apostas.
+// Criada na primeira entrada; nas seguintes, só volta ao nível do Mestre se ele tiver subido. Senha aleatória que ninguém conhece.
+async function devRival() {
+  const master = await prisma.character.findFirst({ where: { account: { email: MASTER_EMAIL } }, orderBy: { level: 'desc' } });
+  if (!master) throw new GameError(409, 'Entre como Mestre uma vez antes de chamar o Rival.');
+  const level = master.level, attrs = typicalAttributes('SORCERER', level);
+  const stats = { level, experience: expForLevel(level), ...attrs, vocation: level >= 20 ? 'MASTER_SORCERER' as const : 'SORCERER' as const,
+    maxHp: 150 + (level - 1) * levelGains.hp + (attrs.vitality - BASE_ATTRIBUTE) * 15, maxMana: 55 + (level - 1) * levelGains.mana + (attrs.resistance - BASE_ATTRIBUTE) * 15 };
+  return prisma.$transaction(async tx => {
+    let account = await tx.account.findUnique({ where: { email: RIVAL_EMAIL }, include: { characters: true } });
+    if (!account) {
+      const a = await tx.account.create({ data: { email: RIVAL_EMAIL, password: await hashPassword(randomBytes(24).toString('hex')), role: 'PLAYER', emailVerifiedAt: new Date() } });
+      await createCharacterKit(tx, a.id, 'Rival de Treino', 'SORCERER', { vocationChosen: true, startingGold: 1_000_000n });
+      account = await tx.account.findUniqueOrThrow({ where: { id: a.id }, include: { characters: true } });
+    }
+    const rival = account.characters[0];
+    if (rival.level !== level) await tx.character.update({ where: { id: rival.id }, data: { ...stats, hp: stats.maxHp, mana: stats.maxMana } });
+    const friends = await tx.friendship.findFirst({ where: { OR: [{ requesterId: master.id, addresseeId: rival.id }, { requesterId: rival.id, addresseeId: master.id }] } });
+    if (!friends) await tx.friendship.create({ data: { requesterId: master.id, addresseeId: rival.id, status: 'ACCEPTED', respondedAt: new Date() } });
+    else if (friends.status !== 'ACCEPTED') await tx.friendship.update({ where: { id: friends.id }, data: { status: 'ACCEPTED', respondedAt: new Date() } });
+    return account.id;
+  });
+}
 authRouter.post('/logout', asyncRoute(async (req, res) => {
   await prisma.session.deleteMany({ where: { tokenHash: digest(tokenFromCookie(req.headers.cookie)) } });
   res.clearCookie('oc_session', { path: '/' }); res.json({ ok: true });
