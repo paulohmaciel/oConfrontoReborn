@@ -167,7 +167,10 @@ O que se aprende:
 - **O resgate funciona**: dois terços dos itens voltam ao dono original e viram ouro para o vencedor, o que reduz a raiva de perder algo com história (melhoria +5, item da jornada).
 - **Ninguém zera** porque a aposta é proporcional ao mais pobre, mas isso só vale se o teto for calculado no servidor sobre o ouro em mãos, nunca informado pela tela.
 
-## Minha recomendação (decisão sua)
+## Decisão do dono (2026-10-31): espólio a 25%
+Padrão de `pvp.lootChancePercent` = 25, com as proteções da tabela (nunca equipado, favorito, +7 ou mais, raro; Pedra de Proteção bloqueia) e resgate de 48 h. As demais formas seguem a recomendação abaixo.
+
+## Minha recomendação
 1. Lançar **Honra** com marcas cosméticas primeiro: zero risco econômico, dá motivo para duelar.
 2. **Aposta de ouro** com teto de 10% do ouro em mãos do mais pobre, taxa de 5% (ralo) e limite diário já existente.
 3. **Espólio a 25%**, só se os dois marcarem "com espólio" ao desafiar, com as proteções da tabela e resgate de 48 h. Jamais o item equipado.
@@ -176,7 +179,7 @@ O que se aprende:
 ## Comando 9 — Recompensas do duelo (depois dos comandos 1 a 8)
 ```
 Leia GAVETAS.md, AGENTS.md, PVP-COMANDOS.md (seção "O que se pode ganhar") e as GAVETA.md de backend/src/game e backend/src/economy. Leia scripts/simulate-duel-stakes.ts: é a proposta em forma de código.
-Tarefa: apostas no Duelo, nas formas que eu marcar: [Honra com marcas] [Aposta de ouro] [Espólio com resgate].
+Tarefa: apostas no Duelo, nas três formas: Honra com marcas, Aposta de ouro (teto 10% do ouro em mãos do mais pobre, taxa 5%) e Espólio com resgate. Decisão do dono: pvp.lootChancePercent padrão 25.
 Regras obrigatórias:
 - Forma escolhida pelo desafiante no desafio e aceita explicitamente pelo oponente; gravada em Duel (coluna nova, migração aditiva 202611010004_duel_stakes). Convite mostra o que está em jogo antes de aceitar.
 - Ouro: ao aceitar, a aposta dos dois é travada (coluna reservada, como o mercado), por addGold/recordGold com razões novas em shared/economy.ts: DUEL_WAGER (transfer, sai), DUEL_PRIZE (transfer, entra), DUEL_FEE (sink). Teto = pvp.wagerMaxPercent do ouro em mãos do mais pobre, calculado no servidor dentro da transação. Empate e convite vencido devolvem tudo.
