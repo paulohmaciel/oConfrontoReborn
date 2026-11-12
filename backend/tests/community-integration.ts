@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { prisma } from '../src/core/db';
 import { hashPassword } from '../src/core/password';
-import { decideTestimonial, deleteScrap, myCommunity, publicProfile, reportContent, requestFriend, respondFriend, updateCommunityProfile, writeScrap, writeTestimonial } from '../src/community/communityService';
+import { blockCharacter, unblockCharacter, decideTestimonial, deleteScrap, myCommunity, publicProfile, reportContent, requestFriend, respondFriend, updateCommunityProfile, writeScrap, writeTestimonial } from '../src/community/communityService';
 
 test('MySQL: perfil de comunidade, recados, depoimentos, amizades, visitas e denúncias', async t => {
   assert.match(process.env.DATABASE_URL ?? '', /\/[^/?]*_test(?:\?|$)/, 'Use uma base dedicada terminada em _test.');
@@ -52,6 +52,28 @@ test('MySQL: perfil de comunidade, recados, depoimentos, amizades, visitas e den
     assert.equal((await publicProfile(C.id, a.name, null)).duels, null);
     assert.equal((await publicProfile(A.id, a.name, a.id)).duels?.wins, 2);
     await prisma.character.update({ where: { id: a.id }, data: { fameHidden: false } });
+  });
+  await t.test('bloqueio: desfaz a amizade e barra recado, depoimento e pedido de amizade nos dois sentidos; desbloquear libera', async () => {
+    const D = await mk('d'), d = D.characters[0];
+    await requestFriend(D.id, d.id, c.name); await requestFriend(C.id, c.id, d.name);
+    assert.equal(await prisma.friendship.count({ where: { status: 'ACCEPTED', OR: [{ requesterId: d.id, addresseeId: c.id }, { requesterId: c.id, addresseeId: d.id }] } }), 1);
+    await assert.rejects(() => blockCharacter(C.id, c.id, c.name), /si mesmo/);
+    await blockCharacter(C.id, c.id, d.name);
+    assert.match((await blockCharacter(C.id, c.id, d.name)).message, /já está bloqueado/);
+    assert.equal(await prisma.friendship.count({ where: { OR: [{ requesterId: d.id, addresseeId: c.id }, { requesterId: c.id, addresseeId: d.id }] } }), 0);
+    await assert.rejects(() => writeScrap(D.id, d.id, c.name, 'Oi de novo'), /bloqueou/);
+    await assert.rejects(() => writeTestimonial(D.id, d.id, c.name, 'Grande aventureiro'), /bloqueou/);
+    await assert.rejects(() => requestFriend(D.id, d.id, c.name), /bloqueou/);
+    await assert.rejects(() => requestFriend(C.id, c.id, d.name), /bloqueou/);
+    assert.deepEqual((await myCommunity(C.id, c.id)).blocked.map(b => b.name), [d.name]);
+    assert.equal((await publicProfile(C.id, d.name, c.id)).blockedByMe, true);
+    assert.equal((await publicProfile(D.id, c.name, d.id)).blockedByMe, false);
+    // Só quem bloqueou desbloqueia.
+    assert.match((await unblockCharacter(D.id, d.id, c.name)).message, /não estava bloqueado/);
+    await assert.rejects(() => requestFriend(D.id, d.id, c.name), /bloqueou/);
+    await unblockCharacter(C.id, c.id, d.name);
+    assert.match((await requestFriend(D.id, d.id, c.name)).message, /Pedido de amizade enviado/);
+    await prisma.friendship.deleteMany({ where: { requesterId: d.id } });
   });
   await t.test('amizade: pedido, aceite e pedido de volta que aceita na hora', async () => {
     await requestFriend(B.id, b.id, a.name);

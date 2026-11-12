@@ -51,9 +51,10 @@ export async function publicProfile(accountId: number, name: string, viewerId: n
     prisma.profileTestimonial.count({ where: { profileId: p.id, status: 'APPROVED' } }),
   ]);
   const { accountId: profileAccount, pvpWins, pvpLosses, honorPoints, fameHidden, ...profile } = p;
+  const blockedByMe = viewer && !owner ? !!await prisma.characterBlock.findUnique({ where: { blockerId_blockedId: { blockerId: viewer.id, blockedId: p.id } }, select: { id: true } }) : false;
   // Duelos: registro e os cinco últimos. Quem escondeu o nome dos registros públicos só vê o próprio.
   const duels = !fameHidden || owner ? await duelRecord(p.id, { wins: pvpWins, losses: pvpLosses, honor: honorPoints }) : null;
-  return { profile, duels, owner, sameAccount: profileAccount === accountId,
+  return { profile, duels, blockedByMe, owner, sameAccount: profileAccount === accountId,
     friends: friendRows.map(f => f.requesterId === p.id ? f.addressee : f.requester), friendCount, scrapCount, testimonialCount,
     scraps: scraps.map(s => ({ id: s.id, text: s.text, createdAt: s.createdAt, author: s.author })),
     testimonials: testimonials.map(t => ({ id: t.id, text: t.text, status: t.status, createdAt: t.createdAt, author: t.author })),
@@ -65,12 +66,13 @@ export async function publicProfile(accountId: number, name: string, viewerId: n
 export async function myCommunity(accountId: number, characterId: number) {
   const c = await prisma.character.findFirst({ where: { id: characterId, accountId }, select: { id: true, name: true, profileAvatar: true, profileAbout: true, profileHideVisits: true } });
   if (!c) throw new GameError(404, 'Personagem não encontrado.');
-  const [incoming, outgoing, pendingTestimonials, premium] = await Promise.all([
+  const [incoming, outgoing, pendingTestimonials, premium, blocks] = await Promise.all([
     prisma.friendship.findMany({ where: { addresseeId: c.id, status: 'PENDING' }, orderBy: { id: 'desc' }, take: 50, include: { requester: { select: card } } }),
     prisma.friendship.findMany({ where: { requesterId: c.id, status: 'PENDING' }, orderBy: { id: 'desc' }, take: 50, include: { addressee: { select: card } } }),
     prisma.profileTestimonial.count({ where: { profileId: c.id, status: 'PENDING' } }),
-    isPremium(prisma, accountId)]);
-  return { ...c, premium, aboutLimit: premium ? limits.aboutPremium : limits.aboutFree,
+    isPremium(prisma, accountId),
+    prisma.characterBlock.findMany({ where: { blockerId: c.id }, orderBy: { id: 'desc' }, take: MAX_BLOCKS, include: { blocked: { select: card } } })]);
+  return { ...c, premium, blocked: blocks.map(b => b.blocked), aboutLimit: premium ? limits.aboutPremium : limits.aboutFree,
     incoming: incoming.map(f => ({ id: f.id, from: f.requester })), outgoing: outgoing.map(f => ({ id: f.id, to: f.addressee })), pendingTestimonials };
 }
 
@@ -94,11 +96,39 @@ export async function updateCommunityProfile(accountId: number, characterId: num
   });
 }
 
+// Bloqueio: vale nos dois sentidos para quem tenta interagir (quem bloqueou também não escreve para o bloqueado).
+const MAX_BLOCKS = 100;
+async function assertNotBlocked(db: Tx | typeof prisma, a: number, b: number) {
+  if (await db.characterBlock.findFirst({ where: { OR: [{ blockerId: a, blockedId: b }, { blockerId: b, blockedId: a }] }, select: { id: true } }))
+    throw new GameError(403, 'Vocês não podem interagir: um dos dois bloqueou o outro.');
+}
+export async function blockCharacter(accountId: number, characterId: number, toName: unknown) {
+  return transaction(async tx => {
+    await lockCharacter(tx, accountId, characterId);
+    const to = await byName(tx, toName);
+    if (to.id === characterId || to.accountId === accountId) throw new GameError(400, 'Você não pode bloquear a si mesmo.');
+    if (await tx.characterBlock.findUnique({ where: { blockerId_blockedId: { blockerId: characterId, blockedId: to.id } } })) return { message: `${to.name} já está bloqueado.` };
+    if (await tx.characterBlock.count({ where: { blockerId: characterId } }) >= MAX_BLOCKS) throw new GameError(409, `Você já bloqueou ${MAX_BLOCKS} aventureiros. Desbloqueie alguém antes.`);
+    await tx.characterBlock.create({ data: { blockerId: characterId, blockedId: to.id } });
+    // Bloquear desfaz a amizade e os pedidos entre os dois (com isso, duelo e caçada em grupo também deixam de ser possíveis).
+    await tx.friendship.deleteMany({ where: { OR: [{ requesterId: characterId, addresseeId: to.id }, { requesterId: to.id, addresseeId: characterId }] } });
+    return { message: `${to.name} foi bloqueado. Ele não deixa mais recado, depoimento nem pedido de amizade para você.` };
+  });
+}
+export async function unblockCharacter(accountId: number, characterId: number, toName: unknown) {
+  return transaction(async tx => {
+    await lockCharacter(tx, accountId, characterId);
+    const to = await byName(tx, toName);
+    const removed = await tx.characterBlock.deleteMany({ where: { blockerId: characterId, blockedId: to.id } });
+    return { message: removed.count ? `${to.name} foi desbloqueado.` : `${to.name} não estava bloqueado.` };
+  });
+}
 export async function writeScrap(accountId: number, authorId: number, toName: unknown, text: unknown) {
   const body = message(text, limits.scrap, 'o recado');
   return transaction(async tx => {
     await lockCharacter(tx, accountId, authorId);
     const to = await byName(tx, toName);
+    await assertNotBlocked(tx, authorId, to.id);
     const last = await tx.profileScrap.findFirst({ where: { authorId }, orderBy: { id: 'desc' }, select: { createdAt: true } });
     if (last && Date.now() - last.createdAt.getTime() < limits.scrapCooldownSeconds * 1000) throw new GameError(429, `Espere ${limits.scrapCooldownSeconds} segundos entre um recado e outro.`);
     const scrap = await tx.profileScrap.create({ data: { profileId: to.id, authorId, text: body } });
@@ -123,6 +153,7 @@ export async function writeTestimonial(accountId: number, authorId: number, toNa
     await lockCharacter(tx, accountId, authorId);
     const to = await byName(tx, toName);
     if (to.id === authorId) throw new GameError(400, 'Você não pode escrever um depoimento para si mesmo.');
+    await assertNotBlocked(tx, authorId, to.id);
     await tx.profileTestimonial.upsert({ where: { profileId_authorId: { profileId: to.id, authorId } },
       update: { text: body, status: 'PENDING', decidedAt: null, createdAt: new Date() }, create: { profileId: to.id, authorId, text: body } });
     return { message: `Depoimento enviado. Ele aparece no perfil de ${to.name} quando for aprovado.` };
@@ -147,6 +178,7 @@ export async function requestFriend(accountId: number, characterId: number, toNa
     await lockCharacter(tx, accountId, characterId);
     const to = await byName(tx, toName);
     if (to.id === characterId) throw new GameError(400, 'Você não pode adicionar a si mesmo.');
+    await assertNotBlocked(tx, characterId, to.id);
     const existing = await tx.friendship.findFirst({ where: { OR: [{ requesterId: characterId, addresseeId: to.id }, { requesterId: to.id, addresseeId: characterId }] } });
     if (existing?.status === 'ACCEPTED') return { message: `Você e ${to.name} já são amigos.` };
     if (existing && existing.requesterId === to.id) {

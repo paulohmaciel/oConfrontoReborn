@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { asyncRoute, pageOf } from '../core/http';
 import { integer } from '../core/engine';
 import { createComment, createPost, deleteOwn, getPost, listPosts, markSolved, vote } from './forumService';
-import { decideTestimonial, deleteScrap, myCommunity, profileList, publicProfile, reportContent, requestFriend, respondFriend, searchCharacters, updateCommunityProfile, writeScrap, writeTestimonial } from './communityService';
+import { blockCharacter, unblockCharacter, decideTestimonial, deleteScrap, myCommunity, profileList, publicProfile, reportContent, requestFriend, respondFriend, searchCharacters, updateCommunityProfile, writeScrap, writeTestimonial } from './communityService';
 
 export const communityRoutes = Router();
 const id = (v: unknown) => integer(Number(v));
@@ -24,6 +24,7 @@ communityRoutes.post('/characters/:id/community/testimonials', asyncRoute(async 
 communityRoutes.post('/characters/:id/community/testimonials/:tid/:action', asyncRoute(async (req, res) => { res.json(await decideTestimonial(res.locals.accountId, id(req.params.id), id(req.params.tid), req.params.action)); }));
 communityRoutes.post('/characters/:id/community/friends', asyncRoute(async (req, res) => { res.json(await requestFriend(res.locals.accountId, id(req.params.id), req.body?.to)); }));
 communityRoutes.post('/characters/:id/community/friends/:fid/:action', asyncRoute(async (req, res) => { res.json(await respondFriend(res.locals.accountId, id(req.params.id), id(req.params.fid), req.params.action)); }));
+communityRoutes.post('/characters/:id/community/:action(block|unblock)', asyncRoute(async (req, res) => { res.json(await (req.params.action === 'block' ? blockCharacter : unblockCharacter)(res.locals.accountId, id(req.params.id), req.body?.to)); }));
 communityRoutes.post('/characters/:id/community/report', asyncRoute(async (req, res) => { res.json(await reportContent(res.locals.accountId, id(req.params.id), req.body?.kind, req.body?.id, req.body?.reason)); }));
 
 // ----- Fórum -----

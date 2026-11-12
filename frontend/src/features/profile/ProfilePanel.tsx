@@ -10,10 +10,10 @@ import {titleName} from '../../../../shared/premium';
 import {freeAvatars,premiumAvatars,limits} from '../../../../shared/community';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
 type DuelRecord={wins:number;losses:number;honor:number;streak:number;recent:{id:number;mode:string;outcome:string;finishedAt:string|null;result:'WIN'|'LOSS'|'DRAW';foe:string}[]};
-type Profile={profile:Card&{profileTitle:string|null;profileFrame:string|null;profileAbout:string|null;profileBio:string|null};duels:DuelRecord|null;owner:boolean;sameAccount:boolean;friendCount:number;scrapCount:number;testimonialCount:number;
+type Profile={profile:Card&{profileTitle:string|null;profileFrame:string|null;profileAbout:string|null;profileBio:string|null};duels:DuelRecord|null;blockedByMe?:boolean;owner:boolean;sameAccount:boolean;friendCount:number;scrapCount:number;testimonialCount:number;
   relation:{id:number;status:string;incoming:boolean}|null};
 type Scrap={id:number;text:string;createdAt:string;author:Card};type Testimonial=Scrap&{status:string};type Visit={visitedAt:string;visitor:Card};
-type Mine={id:number;profileAvatar:string|null;profileAbout:string|null;profileHideVisits:boolean;premium:boolean;aboutLimit:number;incoming:{id:number;from:Card}[];outgoing:{id:number;to:Card}[];pendingTestimonials:number};
+type Mine={id:number;profileAvatar:string|null;profileAbout:string|null;profileHideVisits:boolean;blocked?:Card[];premium:boolean;aboutLimit:number;incoming:{id:number;from:Card}[];outgoing:{id:number;to:Card}[];pendingTestimonials:number};
 type Section='scraps'|'testimonials'|'visits';
 const date=(d:string)=>new Date(d).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
 const Avatar=({c,size=40}:{c:Card;size?:number})=><Icon name={c.profileAvatar??c.profileEmblem??'Hero'} size={size}/>;
@@ -36,7 +36,7 @@ export default function ProfilePanel({hero,name,openProfile,perform}:{hero:Hero;
           <h2>{p.profile.name}</h2>{p.profile.profileTitle&&<small className="hero-title">{titleName(p.profile.profileTitle)}</small>}
           <p className="muted">{classLabel(p.profile.vocation,p.profile.classTier)} · Nível {p.profile.level}</p>
           {(p.profile.profileAbout||p.profile.profileBio)&&<p className="profile-about">{p.profile.profileAbout??p.profile.profileBio}</p>}
-          {p.owner?<button onClick={()=>setEditing(!editing)}>{editing?'Fechar edição':'Editar perfil'}</button>:!p.sameAccount&&<FriendButton p={p} act={act}/>}
+          {p.owner?<button onClick={()=>setEditing(!editing)}>{editing?'Fechar edição':'Editar perfil'}</button>:!p.sameAccount&&<>{!p.blockedByMe&&<FriendButton p={p} act={act}/>}<BlockButton p={p} act={act}/></>}
         </section>
         {editing&&mine&&<Editor mine={mine} act={act} onDone={()=>setEditing(false)}/>}
         {p.duels&&<Duels d={p.duels} owner={p.owner} openProfile={openProfile}/>}
@@ -61,6 +61,11 @@ function SearchBox({openProfile}:{openProfile:(n:string)=>void}){
   useEffect(()=>{if(q.trim().length<2){setFound([]);return;}const t=setTimeout(()=>void api<Card[]>(`/community/search?q=${encodeURIComponent(q.trim())}`).then(setFound).catch(()=>setFound([])),250);return()=>clearTimeout(t);},[q]);
   return <div className="profile-search"><input aria-label="Procurar jogador" placeholder="Procurar jogador pelo nome…" value={q} maxLength={24} onChange={e=>setQ(e.target.value)}/>
     {found.length>0&&<div className="search-results">{found.map(c=><button key={c.id} onClick={()=>{setQ('');openProfile(c.name);}}><Avatar c={c} size={28}/><span>{c.name}</span><small>{classLabel(c.vocation,c.classTier)} · Nv. {c.level}</small></button>)}</div>}</div>;
+}
+// Bloquear pede confirmação (desfaz a amizade); desbloquear é direto.
+function BlockButton({p,act}:{p:Profile;act:Act}){
+  if(p.blockedByMe)return <><p className="muted">Você bloqueou {p.profile.name}.</p><button onClick={()=>void act('unblock',{to:p.profile.name})}>Desbloquear</button></>;
+  return <button className="link-button" onClick={()=>{if(window.confirm(`Bloquear ${p.profile.name}? Ele não vai mais deixar recado, depoimento nem pedido de amizade para você, e a amizade entre vocês é desfeita.`))void act('block',{to:p.profile.name});}}>Bloquear</button>;
 }
 function FriendButton({p,act}:{p:Profile;act:Act}){
   const r=p.relation;
@@ -119,6 +124,8 @@ function Visits({mine,act,openProfile,path,version}:ListProps&{mine:Mine}){
     {mine.incoming.length>0&&<><h3 className="profile-subtitle">Pedidos de amizade</h3><Limited items={mine.incoming} label="Ver mais pedidos" render={f=><div className="market-row" key={f.id}><Avatar c={f.from}/><div><h3><button className="link-button" onClick={()=>openProfile(f.from.name)}>{f.from.name}</button></h3><p>{classLabel(f.from.vocation,f.from.classTier)} · Nv. {f.from.level}</p></div>
       <button className="primary" onClick={()=>void act(`friends/${f.id}/accept`,{})}>Aceitar</button><button onClick={()=>void act(`friends/${f.id}/decline`,{})}>Recusar</button></div>}/></>}
     {mine.outgoing.length>0&&<p className="muted">Pedidos enviados esperando resposta: {mine.outgoing.map(f=>f.to.name).join(', ')}.</p>}
+    {!!mine.blocked?.length&&<><h3 className="profile-subtitle">Aventureiros bloqueados</h3><Limited items={mine.blocked} label="Ver mais bloqueados" render={b=><div className="market-row" key={b.id}><Avatar c={b}/><div><h3>{b.name}</h3><p>{classLabel(b.vocation,b.classTier)} · Nv. {b.level}</p></div>
+      <button onClick={()=>void act('unblock',{to:b.name})}>Desbloquear</button></div>}/></>}
     <h3 className="profile-subtitle">Quem visitou seu perfil</h3>
     <label className="price-label"><input type="checkbox" checked={mine.profileHideVisits} onChange={e=>void act('profile',{hideVisits:e.target.checked})}/> Visitar perfis sem aparecer na lista dos outros</label>
     <div className="friend-grid">{visitors.items.map(v=><button key={v.visitor.id} className="friend" onClick={()=>openProfile(v.visitor.name)} title={date(v.visitedAt)}><Avatar c={v.visitor} size={36}/><small>{v.visitor.name}</small></button>)}</div>

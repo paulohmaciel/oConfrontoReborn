@@ -1,6 +1,11 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-bloquear-jogador', date: '2026-11-12', title: 'Bloquear um aventureiro', items: [
+    'No perfil de qualquer jogador há agora o botão Bloquear. Quem você bloqueia não deixa mais recado, depoimento nem pedido de amizade para você.',
+    'Bloquear desfaz a amizade entre os dois, e com isso acabam também os desafios de duelo e os convites de caçada em grupo.',
+    'A lista de bloqueados fica no seu perfil, em Visitas e pedidos, com o botão Desbloquear.',
+  ] },
   { id: '2026-11-12-pedra-de-protecao', date: '2026-11-12', title: 'A Pedra de Proteção ganhou rosto', items: [
     'A Pedra de Proteção agora tem imagem na mochila, no Ferreiro e no Mercado: a runa de muralha mágica do TibiaWiki.',
   ] },
