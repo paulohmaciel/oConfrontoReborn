@@ -29,6 +29,7 @@ export async function loadSave(accountId: number) {
   return { version: s.version, savedAt: s.savedAt.toISOString(), data: JSON.parse(s.data) as unknown, verified: progressJson(recordOf(s)) };
 }
 
+// `adjusted`: o que foi cortado — nomes das métricas de `Progress` e 'gold' (só o ouro em mãos, acima do total da vida).
 export type PutResult =
   | { conflict: true; version: number; savedAt: string }
   | { conflict: false; version: number; savedAt: string; adjusted: string[]; hours: number; verified: ReturnType<typeof progressJson>; data?: unknown };
@@ -57,8 +58,10 @@ export async function putSave(accountId: number, body: any, now = new Date()): P
     const prev = existing ? recordOf(existing) : { goldTotal: 0n, xpTotal: 0n, items: 0, furthest: 1, vigilBest: 0, power: 0n };
     const hours = hoursSince(existing?.verifiedAt ?? null, now, caps);
     const claimed = progressOf(data, body?.summary);
-    const { accepted, adjusted } = capProgress(prev, claimed, hours, caps);
+    const capped = capProgress(prev, claimed, hours, caps);
+    const accepted = capped.accepted;
     const cut = withGoldCut(data, claimed, accepted);
+    const adjusted: string[] = cut && !capped.adjusted.includes('goldTotal') ? [...capped.adjusted, 'gold'] : capped.adjusted;
     const storedText = cut ? JSON.stringify(cut) : text;
     const version = (existing?.version ?? 0) + 1;
     const fields = { version, data: storedText, sizeBytes: Buffer.byteLength(storedText), clientSavedAt, savedAt: now, verifiedAt: now, ...accepted };

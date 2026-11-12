@@ -95,14 +95,19 @@ export function progressOf(data: Record<string, unknown>, summary: unknown): Pro
 
 /**
  * Ouro cortado: tira do ouro em mãos o que passou do teto (sem ficar negativo) e acerta o total da vida.
- * Devolve o save corrigido (cópia) ou `null` quando o ouro não foi cortado.
+ * O ouro em mãos nunca passa do total ganho na vida que o servidor aceitou: no jogo todo ouro entra pelo
+ * total, então "mais ouro em mãos do que já ganhou" só aparece num save editado.
+ * Devolve o save corrigido (cópia) ou `null` quando nada mudou.
  */
 export function withGoldCut(data: Record<string, unknown>, claimed: Progress, accepted: Progress): Record<string, unknown> | null {
-  if (accepted.goldTotal >= claimed.goldTotal) return null;
-  const excess = Number(claimed.goldTotal - accepted.goldTotal);
-  const counters = { ...(isObject(data.counters) ? data.counters : {}), gold: Number(accepted.goldTotal) };
   const inHand = typeof data.gold === 'number' && Number.isFinite(data.gold) ? data.gold : 0;
-  const gold = Math.max(0, Math.min(inHand - excess, Number(accepted.goldTotal)));
+  const total = Number(accepted.goldTotal);
+  const excess = accepted.goldTotal < claimed.goldTotal ? Number(claimed.goldTotal - accepted.goldTotal) : 0;
+  // +1 de folga: o total verificado é inteiro e o ouro do jogo tem centavos.
+  const left = inHand - excess;
+  const gold = Math.max(0, left > total + 1 ? total : left);
+  if (excess === 0 && gold === inHand) return null;
+  const counters = { ...(isObject(data.counters) ? data.counters : {}), ...(excess > 0 ? { gold: total } : {}) };
   return { ...data, gold, counters };
 }
 

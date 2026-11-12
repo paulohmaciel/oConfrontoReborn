@@ -85,18 +85,25 @@ test('MySQL: app Confrontation — token, save na nuvem, tetos e rankings', asyn
       const log = await prisma.confrontationSync.findFirstOrThrow({ where: { accountId: existing.id }, orderBy: { id: 'desc' } });
       assert.equal(log.adjusted, 'goldTotal'); assert.equal((log.claimed as { goldTotal: string }).goldTotal, '10005000');
     });
+    await t.test('ouro em mãos acima do total ganho na vida (save editado) desce ao total', async () => {
+      const before = await prisma.confrontationSave.findUniqueOrThrow({ where: { accountId: existing.id } });
+      const total = Number(before.goldTotal);
+      const r = await call('PUT', '/save', { baseVersion: before.version, data: saveOf({ gold: 77_000_000, goldTotal: total, xp: 2_000, items: 30, furthest: 3 }), summary: { power: 4_000 } }, tokenA);
+      const body = await r.json() as { adjusted: string[]; data: { gold: number; counters: { gold: number } } };
+      assert.deepEqual(body.adjusted, ['gold']); assert.equal(body.data.gold, total); assert.equal(body.data.counters.gold, total);
+    });
     await t.test('Vigília antes da última fase não conta; save inválido e grande demais são recusados', async () => {
-      const r = await call('PUT', '/save', { baseVersion: 3, data: saveOf({ gold: 5_000, xp: 2_000, items: 30, furthest: 3, vigil: 40 }), summary: { power: 4_000 } }, tokenA);
+      const r = await call('PUT', '/save', { baseVersion: 4, data: saveOf({ gold: 5_000, xp: 2_000, items: 30, furthest: 3, vigil: 40 }), summary: { power: 4_000 } }, tokenA);
       const body = await r.json() as { adjusted: string[]; verified: { vigilBest: number } };
       assert.deepEqual(body.adjusted, ['vigilBest']); assert.equal(body.verified.vigilBest, 0);
-      assert.equal((await call('PUT', '/save', { baseVersion: 4, data: { v: 2 } }, tokenA)).status, 400);
-      assert.equal((await call('PUT', '/save', { baseVersion: 4, data: saveOf({ pad: 600_000 }) }, tokenA)).status, 413);
+      assert.equal((await call('PUT', '/save', { baseVersion: 5, data: { v: 2 } }, tokenA)).status, 400);
+      assert.equal((await call('PUT', '/save', { baseVersion: 5, data: saveOf({ pad: 600_000 }) }, tokenA)).status, 413);
     });
     await t.test('dois envios ao mesmo tempo: um entra, o outro vê conflito (conta travada)', async () => {
-      const send = () => putSave(existing.id, { baseVersion: 4, data: saveOf({ gold: 5_000, xp: 2_000, items: 30, furthest: 3 }), summary: { power: 4_000 } });
+      const send = () => putSave(existing.id, { baseVersion: 5, data: saveOf({ gold: 5_000, xp: 2_000, items: 30, furthest: 3 }), summary: { power: 4_000 } });
       const results = await Promise.all([send(), send()]);
       assert.equal(results.filter(x => x.conflict).length, 1);
-      assert.equal((await prisma.confrontationSave.findUniqueOrThrow({ where: { accountId: existing.id } })).version, 5);
+      assert.equal((await prisma.confrontationSave.findUniqueOrThrow({ where: { accountId: existing.id } })).version, 6);
     });
     await t.test('com horas passadas (relógio do servidor) o progresso entra até o teto', async () => {
       const B = await prisma.account.findUniqueOrThrow({ where: { email: `app-${tag}-b@example.invalid` } });
@@ -136,6 +143,11 @@ test('MySQL: app Confrontation — token, save na nuvem, tetos e rankings', asyn
       assert.equal((await call('GET', '/nada')).status, 404);
     });
   } finally {
+    // Tira do ranking e da nuvem o que este teste criou, para a base de testes não acumular colocados falsos.
+    const mine = (await prisma.account.findMany({ where: { email: { startsWith: `app-${tag}-` } }, select: { id: true } })).map(a => a.id);
+    await prisma.confrontationRank.deleteMany({ where: { accountId: { in: mine } } });
+    await prisma.confrontationSync.deleteMany({ where: { accountId: { in: mine } } });
+    await prisma.confrontationSave.deleteMany({ where: { accountId: { in: mine } } });
     await new Promise<void>(resolve => server.close(() => resolve()));
     await prisma.$disconnect();
   }

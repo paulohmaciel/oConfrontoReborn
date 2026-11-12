@@ -91,6 +91,14 @@ test('ouro cortado sai do ouro em mãos e do total, sem ficar negativo', () => {
   assert.equal(withGoldCut(data, claimed, claimed), null);
 });
 
+test('ouro em mãos maior que o total ganho na vida (save editado) desce ao total', () => {
+  const data = { v: 1, gold: 9_000_000, counters: { gold: 10_000, kills: 3 } };
+  const same = at({ goldTotal: 10_000n });
+  assert.deepEqual(withGoldCut(data, same, same), { v: 1, gold: 10_000, counters: { gold: 10_000, kills: 3 } });
+  assert.equal(withGoldCut({ v: 1, gold: 10_000, counters: { gold: 10_000 } }, same, same), null, 'gastar nunca é cortado; ter tudo em mãos também não');
+  assert.equal(withGoldCut({ v: 1, gold: 10_000.58, counters: { gold: 10_000.58 } }, same, same), null, 'os centavos do jogo não contam como ouro a mais');
+});
+
 test('semana ISO em UTC', () => {
   assert.equal(isoWeek(new Date('2026-11-12T12:00:00Z')), '2026-W46');
   assert.equal(isoWeek(new Date('2026-01-01T00:00:00Z')), '2026-W01');
