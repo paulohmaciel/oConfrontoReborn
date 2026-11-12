@@ -39,7 +39,11 @@ export const regions = [
   { key: 'outskirts', name: 'Arredores de Thais', icon: 'Rat', minLevel: 1, journeyStep: 0, description: 'Campos e túneis próximos à cidade. O lugar ideal para seus primeiros encontros.' },
   { key: 'quarry', name: 'Pedreira dos Gigantes', icon: 'Cyclops', minLevel: 2, journeyStep: 4, description: 'Escavações antigas dominadas por gigantes. Prove seu valor contra o guardião.' },
   { key: 'ruins', name: 'Ruínas Flamejantes', icon: 'Dragon', minLevel: 5, journeyStep: 5, description: 'Uma fortaleza esquecida. Leve proteção contra fogo e observe os chefes.' },
+  { key: 'orc_camp', name: 'Acampamento Orc', icon: 'Orc Leader', minLevel: 15, journeyStep: 5, description: 'Tendas, paliçadas e guerreiras do norte. O Líder Orc comanda tudo lá do alto.' },
   { key: 'abyss', name: 'Portões do Abismo', icon: 'Demon', minLevel: 20, journeyStep: 5, description: 'O território dos demônios. Um desafio para aventureiros bem preparados.' },
+  { key: 'labyrinth', name: 'Labirinto dos Minotauros', icon: 'Minotaur Guard', minLevel: 30, journeyStep: 5, description: 'Corredores de pedra onde arqueiros e magos minotauros vigiam cada curva.' },
+  { key: 'frost', name: 'Terras Geladas', icon: 'Polar Bear', minLevel: 60, journeyStep: 5, description: 'Neve sem fim, trolls do gelo e mamutes. Só os bem equipados atravessam.' },
+  { key: 'swamp', name: 'Vale da Perdição de Capriel', icon: 'Giant Spider', minLevel: 80, journeyStep: 5, description: 'O lugar mais temido do mundo. Águas envenenadas, bruxas e crocodilos; no fundo da teia, a Aranha Gigante não deixa ninguém sair. Poucos voltam.' },
 ] as const;
 export const journey = [
   { key: 'vocation', title: 'Encontre sua vocação', description: 'Escolha como você quer lutar. Sua escolha será permanente nesta etapa.', icon: 'Sword', target: 1, gold: 25, xp: 0, action: 'vocation' },

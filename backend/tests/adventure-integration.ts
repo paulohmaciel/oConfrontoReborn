@@ -20,7 +20,8 @@ test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
   const server=createApp().listen(0,'127.0.0.1');await once(server,'listening');const address=server.address();assert(address&&typeof address!=='string');
   const base=`http://127.0.0.1:${address.port}/api`;let cookie='';
   const request=(p:string,body?:unknown)=>fetch(base+p,{method:body===undefined?'GET':'POST',headers:{Cookie:cookie,Origin:process.env.APP_ORIGIN??'http://localhost:5173','X-Game-Client':'oconfronto','Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
-  async function winRat(){const b=await BattleService.start(a.id,c.id,rat.id);const result=await BattleService.turn(a.id,c.id,b.id,0,'ATTACK');assert.equal(result.status,'VICTORY');}
+  // Luta até o fim (o número de golpes depende do balanceamento do catálogo, não deste teste).
+  async function winRat(){const b=await BattleService.start(a.id,c.id,rat.id);let status='ONGOING';for(let v=0;v<30&&status==='ONGOING';v++)status=(await BattleService.turn(a.id,c.id,b.id,v,'ATTACK')).status;assert.equal(status,'VICTORY');}
   try {
     const login=await request('/auth/login',{email:a.email,password});assert.equal(login.status,200);cookie=login.headers.get('set-cookie')!.split(';')[0];
     await t.test('região bloqueada é validada pelo servidor',async()=>{await assert.rejects(()=>BattleService.start(a.id,c.id,boss.id),/Região bloqueada/);});
@@ -56,7 +57,7 @@ test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
       await BattleService.turn(a.id,c.id,b.id,0,'ATTACK');
       const charge=await BattleService.turn(a.id,c.id,b.id,1,'ATTACK');assert.equal(charge.intent.kind,'HEAVY');
       const interrupt=await BattleService.turn(a.id,c.id,b.id,2,'INTERRUPT');assert.equal(interrupt.received,0);assert.match(interrupt.log.join(' '),/interrompeu/);
-      let version=3;for(let i=0;i<20;i++){const r=await BattleService.turn(a.id,c.id,b.id,version++,'ATTACK');if(r.status==='VICTORY')break;}
+      let version=3;for(let i=0;i<60;i++){const r=await BattleService.turn(a.id,c.id,b.id,version++,'ATTACK');if(r.status==='VICTORY')break;}
       assert.equal((await prisma.battle.findUniqueOrThrow({where:{id:b.id}})).outcome,'VICTORY');
     });
     await t.test('jornada final libera ruínas e reenvio não duplica ouro',async()=>{

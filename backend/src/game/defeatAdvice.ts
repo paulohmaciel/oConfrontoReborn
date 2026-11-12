@@ -48,5 +48,5 @@ export function defeatAdvice(f: DefeatFacts): DefeatAdvice {
   else if (monsterHpPercent >= 75 && gap < 2) tips.push('Melhore a arma no Ferreiro para causar mais dano.');
   if (!reasons.length) reasons.push(`A criatura ainda tinha ${monsterHpPercent}% da vida quando você caiu.`);
   // A ida ao Templo é sempre necessária (vida zerada), por isso entra por último e nunca é cortada.
-  return { monsterHpPercent, reasons, tips: [...tips.slice(0, 3), 'Visite o Templo para recuperar a vida antes da revanche.'] };
+  return { monsterHpPercent, reasons, tips: [...tips.slice(0, 3), 'Visite o Templo de Capriel para recuperar a vida antes da revanche.'] };
 }
