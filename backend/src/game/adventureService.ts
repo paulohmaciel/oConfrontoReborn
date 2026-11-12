@@ -4,6 +4,7 @@ import { GameError } from '../core/engine';
 import { gainExperience } from './gameRules';
 import { addItem, recordGold } from '../economy/economy';
 import { achievementDefinitions, journey, regions, vocations, type BaseVocation } from '../../../shared/adventure';
+import { BASE_ATTRIBUTE } from '../../../shared/progression';
 type Tx=Prisma.TransactionClient;
 export function event(tx:Tx,characterId:number,kind:string,title:string,description:string) {
   return tx.adventureEvent.create({data:{characterId,kind,title,description}});
@@ -24,13 +25,17 @@ export async function awardAchievements(tx:Tx,characterId:number) {
 }
 export async function journeyState(tx:Tx,characterId:number) {
   const c=await tx.character.findUniqueOrThrow({where:{id:characterId}});
-  const [rats,upgraded,tasks,bosses]=await Promise.all([
+  const [rats,upgraded,tasks,bosses,sold,listed,friends]=await Promise.all([
     tx.battle.count({where:{characterId,outcome:'VICTORY',monster:{name:'Rat'}}}),
     tx.characterAchievement.count({where:{characterId,key:'blacksmith'}}),
     tx.characterTask.count({where:{characterId,isCompleted:true}}),
-    tx.battle.count({where:{characterId,outcome:'VICTORY',monster:{name:'Guardião da Pedreira'}}})
+    tx.battle.count({where:{characterId,outcome:'VICTORY',monster:{name:'Guardião da Pedreira'}}}),
+    tx.itemLedger.count({where:{characterId,reason:'NPC_SELL'}}),
+    tx.marketListing.count({where:{sellerId:characterId}}),
+    tx.friendship.count({where:{status:'ACCEPTED',OR:[{requesterId:characterId},{addresseeId:characterId}]}})
   ]);
-  const counts=[c.vocationChosen?1:0,rats,upgraded,tasks,bosses];
+  // Mesma ordem de `journey` (shared/adventure.ts). Pontos distribuídos = atributos acima do valor inicial; Templo = já foi usado alguma vez.
+  const counts=[c.vocationChosen?1:0,rats,upgraded,tasks,bosses,c.strength+c.vitality+c.agility+c.resistance>4*BASE_ATTRIBUTE?1:0,c.templeReadyAt?1:0,sold,listed,friends];
   return {step:c.journeyStep,finished:c.journeyStep>=journey.length,vocationChosen:c.vocationChosen,
     steps:journey.map((s,i)=>({...s,index:i,current:Math.min(s.target,counts[i]),claimed:i<c.journeyStep,active:i===c.journeyStep,ready:i===c.journeyStep&&counts[i]>=s.target})),
     regions:regions.map(r=>({...r,unlocked:c.level>=r.minLevel&&c.journeyStep>=r.journeyStep}))};

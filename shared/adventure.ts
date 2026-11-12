@@ -82,7 +82,15 @@ export const journey = [
   { key: 'upgrade', title: 'Prepare seu equipamento', description: 'Visite o Ferreiro e melhore um equipamento para +1.', icon: 'Magic Longsword', target: 1, gold: 50, xp: 50, action: 'forge' },
   { key: 'task', title: 'Um trabalho bem-feito', description: 'Complete uma missão e receba sua recompensa. Depois, siga para a pedreira.', icon: 'Rotworm', target: 1, gold: 75, xp: 75, action: 'tasks' },
   { key: 'boss', title: 'O guardião da pedreira', description: 'Derrote o Guardião da Pedreira. Defenda ou interrompa seu golpe anunciado.', icon: 'Cyclops', target: 1, gold: 150, xp: 150, action: 'hunt' },
+  // Início guiado (2026-11-12): depois do primeiro chefe, a Jornada apresenta o resto da cidade. As regiões continuam pedindo só as 5 primeiras etapas.
+  { key: 'stats', title: 'Fortaleça seu herói', description: 'Cada nível dá pontos de atributo. Distribua pelo menos um em Atributos.', icon: 'Magic Longsword', target: 1, gold: 100, xp: 100, action: 'stats' },
+  { key: 'temple', title: 'A bênção de Capriel', description: 'Visite o Templo de Capriel e recupere vida, mana e energia de graça.', icon: 'Ultimate Healing Rune', target: 1, gold: 100, xp: 100, action: 'temple' },
+  { key: 'sell', title: 'A primeira venda', description: 'Venda ao Mercador um item que você não usa. O espólio das caçadas vira ouro.', icon: 'Gold Coin', target: 1, gold: 150, xp: 100, action: 'bag' },
+  { key: 'market', title: 'Negócios entre aventureiros', description: 'Anuncie um item no Mercado para outros jogadores. O Mercado pede um nível mínimo; se ainda não abriu, suba mais um pouco.', icon: 'Golden Amulet', target: 1, gold: 200, xp: 150, action: 'market' },
+  { key: 'friend', title: 'Ninguém luta sozinho', description: 'Faça um amigo: procure um jogador no Perfil e peça amizade. Amigos duelam e caçam em grupo.', icon: 'Hero', target: 1, gold: 250, xp: 200, action: 'profile' },
 ] as const;
+// As regiões e a conquista "Além dos portões" dependem só destas primeiras etapas (o início original).
+export const JOURNEY_CORE_STEPS = 5;
 export const achievementDefinitions = [
   { key: 'first-victory', name: 'Primeiro confronto', description: 'Vença seu primeiro combate.', icon: 'Sword' },
   { key: 'hunter', name: 'Caçador dedicado', description: 'Vença dez combates.', icon: 'Rotworm' },

@@ -63,7 +63,24 @@ test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
     await t.test('jornada final libera ruínas e reenvio não duplica ouro',async()=>{
       await claimJourney(a.id,c.id,4);const before=await prisma.character.findUniqueOrThrow({where:{id:c.id}});
       await claimJourney(a.id,c.id,4);assert.equal((await prisma.character.findUniqueOrThrow({where:{id:c.id}})).goldInHand,before.goldInHand);
-      const state=await transaction(tx=>journeyState(tx,c.id));assert(state.finished);assert(state.regions.find(r=>r.key==='ruins')?.unlocked);
+      const state=await transaction(tx=>journeyState(tx,c.id));assert.equal(state.step,5);assert(state.regions.find(r=>r.key==='ruins')?.unlocked);
+    });
+    await t.test('início guiado: atributos, Templo, venda, anúncio e amigo fecham a jornada, cada um uma vez',async()=>{
+      await assert.rejects(()=>claimJourney(a.id,c.id,5),/Complete o objetivo/);
+      await prisma.character.update({where:{id:c.id},data:{strength:{increment:1}}});await claimJourney(a.id,c.id,5);
+      await assert.rejects(()=>claimJourney(a.id,c.id,6),/Complete o objetivo/);
+      await prisma.character.update({where:{id:c.id},data:{templeReadyAt:new Date()}});await claimJourney(a.id,c.id,6);
+      await prisma.itemLedger.create({data:{characterId:c.id,blueprintId:original.blueprintId,delta:-1,reason:'NPC_SELL'}});await claimJourney(a.id,c.id,7);
+      await assert.rejects(()=>claimJourney(a.id,c.id,8),/Complete o objetivo/);
+      await prisma.marketListing.create({data:{sellerId:c.id,blueprintId:original.blueprintId,price:10n,status:'CANCELLED'}});await claimJourney(a.id,c.id,8);
+      const ally=await prisma.account.create({data:{email:`ally-${randomUUID().slice(0,8)}@example.invalid`,password:'x',characters:{create:{name:`Aliado ${randomUUID().slice(0,8)}`}}},include:{characters:true}});
+      await prisma.friendship.create({data:{requesterId:ally.characters[0].id,addresseeId:c.id,status:'PENDING'}});
+      await assert.rejects(()=>claimJourney(a.id,c.id,9),/Complete o objetivo/);
+      await prisma.friendship.updateMany({where:{addresseeId:c.id},data:{status:'ACCEPTED',respondedAt:new Date()}});
+      const before=await prisma.character.findUniqueOrThrow({where:{id:c.id}});
+      await claimJourney(a.id,c.id,9);await claimJourney(a.id,c.id,9);
+      assert.equal((await prisma.character.findUniqueOrThrow({where:{id:c.id}})).goldInHand,before.goldInHand+250n);
+      const state=await transaction(tx=>journeyState(tx,c.id));assert(state.finished);assert.equal(state.step,10);
     });
     await t.test('diário retorna conquistas, bestiário e histórico real',async()=>{
       const response=await request(`/characters/${c.id}/journal`);assert.equal(response.status,200);const j=await response.json();

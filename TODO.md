@@ -58,7 +58,7 @@
 ## 📋 A fazer — por fase (ordem do Astra, ajustada)
 
 ### Antes do beta
-- [ ] **[Astra 6]** Início guiado (~30 min): primeira arma melhorada, primeiro chefe, primeira venda
+- [x] **[Astra 6]** Início guiado (2026-11-12): a Jornada ganhou cinco etapas depois do primeiro chefe (atributos, Templo, primeira venda, anúncio no Mercado, primeiro amigo), cada uma com botão para a aba certa; as regiões seguem pedindo só as 5 primeiras (`JOURNEY_CORE_STEPS`)
 - [x] **[Astra 4]** Registro de derrota explicando o motivo + revanche com dica (2026-10-31: `game/defeatAdvice.ts`, motivos também vão para o Diário; botões Ir ao Templo → Revanche)
 - [x] **[Astra 13]** Aviso de manutenção + histórico de atualizações: página Novidades (shared/changelog.ts) e avisos da equipe no topo, inclusive na entrada (notices.manage, motivo e auditoria; migração 202611010002_game_notices) (2026-10-31)
 - [x] **[Astra 12]** Opção "Menos movimento" (botão ao lado do tema; segue o sistema sem escolha salva; desliga animações, transições e o fogo do +10). Perigo/raridade já têm texto além da cor (PERIGOSO/CHEFE, +N, sinais +/−, "caiu") (2026-10-31)
