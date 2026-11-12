@@ -236,3 +236,13 @@
 .battle-stage-wrap .stage-motion{position:absolute;top:8px;right:12px;z-index:6;margin:0;padding:2px 10px;border-radius:999px;background:#0b1114cc;border:1px solid #ffffff22;color:#cfd8d2;opacity:.55;text-decoration:none}
 .battle-stage-wrap .stage-motion:hover,.battle-stage-wrap .stage-motion:focus-visible{opacity:1}
 :root[data-theme="light"] .battle-stage-wrap .stage-motion{background:#fbf0d6dd;border-color:#63311344;color:#633113}
+
+/* Quem foge ou volta do golpe vira o corpo: ninguém corre de costas. (As folhas olham para a direita; os sprites do Tibia, para a esquerda.) */
+.battle-stage .fighter.left.flee .sheet-sprite,.battle-stage .fighter.left.gone .sheet-sprite{transform:scaleX(-1)}
+.battle-stage .fighter.right.flee .sheet-sprite,.battle-stage .fighter.right.gone .sheet-sprite{transform:none}
+.battle-stage .fighter.left.flee .stage-sprite,.battle-stage .fighter.left.gone .stage-sprite{transform:none}
+.battle-stage .fighter.right.flee .stage-sprite,.battle-stage .fighter.right.gone .stage-sprite{transform:scaleX(-1)}
+.battle-stage .fighter.sheeted.left.lunge .sheet-sprite{animation-name:sheet-lunge-left}
+.battle-stage .fighter.sheeted.right.lunge .sheet-sprite{animation-name:sheet-lunge-right}
+@keyframes sheet-lunge-left{0%{background-position:0 20%;transform:none}12%{background-position:33.333% 20%}24%{background-position:66.667% 20%}34%{background-position:0 40%}42%{background-position:33.333% 40%}50%{background-position:66.667% 40%}62%{background-position:100% 40%;transform:none}70%{background-position:0 20%;transform:scaleX(-1)}80%{background-position:33.333% 20%;transform:scaleX(-1)}90%{background-position:66.667% 20%;transform:scaleX(-1)}97%,100%{background-position:0 0;transform:none}}
+@keyframes sheet-lunge-right{0%{background-position:0 20%;transform:scaleX(-1)}12%{background-position:33.333% 20%}24%{background-position:66.667% 20%}34%{background-position:0 40%}42%{background-position:33.333% 40%}50%{background-position:66.667% 40%}62%{background-position:100% 40%;transform:scaleX(-1)}70%{background-position:0 20%;transform:none}80%{background-position:33.333% 20%;transform:none}90%{background-position:66.667% 20%;transform:none}97%,100%{background-position:0 0;transform:scaleX(-1)}}

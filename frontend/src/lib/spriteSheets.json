@@ -1,0 +1,8 @@
+{
+  "heroes": {
+    "KNIGHT": "cavaleiro"
+  },
+  "monsters": {
+    "Wolf": "lobo-das-cinzas"
+  }
+}
