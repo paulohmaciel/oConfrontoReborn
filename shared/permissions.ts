@@ -3,7 +3,7 @@ export type Role = typeof roles[number];
 const staff = ['SUPPORT', 'MODERATOR', 'ADMIN'] as const, mods = ['MODERATOR', 'ADMIN'] as const, admins = ['ADMIN'] as const;
 export const permissions = {
   'accounts.read': staff, 'ledger.read': staff, 'tickets.read': staff, 'tickets.reply': staff,
-  'punish.apply': mods, 'audit.read': mods, 'community.moderate': mods,
+  'punish.apply': mods, 'audit.read': mods, 'community.moderate': mods, 'notices.manage': mods,
   'settings.read': admins, 'settings.write': admins, 'economy.read': admins, 'premium.grant': admins,
   'orders.read': admins, 'orders.manage': admins, 'gold.adjust': admins,
 } as const satisfies Record<string, readonly Role[]>;

@@ -8,6 +8,8 @@ import {tabs,adminTab,pathForTab,tabFromPath,paramFromPath,type Tab} from './lib
 import ProfilePanel from './features/profile/ProfilePanel';
 import ForumPanel from './features/forum/ForumPanel';
 import GroupHuntPanel from './features/group/GroupHuntPanel';
+import NewsPanel from './features/news/NewsPanel';
+import NoticeBanner from './features/news/NoticeBanner';
 import HuntPanel from './features/adventure/HuntPanel';
 import {JourneyPanel,JournalPanel} from './features/adventure/AdventurePanels';
 import {type BaseVocation} from '../../shared/adventure';
@@ -89,7 +91,7 @@ export default function App(){
  async function turn(action:string){if(!battle)return;await perform(async()=>{const result=await api<Battle>(`/characters/${heroId.current}/battles/${battle.battleId}/turns`,{action,expectedTurn:battle.turnVersion});setBattle(result);},'');}
  const start=(m:Monster)=>perform(async()=>{const b=await api<{id:number}>(`/characters/${heroId.current}/battles`,{monsterId:m.id});setBattle(await api<Battle>(`/characters/${heroId.current}/battles/${b.id}`));},'');
  if(checking)return <div className="loading-screen">Abrindo os portões…</div>;
- if(!signed||!hero)return <LoginScreen authView={authView} setAuthView={setAuthView} resetToken={resetToken} register={register} setRegister={setRegister} signupVocation={signupVocation} setSignupVocation={setSignupVocation} busy={busy} error={error} setError={setError} landing={landing} authenticate={authenticate} authenticateDev={authenticateDev}/>;
+ if(!signed||!hero)return <><NoticeBanner/><LoginScreen authView={authView} setAuthView={setAuthView} resetToken={resetToken} register={register} setRegister={setRegister} signupVocation={signupVocation} setSignupVocation={setSignupVocation} busy={busy} error={error} setError={setError} landing={landing} authenticate={authenticate} authenticateDev={authenticateDev}/></>;
  const fighting=!!hero.activeBattleId,allTabs:readonly (readonly [Tab,string,string])[]=staff?[...tabs,adminTab]:tabs;
  const openProfile=(name:string)=>{setRouteParam(name);setTab('profile');window.scrollTo(0,0);};
  const openPost=(id:string)=>{setRouteParam(id);setTab('forum');window.scrollTo(0,0);};
@@ -100,7 +102,7 @@ export default function App(){
  <MobileDrawer open={menuOpen} onClose={()=>setMenuOpen(false)} hero={hero} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={goTab} onSelectCharacter={id=>void selectCharacter(id)} onLogout={logout}/>
  <MobileBar tabs={allTabs} tab={tab} fighting={fighting} onTab={goTab}/>
  <div className="game-layout"><Sidebar hero={hero} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={goTab} onSelectCharacter={id=>void selectCharacter(id)}/>
- <main><div className="page-heading"><div><span className="eyebrow">{fighting?'COMBATE EM ANDAMENTO':'PREPARE SEU PRÓXIMO PASSO'}</span><h1>{allTabs.find(t=>t[0]===tab)?.[1]}</h1></div><span className="world-tag">CAPRIEL · AVENTUREIROS</span></div>{error&&<div className="error notice" role="alert">{error}</div>}{notice&&<div className="success notice" role="status">{notice}</div>}{landing&&<div className="success notice" role="status">{landing} <button className="link-button" onClick={()=>setLanding('')}>Fechar</button></div>}{fighting&&tab!=='hunt'&&<div className="notice">Seu combate continua ativo. <button className="link-button" onClick={()=>setTab('hunt')}>Voltar ao combate</button></div>}
+ <main><NoticeBanner onOpenNews={()=>setTab('news')}/><div className="page-heading"><div><span className="eyebrow">{fighting?'COMBATE EM ANDAMENTO':'PREPARE SEU PRÓXIMO PASSO'}</span><h1>{allTabs.find(t=>t[0]===tab)?.[1]}</h1></div><span className="world-tag">CAPRIEL · AVENTUREIROS</span></div>{error&&<div className="error notice" role="alert">{error}</div>}{notice&&<div className="success notice" role="status">{notice}</div>}{landing&&<div className="success notice" role="status">{landing} <button className="link-button" onClick={()=>setLanding('')}>Fechar</button></div>}{fighting&&tab!=='hunt'&&<div className="notice">Seu combate continua ativo. <button className="link-button" onClick={()=>setTab('hunt')}>Voltar ao combate</button></div>}
  {tab==='journey'&&<JourneyPanel hero={hero} state={journeyState} busy={busy} command={command} go={setTab}/>}
  {tab==='journal'&&<JournalPanel characterId={hero.id}/>}
  {tab==='characters'&&<CharactersPanel hero={hero} config={config} command={command} onSelect={id=>void selectCharacter(id)} onCreated={id=>void afterCreated(id)}/>}
@@ -118,6 +120,7 @@ export default function App(){
  {tab==='tasks'&&<TasksPanel hero={hero} tasks={tasks} config={config} busy={busy} fighting={fighting} command={command}/>}
  {tab==='stats'&&<StatsPanel hero={hero} config={config} busy={busy} fighting={fighting} command={command} perform={perform}/>}
  {tab==='atlas'&&<AtlasPanel/>}
+ {tab==='news'&&<NewsPanel/>}
  {tab==='group'&&<GroupHuntPanel hero={hero} perform={perform} openProfile={openProfile}/>}
  {tab==='forum'&&<ForumPanel hero={hero} postId={routeParam} openPost={openPost} openProfile={openProfile} perform={perform}/>}
  {tab==='profile'&&<ProfilePanel hero={hero} name={routeParam||hero.name} openProfile={openProfile} perform={perform}/>}
