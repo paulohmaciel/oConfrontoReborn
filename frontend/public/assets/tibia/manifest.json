@@ -4101,7 +4101,35 @@
       "status": "ready",
       "fetchedAt": "2026-10-31T19:31:46.850Z",
       "metadata": null
+    },
+    {
+      "name": "Logout Block Icon",
+      "filename": "Logout_Block_Icon.gif",
+      "path": "/assets/tibia/logout-block-icon-52297269.gif",
+      "sourceUrl": "https://www.tibiawiki.com.br/images/f/f7/Logout_Block_Icon.gif",
+      "sourcePage": "https://www.tibiawiki.com.br/wiki/Arquivo:Logout_Block_Icon.gif",
+      "sourceMethod": "public-file-verified",
+      "sha256": "4f490c2f4d2612ee1872eaa88f201ddb3cde545ae13cfe9ceb076049dd0ae700",
+      "bytes": 287,
+      "mime": "image/gif",
+      "status": "ready",
+      "fetchedAt": "2026-10-31T22:02:35.693Z",
+      "metadata": null
+    },
+    {
+      "name": "Haste Icon",
+      "filename": "Haste_Icon.gif",
+      "path": "/assets/tibia/haste-icon-bccbcc2b.gif",
+      "sourceUrl": "https://www.tibiawiki.com.br/images/0/00/Haste_Icon.gif",
+      "sourcePage": "https://www.tibiawiki.com.br/wiki/Arquivo:Haste_Icon.gif",
+      "sourceMethod": "public-file-verified",
+      "sha256": "2ef005628725e35b8d4d430ef649d289e290781b6b121924da5b7021602db3c5",
+      "bytes": 117,
+      "mime": "image/gif",
+      "status": "ready",
+      "fetchedAt": "2026-10-31T22:02:35.695Z",
+      "metadata": null
     }
   ],
-  "updatedAt": "2026-10-31T19:43:53.854Z"
+  "updatedAt": "2026-10-31T22:02:35.695Z"
 }

@@ -1,6 +1,11 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-10-31-tela-batalha', date: '2026-10-31', title: 'Nova tela de batalha', items: [
+    'Habilidades separadas em Ataque, Suporte e Fuga, com ícones do TibiaWiki.',
+    'Sua mana agora aparece em barra, ao lado da vida, durante a batalha.',
+    'A última rodada fica em um só quadro: seu golpe × golpe da criatura, com o dano em destaque.',
+  ] },
   { id: '2026-10-31-voz-rpg', date: '2026-10-31', title: 'Textos com voz de aventura', items: [
     'Combate, caçada, jornada, diário, mochila, templo e mercado foram reescritos com linguagem de RPG: Batalha em curso, Partir para nova caçada, Beber poção, Seu golpe causa X de dano…',
   ] },
