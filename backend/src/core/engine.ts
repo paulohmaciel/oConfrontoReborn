@@ -1,4 +1,5 @@
 import { skillCosts, vocations, baseVocation } from '../../../shared/adventure';
+import { statusEffects, STATUS_CHANCE, STATUS_BOSS_CHANCE, SLOW_ATTACK_PERCENT, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
 import { expForLevel } from '../../../shared/progression';
 export const actions = ['ATTACK', 'TRIPLE_HIT', 'FIFTH_HIT', 'HEAL', 'DEFEND_SHIELD', 'INTERRUPT', 'FLEE'] as const;
 export type Action = typeof actions[number];
@@ -17,8 +18,9 @@ export function integer(value: unknown, min = 1): number {
 export function getExpForLevel(level: number): bigint {
   return expForLevel(integer(level));
 }
-export interface Fighter { hp: number; maxHp: number; mana: number; attack: number; defense: number; agility?: number; vocation?:string; criticalChance?:number;fireResistance?:number;dodgeChance?:number }
-export interface Enemy { hp: number; attack: number; defense: number; isBoss?:boolean; turn?:number;element?:string }
+// `effects` = efeitos de status ativos no herói (veneno, queimadura, lentidão). `status` = o que a criatura causa quando acerta.
+export interface Fighter { hp: number; maxHp: number; mana: number; attack: number; defense: number; agility?: number; vocation?:string; criticalChance?:number;fireResistance?:number;dodgeChance?:number; effects?: ActiveEffect[] }
+export interface Enemy { hp: number; attack: number; defense: number; isBoss?:boolean; turn?:number;element?:string; status?: StatusKind | null }
 export function monsterIntent(monster:Enemy, turn=monster.turn??0) {
   if(!monster.isBoss)return {kind:'ATTACK',label:'Ataque comum',warning:false};
   if(turn%3===1)return {kind:'CHARGE',label:'Vai preparar um golpe poderoso. Aproveite para atacar ou curar.',warning:false};
@@ -46,7 +48,30 @@ export function resolveTurn(player: Fighter, monster: Enemy, action: Action, dic
   let hp = player.hp, mana = player.mana, monsterHp = monster.hp;
   let dealt = 0, received = 0, healed = 0, crit = false, dodged = false;
   const log: string[] = [];
-  if (action === 'FLEE') return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, status: 'FLED' as const, log: ['Você bate em retirada.'] };
+  // Efeitos de status: copiados para não alterar a entrada; sem efeitos e sem `monster.status`, nada muda e nenhum dado extra é rolado.
+  let effects: ActiveEffect[] = (player.effects ?? []).filter(e => e.turns > 0).map(e => ({ ...e })), effectDamage = 0, inflicted: StatusKind | null = null;
+  const slowed = effects.some(e => e.kind === 'SLOW');
+  // Fim do turno enquanto a luta continua: os efeitos que já estavam ativos causam dano e perdem um turno; só depois entra o efeito novo.
+  const endTurn = (foe: FoeMove) => {
+    for (const e of effects) {
+      const pct = statusEffects[e.kind].damagePercent;
+      if (pct > 0 && hp > 0) {
+        let d = Math.max(1, Math.floor(player.maxHp * pct / 100));
+        if (e.kind === 'BURN') d = Math.max(1, Math.floor(d * (1 - (player.fireResistance ?? 0) / 100)));
+        d = Math.min(d, hp); hp -= d; effectDamage += d;
+        log.push(`${statusEffects[e.kind].name}: você perde ${d} de vida.`);
+      }
+      e.turns--;
+    }
+    effects = effects.filter(e => e.turns > 0);
+    const applied = hp > 0 ? inflicted : null;
+    if (applied) {
+      effects = [...effects.filter(e => e.kind !== applied), { kind: applied, turns: statusEffects[applied].turns }];
+      log.push(`A criatura deixa você ${statusEffects[applied].active.toLowerCase()} por ${statusEffects[applied].turns} turnos.`);
+    }
+    return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe, effects, effectDamage, inflicted: applied, status: hp === 0 ? 'DEFEAT' as const : 'ONGOING' as const, log };
+  };
+  if (action === 'FLEE') return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, effects: [] as ActiveEffect[], effectDamage, inflicted, status: 'FLED' as const, log: ['Você bate em retirada.'] };
   const costs = skillCosts(player.vocation??'KNIGHT');
   // Política explícita: mana insuficiente rejeita o turno inteiro.
   if (mana < costs[action]) throw new GameError(409, 'Mana insuficiente.');
@@ -55,24 +80,30 @@ export function resolveTurn(player: Fighter, monster: Enemy, action: Action, dic
     healed = Math.min(player.maxHp - hp, healRoll(player, dice));
     hp += healed;
     log.push(`Você recupera ${healed} de vida.`);
+    // A cura do Druida também limpa os efeitos de status.
+    if (effects.length && baseVocation(player.vocation ?? 'KNIGHT') === 'DRUID') { effects = []; log.push('Sua cura purifica o corpo: os efeitos somem.'); }
   } else {
     ({ dealt, crit } = strike(player, monster.defense, action, dice));
+    if (slowed) dealt = Math.max(1, Math.floor(dealt * SLOW_ATTACK_PERCENT / 100));
     monsterHp = Math.max(0, monsterHp - dealt);
     log.push(`Seu golpe causa ${dealt} de dano.`);
   }
-  if (monsterHp === 0) return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, status: 'VICTORY' as const, log };
+  if (monsterHp === 0) return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, effects: [] as ActiveEffect[], effectDamage, inflicted, status: 'VICTORY' as const, log };
   const intent=monsterIntent(monster);
   if(intent.kind==='CHARGE'||(intent.kind==='HEAVY'&&action==='INTERRUPT')) {
     log.push(intent.kind==='CHARGE'?'O chefe concentra forças para um golpe pesado!':'Você interrompe o golpe pesado do chefe!');
-    return {hp,mana,monsterHp,dealt,received,healed,crit,dodged,foe:(intent.kind==='CHARGE'?'CHARGE':'INTERRUPTED') as FoeMove,status:'ONGOING' as const,log};
+    return endTurn((intent.kind==='CHARGE'?'CHARGE':'INTERRUPTED') as FoeMove);
   }
   const defense = player.defense * (action === 'DEFEND_SHIELD' ? 2.5 : 1);
   const base = Math.max(1, monster.attack*(intent.kind==='HEAVY'?1.8:1) - defense*.4);
   received = dice(Math.max(1, Math.floor(base*.75)), Math.max(1, Math.ceil(base*1.25)));
   if(monster.element==='FIRE')received=Math.max(1,Math.floor(received*(1-(player.fireResistance??0)/100)));
   if(intent.kind==='HEAVY'&&action==='DEFEND_SHIELD')received=Math.max(1,Math.floor(received*.45));
-  if((player.dodgeChance??0)>0&&dice(1,100)<=(player.dodgeChance??0)){received=0;dodged=true;log.push('Você se esquiva do golpe!');}
+  // Lento não esquiva.
+  if(!slowed&&(player.dodgeChance??0)>0&&dice(1,100)<=(player.dodgeChance??0)){received=0;dodged=true;log.push('Você se esquiva do golpe!');}
   hp = Math.max(0, hp - received);
   log.push(`A criatura revida: ${received} de dano.`);
-  return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: intent.kind as FoeMove, status: hp === 0 ? 'DEFEAT' as const : 'ONGOING' as const, log };
+  // Golpe que acertou pode deixar um efeito; erguer a guarda no turno impede.
+  if (monster.status && received > 0 && hp > 0 && action !== 'DEFEND_SHIELD' && dice(1, 100) <= (monster.isBoss ? STATUS_BOSS_CHANCE : STATUS_CHANCE)) inflicted = monster.status;
+  return endTurn(intent.kind as FoeMove);
 }

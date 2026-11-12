@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {statusEffects} from '../../../../shared/statusEffects';
 import Icon from '../../ui/GameIcon';
 import {LimitedRows} from '../../ui/ShowMore';
 import type {TurnRecord} from '../../lib/types';
@@ -19,7 +20,7 @@ function theirs(t:TurnRecord){
   if(t.foe==='CHARGE')return 'Concentrou forças';
   if(t.foe==='INTERRUPTED')return 'Golpe pesado interrompido';
   if(t.dodged)return 'Você esquivou';
-  return `${t.foe==='HEAVY'?'Golpe pesado':'Ataque'}: ${n(t.received)} de dano`;
+  return `${t.foe==='HEAVY'?'Golpe pesado':'Ataque'}: ${n(t.received)} de dano${t.effectDamage?` · efeito: ${n(t.effectDamage)}`:''}${t.inflicted?` · deixou você ${statusEffects[t.inflicted].active.toLowerCase()}`:''}`;
 }
 
 // Última rodada em um só quadro (seu golpe × golpe da criatura) e, sob demanda, o combate inteiro.

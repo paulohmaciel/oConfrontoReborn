@@ -40,3 +40,45 @@ test('ferreiro cobra custo crescente e respeita limite de tier', () => {
   for (const tier of [-1, 10, 1.5]) assert.throws(() => upgradePrice(100, tier));
   assert.throws(() => upgradePrice(-100, 0));
 });
+
+// ----- Efeitos de status (shared/statusEffects.ts) -----
+const max = (_a: number, b: number) => b;
+test('sem efeito e sem criatura que cause efeito, o turno é o mesmo de antes', () => {
+  const plain = resolveTurn(player, monster, 'ATTACK', min);
+  assert.deepEqual(plain.effects, []); assert.equal(plain.effectDamage, 0); assert.equal(plain.inflicted, null);
+});
+test('criatura venenosa aplica o veneno quando acerta; o veneno só começa a doer no turno seguinte', () => {
+  // min: a rolagem 1..100 dá 1, então o efeito entra. Vida máxima 100: veneno tira 3 por turno, por 3 turnos.
+  const first = resolveTurn(player, { ...monster, status: 'POISON' }, 'ATTACK', min);
+  assert.equal(first.inflicted, 'POISON'); assert.deepEqual(first.effects, [{ kind: 'POISON', turns: 3 }]); assert.equal(first.effectDamage, 0);
+  const second = resolveTurn({ ...player, hp: first.hp, effects: first.effects }, monster, 'ATTACK', min);
+  assert.equal(second.effectDamage, 3); assert.deepEqual(second.effects, [{ kind: 'POISON', turns: 2 }]);
+  assert.equal(second.hp, first.hp - second.received - 3);
+  // max: a rolagem dá 100 e o efeito não entra.
+  assert.equal(resolveTurn(player, { ...monster, status: 'POISON' }, 'ATTACK', max).inflicted, null);
+});
+test('erguer a guarda impede o efeito; o efeito pode derrubar o herói', () => {
+  assert.equal(resolveTurn(player, { ...monster, status: 'BURN' }, 'DEFEND_SHIELD', min).inflicted, null);
+  const dying = resolveTurn({ ...player, hp: 2, defense: 1000, effects: [{ kind: 'POISON', turns: 2 }] }, monster, 'ATTACK', min);
+  assert.equal(dying.hp, 0); assert.equal(dying.status, 'DEFEAT');
+});
+test('queimadura respeita a resistência a fogo; a cura do Druida limpa os efeitos, a dos outros não', () => {
+  const burn = [{ kind: 'BURN' as const, turns: 2 }];
+  assert.equal(resolveTurn({ ...player, effects: burn }, monster, 'ATTACK', min).effectDamage, 4);
+  assert.equal(resolveTurn({ ...player, effects: burn, fireResistance: 50 }, monster, 'ATTACK', min).effectDamage, 2);
+  assert.deepEqual(resolveTurn({ ...player, vocation: 'ELDER_DRUID', effects: burn }, monster, 'HEAL', min).effects, []);
+  assert.deepEqual(resolveTurn({ ...player, vocation: 'KNIGHT', effects: burn }, monster, 'HEAL', min).effects, [{ kind: 'BURN', turns: 1 }]);
+});
+test('lento: golpe 15% mais fraco e sem esquiva; o efeito acaba sozinho', () => {
+  const slow = [{ kind: 'SLOW' as const, turns: 1 }];
+  const normal = resolveTurn(player, monster, 'ATTACK', min), slowed = resolveTurn({ ...player, effects: slow }, monster, 'ATTACK', min);
+  assert.equal(slowed.dealt, Math.floor(normal.dealt * 85 / 100)); assert.deepEqual(slowed.effects, []);
+  // Com esquiva garantida (dado mínimo), só quem não está lento escapa.
+  assert.equal(resolveTurn({ ...player, dodgeChance: 100 }, monster, 'ATTACK', min).dodged, true);
+  assert.equal(resolveTurn({ ...player, dodgeChance: 100, effects: slow }, monster, 'ATTACK', min).dodged, false);
+});
+test('vitória e fuga encerram os efeitos', () => {
+  const effects = [{ kind: 'POISON' as const, turns: 3 }];
+  assert.deepEqual(resolveTurn({ ...player, effects }, { ...monster, hp: 1 }, 'ATTACK', min).effects, []);
+  assert.deepEqual(resolveTurn({ ...player, effects }, monster, 'FLEE', min).effects, []);
+});

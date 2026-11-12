@@ -14,15 +14,19 @@ import { vocationAllowed, skillCosts } from '../../../shared/adventure';
 import { defeatAdvice, type DefeatAdvice } from './defeatAdvice';
 import { inGroupBattle } from './groupHuntService';
 import { healthPotionNames } from '../../../shared/potions';
+import { monsterStatus, statusEffects, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
 const dice = (min: number, max: number) => randomInt(min, max + 1);
 // Histórico do combate, turno a turno, guardado no próprio lastLog (JSON). Formato antigo: só a lista de frases do último turno.
-export interface TurnRecord { turn: number; action: string; dealt: number; crit: boolean; healed: number; received: number; dodged: boolean; foe: FoeMove; heavy: boolean; hp: number; maxHp: number; monsterHp: number; monsterMaxHp: number }
-type StoredLog = { log: string[]; turns: TurnRecord[] };
+// `effectDamage` e `inflicted` só aparecem nos turnos em que houve efeito de status.
+export interface TurnRecord { turn: number; action: string; dealt: number; crit: boolean; healed: number; received: number; dodged: boolean; foe: FoeMove; heavy: boolean; hp: number; maxHp: number; monsterHp: number; monsterMaxHp: number; effectDamage?: number; inflicted?: StatusKind }
+// Os efeitos ativos do herói ficam junto do histórico (valem só nesta batalha).
+type StoredLog = { log: string[]; turns: TurnRecord[]; effects: ActiveEffect[] };
 const MAX_TURNS_KEPT = 200;
 function readLog(value: unknown): StoredLog {
-  if (Array.isArray(value)) return { log: value as string[], turns: [] };
+  if (Array.isArray(value)) return { log: value as string[], turns: [], effects: [] };
   const v = value as Partial<StoredLog> | null;
-  return { log: v?.log ?? [], turns: v?.turns ?? [] };
+  const effects = Array.isArray(v?.effects) ? v.effects.filter(e => e && Object.prototype.hasOwnProperty.call(statusEffects, e.kind) && Number.isInteger(e.turns) && e.turns > 0) : [];
+  return { log: v?.log ?? [], turns: v?.turns ?? [], effects };
 }
 
 export class BattleService {
@@ -52,7 +56,8 @@ export class BattleService {
       if (!b) throw new GameError(404, 'Batalha não encontrada.');
       return { battleId: b.id, turnVersion: b.turnVersion, hp: c.hp, maxHp: c.maxHp, mana: c.mana,
         monsterHp: b.monsterHp, monsterMaxHp: b.monster.hp, monsterName: b.monster.name,
-        monsterSprite: b.monster.spriteUrl, status: b.outcome, log: readLog(b.lastLog).log, turns: readLog(b.lastLog).turns,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion) };
+        monsterSprite: b.monster.spriteUrl, status: b.outcome, log: readLog(b.lastLog).log, turns: readLog(b.lastLog).turns,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion),
+        effects: b.isFinished ? [] : readLog(b.lastLog).effects, monsterStatus: monsterStatus(b.monster) };
     });
   }
 
@@ -71,10 +76,10 @@ export class BattleService {
           throw new GameError(409, 'Algo está errado com seu equipamento; revise a mochila.');
         if (!vocationAllowed(item.blueprint.vocations, c.vocation)) throw new GameError(409, 'Vocação incompatível.');
       }
-      const stats=combatStats(c,equipment);
+      const stats=combatStats(c,equipment), stored = readLog(b.lastLog);
       const result = resolveTurn({ hp: c.hp, maxHp: c.maxHp, mana: c.mana,
-        ...stats,agility:c.agility,vocation:c.vocation },
-        { hp: b.monsterHp, attack: b.monster.attack, defense: b.monster.defense,isBoss:b.monster.isBoss,turn:b.turnVersion,element:b.monster.element }, action, dice);
+        ...stats,agility:c.agility,vocation:c.vocation,effects:stored.effects },
+        { hp: b.monsterHp, attack: b.monster.attack, defense: b.monster.defense,isBoss:b.monster.isBoss,turn:b.turnVersion,element:b.monster.element,status:monsterStatus(b.monster) }, action, dice);
       let gold = 0, xpGain = 0;
       const droppedItems: { blueprintId: number; quantity: number; name: string }[] = [];
       if (result.status === 'VICTORY') {
@@ -95,15 +100,16 @@ export class BattleService {
         await tx.characterTask.updateMany({ where: { characterId, isCompleted: false, task: { monsterId: b.monsterId } }, data: { currentKills: { increment: 1 } } });
       }
       const { experience, level, data: levelData } = gainExperience(c, xpGain);
-      const stored = readLog(b.lastLog), heavy = monsterIntent(b.monster, b.turnVersion).kind === 'HEAVY';
+      const heavy = monsterIntent(b.monster, b.turnVersion).kind === 'HEAVY';
       const record: TurnRecord = { turn: b.turnVersion + 1, action, dealt: result.dealt, crit: result.crit, healed: result.healed, received: result.received, dodged: result.dodged,
-        foe: result.foe, heavy, hp: result.hp, maxHp: c.maxHp, monsterHp: result.monsterHp, monsterMaxHp: b.monster.hp };
+        foe: result.foe, heavy, hp: result.hp, maxHp: c.maxHp, monsterHp: result.monsterHp, monsterMaxHp: b.monster.hp,
+        ...(result.effectDamage ? { effectDamage: result.effectDamage } : {}), ...(result.inflicted ? { inflicted: result.inflicted } : {}) };
       const turns = [...stored.turns, record].slice(-MAX_TURNS_KEPT);
       await tx.character.update({ where: { id: characterId }, data: { hp: result.hp, mana: result.mana, ...levelData, goldInHand: { increment: BigInt(gold) } } });
       if (gold > 0) await recordGold(tx, characterId, BigInt(gold), c.goldInHand + BigInt(gold), 'MONSTER', { type: 'battle', id: battleId });
       await tx.battle.update({ where: { id: battleId }, data: { monsterHp: result.monsterHp,
         isFinished: result.status !== 'ONGOING', activeCharacterId: result.status === 'ONGOING' ? characterId : null,
-        turnVersion: { increment: 1 }, outcome: result.status, lastLog: { log: result.log, turns } as unknown as Prisma.InputJsonValue,
+        turnVersion: { increment: 1 }, outcome: result.status, lastLog: { log: result.log, turns, effects: result.status === 'ONGOING' ? result.effects : [] } as unknown as Prisma.InputJsonValue,
         rewardGold:BigInt(gold),rewardExperience:xpGain,rewardRecorded:result.status!=='ONGOING' } });
       let defeat: DefeatAdvice | null = null;
       if (result.status === 'DEFEAT') {
@@ -119,7 +125,7 @@ export class BattleService {
         if(result.status==='VICTORY')await awardAchievements(tx,characterId);
       }
       return { ...result, turns, battleId, turnVersion: b.turnVersion+1, maxHp: c.maxHp+(level-c.level)*levelGains.hp, monsterMaxHp: b.monster.hp,
-        monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), defeat, rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
+        monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), monsterStatus: monsterStatus(b.monster), defeat, rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
     });
   }
 }

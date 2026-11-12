@@ -5,6 +5,7 @@ import {Limited} from '../../ui/ShowMore';
 import RegionIcon from '../../ui/RegionIcon';
 import type {Hero,JourneyState,Monster,Battle} from '../../lib/types';
 import {baseVocation,vocations,skillCosts,skillLabels,regions} from '../../../../shared/adventure';
+import {statusEffects,statusWarning} from '../../../../shared/statusEffects';
 const n=(v:number)=>v.toLocaleString('pt-BR');
 function Life({label,hp,max,kind=''}:{label:string;hp:number;max:number;kind?:string}){return <div className="meter"><div><span>{label}</span><b>{n(hp)} / {n(max)}</b></div><progress className={kind} aria-label={label} max={Math.max(1,max)} value={hp}/></div>;}
 // Habilidades da batalha em três grupos: ataque, suporte e fuga.
@@ -25,9 +26,9 @@ export default function HuntPanel({hero,state,monsters,battle,busy,start,turn,di
   const rematch=battle?monsters.find(m=>m.name===battle.monsterName)??null:null;
   if(battle){const ongoing=battle.status==='ONGOING';return <section className="arena">
     <div className="arena-head"><span className="eyebrow">{ongoing?(battle.isBoss?'Duelo contra um chefe':''):'Fim da batalha'}</span><b>Turno {ongoing?battle.turnVersion+1:battle.turnVersion}{ongoing?' · Sua vez':''}</b></div>
-    <div className="fighters"><div><Icon name={profile.icon} size={96}/><h3>{hero.name}</h3><Life label="Sua vida" hp={battle.hp} max={battle.maxHp}/><Life label="Sua mana" kind="mana" hp={battle.mana} max={Math.max(hero.maxMana,battle.mana)}/><p>{profile.name}</p></div>
+    <div className="fighters"><div><Icon name={profile.icon} size={96}/><h3>{hero.name}</h3><Life label="Sua vida" hp={battle.hp} max={battle.maxHp}/><Life label="Sua mana" kind="mana" hp={battle.mana} max={Math.max(hero.maxMana,battle.mana)}/>{ongoing&&!!battle.effects?.length&&<ul className="status-effects" aria-label="Efeitos ativos">{battle.effects.map(e=><li key={e.kind} className={e.kind.toLowerCase()} title={statusEffects[e.kind].help}><b>{statusEffects[e.kind].active}</b> · {e.turns} {e.turns===1?'turno':'turnos'}</li>)}</ul>}<p>{profile.name}</p></div>
       <div className="versus"><Icon name="Logout Block Icon" size={54}/><span>VS</span></div>
-      <div><Icon name={battle.monsterName} src={battle.monsterSprite} size={96}/><h3>{battle.monsterName}</h3><Life label="Vida do monstro" hp={battle.monsterHp} max={battle.monsterMaxHp}/></div></div>
+      <div><Icon name={battle.monsterName} src={battle.monsterSprite} size={96}/><h3>{battle.monsterName}</h3><Life label="Vida do monstro" hp={battle.monsterHp} max={battle.monsterMaxHp}/>{ongoing&&battle.monsterStatus&&<p className="status-warning" title={`${statusEffects[battle.monsterStatus].help} Defender no turno impede.`}>{statusWarning[battle.monsterStatus]}</p>}</div></div>
     {ongoing?<>{battle.isBoss&&<div className={`boss-intent ${battle.intent?.warning?'warning':''}`} role="status">{battle.intent?.label}</div>}
       <h2 className="arena-title">Habilidades</h2>
       <div className="skill-groups">{skillGroups.map(g=><div key={g.key} role="group" aria-label={g.label} className={`skill-group ${g.key}`}><div className="skill-head"><Icon name={g.icon} size={26}/><span>{g.label}</span></div>

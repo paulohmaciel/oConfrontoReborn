@@ -1,6 +1,11 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-efeitos-de-status', date: '2026-11-12', title: 'Veneno, fogo e gelo', items: [
+    'Criaturas de fogo podem queimar, as do Pântano Sombrio podem envenenar e as das terras geladas podem deixar você lento. A batalha mostra o que a criatura pode causar e quantos turnos o efeito ainda dura.',
+    'Veneno e queimadura tiram um pouco de vida no fim do turno (resistência a fogo reduz a queimadura). Lento, você não esquiva e bate 15% mais fraco.',
+    'Erguer a guarda no turno impede o efeito, e a cura do Druida limpa todos. Os efeitos terminam com a batalha.',
+  ] },
   { id: '2026-11-12-colecao-de-raros', date: '2026-11-12', title: 'Itens raros de Capriel', items: [
     'Nova aba Itens raros, em Comunidade: todos os equipamentos que chegaram ao +10, com número de série, quem forjou e a história de cada um.',
     'Busque pelo nome do item e filtre por em circulação, destruídos ou primeiros do tipo. Quem escondeu o nome no Ferreiro aparece como aventureiro anônimo.',
