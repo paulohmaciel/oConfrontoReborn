@@ -14,7 +14,7 @@ import { PROTECTION_STONE } from '../../../shared/economy';
 import { event, awardAchievements } from './adventureService';
 import { arenaFee, canChallenge, duelActionCosts, duelActionHelp, duelActionLabels, duelActions, duelModes, honorCosmetic, honorCosmetics, honorDelta, levelGap, lootEligible, modeLabels, wagerCap,
   type DuelAction, type DuelMode, type DuelRoundRecord } from '../../../shared/pvp';
-import { resolveDuelRound, type DuelFighter as EngineFighter } from './duelEngine';
+import { resolveDuelRound, duelTuningOf, type DuelFighter as EngineFighter } from './duelEngine';
 type Tx = Prisma.TransactionClient;
 const dice = (min: number, max: number) => randomInt(min, max + 1);
 const card = { id: true, name: true, level: true, vocation: true, classTier: true, profileAvatar: true, profileEmblem: true } as const;
@@ -291,7 +291,7 @@ async function resolveRound(tx: Tx, d: LockedDuel) {
   const pair = d.fighters.map(f => ({ characterId: f.characterId, name: s.stats[f.characterId].name, vocation: f.vocation, hp: f.hp, maxHp: f.maxHp, mana: f.mana, maxMana: f.maxMana,
     attack: s.stats[f.characterId].attack, defense: s.stats[f.characterId].defense, agility: s.stats[f.characterId].agility,
     criticalChance: s.stats[f.characterId].criticalChance, dodgeChance: s.stats[f.characterId].dodgeChance, action: f.action as DuelAction | null, missed: f.missed })) as [EngineFighter, EngineFighter];
-  const r = resolveDuelRound(d.round, pair, dice, settings['pvp.damagePercent']);
+  const r = resolveDuelRound(d.round, pair, dice, duelTuningOf(settings));
   const done = r.outcome !== 'ONGOING';
   for (const f of r.fighters) {
     const row = d.fighters.find(x => x.characterId === f.characterId)!;

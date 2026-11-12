@@ -68,6 +68,13 @@ export const settingDefs = {
   'pvp.honorMarksWin': { default: 10, min: 0, max: 1000, label: 'Duelo: marcas de honra por vitória (só cosméticos)', unit: '', group: 'Duelo' },
   'pvp.honorMarksLoss': { default: 4, min: 0, max: 1000, label: 'Duelo: marcas de honra por derrota ou empate', unit: '', group: 'Duelo' },
   'pvp.damagePercent': { default: 100, min: 10, max: 300, label: 'Duelo: dano entre aventureiros (100 = mesmo do combate)', unit: '%', group: 'Duelo' },
+  // Equilíbrio entre vocações só no duelo (o combate contra monstros não muda). 100 = neutro. Meça com `npm run duel:simulate` antes de mexer.
+  'pvp.healPercent': { default: 100, min: 10, max: 300, label: 'Duelo: força da cura (100 = mesma do combate)', unit: '%', group: 'Duelo' },
+  'pvp.defensePercent': { default: 100, min: 0, max: 200, label: 'Duelo: quanto da defesa do alvo conta (100 = toda)', unit: '%', group: 'Duelo' },
+  'pvp.takenKnight': { default: 100, min: 25, max: 300, label: 'Duelo: dano recebido pelo Cavaleiro', unit: '%', group: 'Duelo' },
+  'pvp.takenPaladin': { default: 100, min: 25, max: 300, label: 'Duelo: dano recebido pelo Arqueiro', unit: '%', group: 'Duelo' },
+  'pvp.takenSorcerer': { default: 100, min: 25, max: 300, label: 'Duelo: dano recebido pelo Feiticeiro', unit: '%', group: 'Duelo' },
+  'pvp.takenDruid': { default: 100, min: 25, max: 300, label: 'Duelo: dano recebido pelo Druida', unit: '%', group: 'Duelo' },
   'class.promotionGold': { default: 5000, min: 0, max: 100_000_000, label: 'Custo da promoção de classe', unit: 'ouro', group: 'Classes' },
   'characters.free': { default: 1, min: 1, max: 10, label: 'Personagens por conta gratuita', unit: '', group: 'Personagens' },
   'characters.premium': { default: 4, min: 1, max: 20, label: 'Personagens por conta Premium', unit: '', group: 'Personagens' },
