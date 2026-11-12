@@ -3,7 +3,8 @@ import {api,ApiError} from './lib/api';
 import {fmt} from './lib/format';
 import ThemeToggle from './ui/ThemeToggle';
 import Icon from './ui/GameIcon';
-import {tabs,adminTab,pathForTab,tabFromPath,type Tab} from './lib/tabs';
+import {tabs,adminTab,pathForTab,tabFromPath,paramFromPath,type Tab} from './lib/tabs';
+import ProfilePanel from './features/profile/ProfilePanel';
 import HuntPanel from './features/adventure/HuntPanel';
 import {JourneyPanel,JournalPanel} from './features/adventure/AdventurePanels';
 import {type BaseVocation} from '../../shared/adventure';
@@ -36,12 +37,12 @@ export default function App(){
  const [config,setConfig]=useState<GameConfig|null>(null),[staff,setStaff]=useState(false),[premiumActive,setPremiumActive]=useState(false),[roster,setRoster]=useState<{id:number;name:string;level:number;vocation:string}[]>([]);
  const [authView,setAuthView]=useState<'form'|'forgot'|'reset'>(()=>new URLSearchParams(location.search).has('redefinir')?'reset':'form'),[resetToken]=useState(()=>new URLSearchParams(location.search).get('redefinir')??''),[landing,setLanding]=useState('');
  const [bagFilter,setBagFilter]=useState({slot:'',q:'',fav:false}),bagFilterRef=useRef(bagFilter);
- const [menuOpen,setMenuOpen]=useState(false);
+ const [menuOpen,setMenuOpen]=useState(false),[routeParam,setRouteParam]=useState(()=>paramFromPath(location.pathname));
  // A aba vive na URL: trocar de aba grava o endereço; voltar/avançar do navegador troca a aba.
- useEffect(()=>{const path=pathForTab(tab);if(location.pathname===path)return;
+ useEffect(()=>{const path=pathForTab(tab,tab==='profile'?routeParam:'');if(location.pathname===path)return;
   // Endereço desconhecido (ex.: /xyz) é corrigido sem criar entrada no histórico.
-  if(tabFromPath(location.pathname)===null)history.replaceState(null,'',path);else history.pushState(null,'',path);},[tab]);
- useEffect(()=>{const back=()=>setTab(tabFromPath(location.pathname)??'journey');window.addEventListener('popstate',back);return()=>window.removeEventListener('popstate',back);},[]);
+  if(tabFromPath(location.pathname)===null)history.replaceState(null,'',path);else history.pushState(null,'',path);},[tab,routeParam]);
+ useEffect(()=>{const back=()=>{setTab(tabFromPath(location.pathname)??'journey');setRouteParam(paramFromPath(location.pathname));};window.addEventListener('popstate',back);return()=>window.removeEventListener('popstate',back);},[]);
  useEffect(()=>{const label=[...tabs,adminTab].find(t=>t[0]===tab)?.[1];document.title=label&&tab!=='journey'?`${label} · O Confronto`:'O Confronto · Crônicas de um aventureiro';},[tab]);
  const bagPage=useRef(1); const lock=useRef(false);const heroId=useRef<number|null>(null);
  const notifyError=(e:unknown)=>{setError(e instanceof Error?e.message:'Ocorreu um erro.');if(e instanceof ApiError&&e.status===401){setSigned(false);setHero(null);heroId.current=null;}};
@@ -86,7 +87,8 @@ export default function App(){
  if(checking)return <div className="loading-screen">Abrindo os portões…</div>;
  if(!signed||!hero)return <LoginScreen authView={authView} setAuthView={setAuthView} resetToken={resetToken} register={register} setRegister={setRegister} signupVocation={signupVocation} setSignupVocation={setSignupVocation} busy={busy} error={error} setError={setError} landing={landing} authenticate={authenticate} authenticateDev={authenticateDev}/>;
  const fighting=!!hero.activeBattleId,allTabs:readonly (readonly [Tab,string,string])[]=staff?[...tabs,adminTab]:tabs;
- const goTab=(id:Tab)=>{setTab(id);setSearch('');setSelected(null);window.scrollTo(0,0);};
+ const openProfile=(name:string)=>{setRouteParam(name);setTab('profile');window.scrollTo(0,0);};
+ const goTab=(id:Tab)=>{setRouteParam('');setTab(id);setSearch('');setSelected(null);window.scrollTo(0,0);};
  const logout=()=>void perform(async()=>{await api('/auth/logout',{});setSigned(false);setHero(null);heroId.current=null;setBattle(null);setStaff(false);setPremiumActive(false);},'');
  return <div className={`shell ${hero.profileFrame?`frame-${hero.profileFrame}`:''}`}><header className="topbar"><div className="wordmark">O CONFRONTO<span>CRÔNICAS DE UM AVENTUREIRO</span></div><div className="top-meta"><ThemeToggle/><span className="online-dot"/> Mundo local <span className="separator">|</span><Icon name="Gold Coin" size={24}/><b>{fmt(hero.goldInHand)}</b><button className="quiet logout" onClick={logout}>Sair</button>
   <button type="button" className="menu-button" aria-label="Abrir menu" aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={()=>setMenuOpen(true)}><span/><span/><span/>{hero.statPoints>0&&<i className="menu-dot" aria-label="Pontos de atributo para distribuir"/>}</button></div></header>
@@ -111,5 +113,6 @@ export default function App(){
  {tab==='tasks'&&<TasksPanel hero={hero} tasks={tasks} config={config} busy={busy} fighting={fighting} command={command}/>}
  {tab==='stats'&&<StatsPanel hero={hero} config={config} busy={busy} fighting={fighting} command={command} perform={perform}/>}
  {tab==='atlas'&&<AtlasPanel/>}
+ {tab==='profile'&&<ProfilePanel hero={hero} name={routeParam||hero.name} openProfile={openProfile} perform={perform}/>}
  </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command}/></div></div>;
 }

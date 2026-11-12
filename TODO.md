@@ -104,7 +104,7 @@
 ### Comunidade e grupo (pedidos de 2026-10-31)
 - [x] Missões com nome, quem pede e história para os 113 monstros (`shared/missions.ts`); Thais virou Capriel e a primeira região, Campos do Amanhecer
 - [x] 8 classes por vocação (20, 100, 250, 400, 550, 700, 850, 1000): +3% ataque/defesa e +1 crítico por classe após a promoção, custo = promoção × (nível ÷ 20)², migração aditiva `202610310001_class_tiers`, monstros recalibrados (2026-10-31)
-- [ ] Perfil de comunidade grátis: imagem/GIF da galeria do TibiaWiki, descrição, recados, depoimentos (com aprovação), amigos, visitas (com modo invisível); Premium dá extras
+- [x] Perfil de comunidade grátis (/perfil, /perfil/Nome): galeria do TibiaWiki (10 lendárias no Premium), descrição (500; Premium 2.000), recados com intervalo, depoimentos com aprovação, amigos, visitas com modo invisível, denúncia → atendimento REPORT, remoção pela equipe com auditoria; migração `202610310002_community_profile`; menu lateral em seções (2026-10-31)
 - [ ] Fórum estilo Reddit: categorias, votos, comentários, "resolvido"; denúncia e moderação com auditoria
 - [ ] Caçada em grupo com amigos a partir de um nível — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
 
