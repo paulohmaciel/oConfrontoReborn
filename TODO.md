@@ -64,8 +64,8 @@
 - [ ] Métricas de onboarding/retenção (tempo até 1ª conquista, motivo de derrota, abandono após quebra)
 
 ### Durante o beta
-- [ ] **[Astra 1]** Histórico pessoal de tentativas do Ferreiro (sucesso/falha/quebra) na tela
-- [ ] **[Astra 1]** Efeito visual por faixa (+7 brilho discreto, +9 forte, +10 exclusivo) — respeitando "reduzir movimento"
+- [x] **[Astra 1]** Histórico pessoal de tentativas do Ferreiro (aba Meu histórico: sucessos, falhas, quebras, Pedra, ouro gasto, em páginas) (2026-10-31)
+- [x] **[Astra 1]** Efeito visual por faixa (+7 brilho discreto, +9 forte, +10 fogo) — parado com "Menos movimento" (2026-10-31)
 - [x] **[Astra 1]** Pedra de Proteção **só obtida jogando** (2026-10-28): cai de monstros nível 5+ (0,3%; chefes 1%), item de loot; marcada na Forja, só é gasta quando evita uma quebra, registrada no extrato (`PROTECTION_USE`). Nunca vendida por dinheiro real. Teste de integração incluso.
 - [ ] Sprite próprio da Pedra de Proteção (hoje sem imagem; só usar TibiaWiki após decidir a licença) e, se quiser, ajustar a chance de queda
 - [ ] Rodar `npm run seed` (cria a pedra e as quedas; é upsert, não apaga nada)
@@ -90,7 +90,7 @@
 - [ ] Anúncio no mundo de +10 / primeiro do tipo (respeitando anonimato)
 - [ ] Itens raros obtidos por outras rotas (chefes/fabricação) — Astra sugeriu; hoje raro = +10
 - [x] Efeito visual do +10: moldura de fogo animada criada pelo dono (GIF `fx/fire-frame.gif`, 16 quadros) em volta do ícone da mochila, equipamento e Forja; parada (1º quadro) com "reduzir movimento" (2026-10-28)
-- [ ] Brilho discreto no +7 e mais forte no +9 (proposta Astra 1)
+- [x] Brilho discreto no +7 e mais forte no +9 (proposta Astra 1)
 - [ ] Revisar com a LGPD/Privacidade: texto legal deve citar a exibição pública do nome do personagem e o opt-out
 
 ### Níveis 60 a 1000 — ver `PLANO-NIVEIS.md` (proposta de 2026-10-31, aguardando decisões ❓1–❓5)

@@ -164,3 +164,11 @@
 /* "Menos movimento" (botão ao lado do tema; sem escolha salva, segue o sistema) */
 :root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 :root[data-motion="reduce"] .fire-icon::after{background-image:url(/assets/fx/fire-frame-static.png)!important}
+/* Brilho por faixa de melhoria (ui/GameIcon): +7/+8 discreto, +9 forte; +10 usa o fogo de fire.css. Sem movimento: brilho parado. */
+.tier-glow{display:inline-block;border-radius:6px;line-height:0}
+.tier-glow.glow-soft{box-shadow:0 0 6px 1px #e8c45a66;animation:tier-pulse 2.8s ease-in-out infinite}
+.tier-glow.glow-strong{box-shadow:0 0 10px 3px #f0a53acc;animation:tier-pulse 1.6s ease-in-out infinite}
+@keyframes tier-pulse{50%{filter:brightness(1.18)}}
+@media (prefers-reduced-motion:reduce){.tier-glow{animation:none}}
+/* O ".bag-slot>span" é o rótulo +N/×N no canto; o ícone com brilho/fogo também é span e fica no lugar normal. */
+.bag-slot>.tier-glow,.bag-slot>.fire-icon{position:relative;right:auto;bottom:auto}

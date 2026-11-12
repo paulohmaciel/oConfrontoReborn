@@ -38,3 +38,15 @@ adventureRoutes.get('/characters/:id/battles',asyncRoute(async(req,res)=>{
   const [items,total]=await Promise.all([prisma.battle.findMany({where,orderBy:{id:'desc'},skip,take,include:{monster:{select:{name:true,spriteUrl:true}}}}),prisma.battle.count({where})]);
   res.json(paged(items,total,page));
 }));
+// Histórico pessoal do Ferreiro: cada tentativa de melhoria já fica no diário (kind UPGRADE); aqui vem paginado e com o resumo.
+const upgradeOutcome = (title: string) => title.endsWith(' quebrou') ? 'BROKE' : title.includes('melhoria falhou') ? 'FAILED' : title.includes('Pedra de Proteção') ? 'PROTECTED' : 'SUCCESS';
+adventureRoutes.get('/characters/:id/forge/history',asyncRoute(async(req,res)=>{
+  const characterId=await ownCharacter(req,res),{page,skip,take}=pageOf(req.query),where={characterId,kind:'UPGRADE'};
+  const [items,total,broke,failed,protectedCount,spent]=await Promise.all([
+    prisma.adventureEvent.findMany({where,orderBy:{id:'desc'},skip,take}),prisma.adventureEvent.count({where}),
+    prisma.adventureEvent.count({where:{...where,title:{endsWith:' quebrou'}}}),prisma.adventureEvent.count({where:{...where,title:{contains:'melhoria falhou'}}}),
+    prisma.adventureEvent.count({where:{...where,title:{contains:'Pedra de Proteção'}}}),
+    prisma.goldLedger.aggregate({where:{characterId,reason:'UPGRADE'},_sum:{delta:true}})]);
+  res.json({...paged(items.map(e=>({id:e.id,title:e.title,description:e.description,createdAt:e.createdAt,outcome:upgradeOutcome(e.title)})),total,page),
+    summary:{attempts:total,success:total-broke-failed-protectedCount,failed,broke,protected:protectedCount,goldSpent:(0n-(spent._sum.delta??0n)).toString()}});
+}));
