@@ -82,3 +82,18 @@ test('vitória e fuga encerram os efeitos', () => {
   assert.deepEqual(resolveTurn({ ...player, effects }, { ...monster, hp: 1 }, 'ATTACK', min).effects, []);
   assert.deepEqual(resolveTurn({ ...player, effects }, monster, 'FLEE', min).effects, []);
 });
+
+// ----- Chefes com duas fases -----
+test('chefe abaixo de metade da vida entra em fúria: avisa na virada e bate 10% mais forte; criatura comum não tem fase', () => {
+  const boss = { ...monster, isBoss: true, turn: 0, hp: 65, maxHp: 100, attack: 100 }, strong = { ...player, hp: 1000, maxHp: 1000, defense: 0, attack: 15 };
+  // min: golpe do herói de 15, com crítico (65 → 50, exatamente metade): a fúria começa neste turno.
+  const turning = resolveTurn(strong, boss, 'ATTACK', min);
+  assert.equal(turning.monsterHp, 50); assert.equal(turning.phase, 2); assert.match(turning.log.join(' '), /entra em fúria/);
+  const calm = resolveTurn(strong, { ...boss, hp: 100 }, 'ATTACK', min);
+  assert.equal(calm.phase, 1); assert.equal(turning.received, Math.floor(calm.received * 1.1 + 1e-9));
+  // Já em fúria: não repete o aviso.
+  assert.doesNotMatch(resolveTurn(strong, { ...boss, hp: 40 }, 'ATTACK', min).log.join(' '), /entra em fúria/);
+  // Sem ser chefe, ou sem a vida cheia informada, não há fase 2.
+  assert.equal(resolveTurn(strong, { ...boss, isBoss: false }, 'ATTACK', min).phase, 1);
+  assert.equal(resolveTurn(strong, { ...monster, isBoss: true, turn: 0, hp: 20, attack: 100 }, 'ATTACK', min).phase, 1);
+});

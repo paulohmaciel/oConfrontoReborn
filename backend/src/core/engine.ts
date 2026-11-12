@@ -1,5 +1,5 @@
 import { skillCosts, vocations, baseVocation } from '../../../shared/adventure';
-import { statusEffects, STATUS_CHANCE, STATUS_BOSS_CHANCE, SLOW_ATTACK_PERCENT, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
+import { statusEffects, STATUS_CHANCE, STATUS_BOSS_CHANCE, SLOW_ATTACK_PERCENT, bossPhase, bossRage, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
 import { expForLevel } from '../../../shared/progression';
 export const actions = ['ATTACK', 'TRIPLE_HIT', 'FIFTH_HIT', 'HEAL', 'DEFEND_SHIELD', 'INTERRUPT', 'FLEE'] as const;
 export type Action = typeof actions[number];
@@ -20,7 +20,8 @@ export function getExpForLevel(level: number): bigint {
 }
 // `effects` = efeitos de status ativos no herói (veneno, queimadura, lentidão). `status` = o que a criatura causa quando acerta.
 export interface Fighter { hp: number; maxHp: number; mana: number; attack: number; defense: number; agility?: number; vocation?:string; criticalChance?:number;fireResistance?:number;dodgeChance?:number; effects?: ActiveEffect[] }
-export interface Enemy { hp: number; attack: number; defense: number; isBoss?:boolean; turn?:number;element?:string; status?: StatusKind | null }
+// `maxHp` (vida cheia da criatura) permite saber a fase do chefe; sem ele, não há fase 2.
+export interface Enemy { hp: number; attack: number; defense: number; isBoss?:boolean; turn?:number;element?:string; status?: StatusKind | null; maxHp?: number }
 export function monsterIntent(monster:Enemy, turn=monster.turn??0) {
   if(!monster.isBoss)return {kind:'ATTACK',label:'Ataque comum',warning:false};
   if(turn%3===1)return {kind:'CHARGE',label:'Vai preparar um golpe poderoso. Aproveite para atacar ou curar.',warning:false};
@@ -69,9 +70,9 @@ export function resolveTurn(player: Fighter, monster: Enemy, action: Action, dic
       effects = [...effects.filter(e => e.kind !== applied), { kind: applied, turns: statusEffects[applied].turns }];
       log.push(`A criatura deixa você ${statusEffects[applied].active.toLowerCase()} por ${statusEffects[applied].turns} turnos.`);
     }
-    return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe, effects, effectDamage, inflicted: applied, status: hp === 0 ? 'DEFEAT' as const : 'ONGOING' as const, log };
+    return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe, effects, effectDamage, inflicted: applied, phase, status: hp === 0 ? 'DEFEAT' as const : 'ONGOING' as const, log };
   };
-  if (action === 'FLEE') return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, effects: [] as ActiveEffect[], effectDamage, inflicted, status: 'FLED' as const, log: ['Você bate em retirada.'] };
+  if (action === 'FLEE') return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, effects: [] as ActiveEffect[], effectDamage, inflicted, phase: 1 as 1 | 2, status: 'FLED' as const, log: ['Você bate em retirada.'] };
   const costs = skillCosts(player.vocation??'KNIGHT');
   // Política explícita: mana insuficiente rejeita o turno inteiro.
   if (mana < costs[action]) throw new GameError(409, 'Mana insuficiente.');
@@ -88,14 +89,17 @@ export function resolveTurn(player: Fighter, monster: Enemy, action: Action, dic
     monsterHp = Math.max(0, monsterHp - dealt);
     log.push(`Seu golpe causa ${dealt} de dano.`);
   }
-  if (monsterHp === 0) return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, effects: [] as ActiveEffect[], effectDamage, inflicted, status: 'VICTORY' as const, log };
+  if (monsterHp === 0) return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, effects: [] as ActiveEffect[], effectDamage, inflicted, phase: 1 as 1 | 2, status: 'VICTORY' as const, log };
+  // Fase do chefe depois do seu golpe: abaixo de metade da vida ele entra em fúria (avisa uma vez, na virada).
+  const phase = bossPhase({ isBoss: monster.isBoss, hp: monsterHp, maxHp: monster.maxHp });
+  if (phase === 2 && bossPhase(monster) === 1) log.push('Ferido, o chefe entra em fúria! Os golpes dele ficam mais fortes.');
   const intent=monsterIntent(monster);
   if(intent.kind==='CHARGE'||(intent.kind==='HEAVY'&&action==='INTERRUPT')) {
     log.push(intent.kind==='CHARGE'?'O chefe concentra forças para um golpe pesado!':'Você interrompe o golpe pesado do chefe!');
     return endTurn((intent.kind==='CHARGE'?'CHARGE':'INTERRUPTED') as FoeMove);
   }
   const defense = player.defense * (action === 'DEFEND_SHIELD' ? 2.5 : 1);
-  const base = Math.max(1, monster.attack*(intent.kind==='HEAVY'?1.8:1) - defense*.4);
+  const base = Math.max(1, monster.attack*(intent.kind==='HEAVY'?1.8:1)*(phase===2?bossRage.attackPercent/100:1) - defense*.4);
   received = dice(Math.max(1, Math.floor(base*.75)), Math.max(1, Math.ceil(base*1.25)));
   if(monster.element==='FIRE')received=Math.max(1,Math.floor(received*(1-(player.fireResistance??0)/100)));
   if(intent.kind==='HEAVY'&&action==='DEFEND_SHIELD')received=Math.max(1,Math.floor(received*.45));

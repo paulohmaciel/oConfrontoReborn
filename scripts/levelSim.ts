@@ -42,7 +42,7 @@ export function fight(h: Hero, m: Foe) {
   while (turn < 60) {
     const action = choose(hp, h.maxHp, mana, costs, monsterIntent({ ...m, turn }, turn).warning);
     const r = resolveTurn({ hp, maxHp: h.maxHp, mana, ...h.stats, agility: h.c.agility, vocation: h.c.vocation, effects },
-      { hp: monsterHp, attack: m.attack, defense: m.defense, isBoss: m.isBoss, turn, element: m.element, status }, action, dice);
+      { hp: monsterHp, attack: m.attack, defense: m.defense, isBoss: m.isBoss, turn, element: m.element, status, maxHp: m.hp }, action, dice);
     hp = r.hp; mana = r.mana; monsterHp = r.monsterHp; effects = r.effects; turn++;
     if (r.status !== 'ONGOING') return { won: r.status === 'VICTORY', turns: turn, hpLost: 1 - hp / h.maxHp };
   }

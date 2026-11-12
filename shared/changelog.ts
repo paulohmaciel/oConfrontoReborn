@@ -1,6 +1,11 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-chefes-em-furia', date: '2026-11-12', title: 'Chefes em fúria', items: [
+    'Todo chefe agora tem duas fases. Ao cair para metade da vida, ele entra em fúria e os golpes ficam 10% mais fortes até o fim da luta.',
+    'A batalha mostra a fase do chefe o tempo todo. Guarde mana para defender ou interromper o golpe pesado na segunda metade.',
+    'O Orc Leader teve o ataque reduzido de leve para a luta continuar justa com a fúria.',
+  ] },
   { id: '2026-11-12-efeitos-de-status', date: '2026-11-12', title: 'Veneno, fogo e gelo', items: [
     'Criaturas de fogo podem queimar, as do Pântano Sombrio podem envenenar e as das terras geladas podem deixar você lento. A batalha mostra o que a criatura pode causar e quantos turnos o efeito ainda dura.',
     'Veneno e queimadura tiram um pouco de vida no fim do turno (resistência a fogo reduz a queimadura). Lento, você não esquiva e bate 15% mais fraco.',

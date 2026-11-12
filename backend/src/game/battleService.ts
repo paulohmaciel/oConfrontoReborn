@@ -14,7 +14,7 @@ import { vocationAllowed, skillCosts } from '../../../shared/adventure';
 import { defeatAdvice, type DefeatAdvice } from './defeatAdvice';
 import { inGroupBattle } from './groupHuntService';
 import { healthPotionNames } from '../../../shared/potions';
-import { monsterStatus, statusEffects, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
+import { bossPhase, monsterStatus, statusEffects, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
 const dice = (min: number, max: number) => randomInt(min, max + 1);
 // Histórico do combate, turno a turno, guardado no próprio lastLog (JSON). Formato antigo: só a lista de frases do último turno.
 // `effectDamage` e `inflicted` só aparecem nos turnos em que houve efeito de status.
@@ -57,7 +57,7 @@ export class BattleService {
       return { battleId: b.id, turnVersion: b.turnVersion, hp: c.hp, maxHp: c.maxHp, mana: c.mana,
         monsterHp: b.monsterHp, monsterMaxHp: b.monster.hp, monsterName: b.monster.name,
         monsterSprite: b.monster.spriteUrl, status: b.outcome, log: readLog(b.lastLog).log, turns: readLog(b.lastLog).turns,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion),
-        effects: b.isFinished ? [] : readLog(b.lastLog).effects, monsterStatus: monsterStatus(b.monster) };
+        effects: b.isFinished ? [] : readLog(b.lastLog).effects, monsterStatus: monsterStatus(b.monster), phase: bossPhase({ isBoss: b.monster.isBoss, hp: b.monsterHp, maxHp: b.monster.hp }) };
     });
   }
 
@@ -79,7 +79,7 @@ export class BattleService {
       const stats=combatStats(c,equipment), stored = readLog(b.lastLog);
       const result = resolveTurn({ hp: c.hp, maxHp: c.maxHp, mana: c.mana,
         ...stats,agility:c.agility,vocation:c.vocation,effects:stored.effects },
-        { hp: b.monsterHp, attack: b.monster.attack, defense: b.monster.defense,isBoss:b.monster.isBoss,turn:b.turnVersion,element:b.monster.element,status:monsterStatus(b.monster) }, action, dice);
+        { hp: b.monsterHp, attack: b.monster.attack, defense: b.monster.defense,isBoss:b.monster.isBoss,turn:b.turnVersion,element:b.monster.element,status:monsterStatus(b.monster),maxHp:b.monster.hp }, action, dice);
       let gold = 0, xpGain = 0;
       const droppedItems: { blueprintId: number; quantity: number; name: string }[] = [];
       if (result.status === 'VICTORY') {
@@ -125,7 +125,7 @@ export class BattleService {
         if(result.status==='VICTORY')await awardAchievements(tx,characterId);
       }
       return { ...result, turns, battleId, turnVersion: b.turnVersion+1, maxHp: c.maxHp+(level-c.level)*levelGains.hp, monsterMaxHp: b.monster.hp,
-        monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), monsterStatus: monsterStatus(b.monster), defeat, rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
+        monsterName: b.monster.name, monsterSprite: b.monster.spriteUrl,isBoss:b.monster.isBoss,intent:monsterIntent(b.monster,b.turnVersion+1), monsterStatus: monsterStatus(b.monster), phase: bossPhase({ isBoss: b.monster.isBoss, hp: result.monsterHp, maxHp: b.monster.hp }), defeat, rewards: { gold: String(gold), experience: experience.toString(), xpGained: xpGain, level, leveledUp: level > c.level, droppedItems } };
     });
   }
 }
