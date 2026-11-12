@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import Icon from '../../ui/GameIcon';
 import TurnLog from './TurnLog';
+import BattleStage from './BattleStage';
 import {Limited} from '../../ui/ShowMore';
 import RegionIcon from '../../ui/RegionIcon';
 import type {Hero,JourneyState,Monster,Battle} from '../../lib/types';
@@ -27,9 +28,10 @@ export default function HuntPanel({hero,state,monsters,battle,busy,start,turn,di
   const rematch=battle?monsters.find(m=>m.name===battle.monsterName)??null:null;
   if(battle){const ongoing=battle.status==='ONGOING';return <section className="arena">
     <div className="arena-head"><span className="eyebrow">{ongoing?(battle.isBoss?'Duelo contra um chefe':''):'Fim da batalha'}</span><b>Turno {ongoing?battle.turnVersion+1:battle.turnVersion}{ongoing?` de ${BATTLE_MAX_TURNS} · Sua vez`:''}</b></div>
-    <div className="fighters"><div><Icon name={profile.icon} size={96}/><h3>{hero.name}</h3><Life label="Sua vida" hp={battle.hp} max={battle.maxHp}/><Life label="Sua mana" kind="mana" hp={battle.mana} max={Math.max(hero.maxMana,battle.mana)}/>{ongoing&&!!battle.effects?.length&&<ul className="status-effects" aria-label="Efeitos ativos">{battle.effects.map(e=><li key={e.kind} className={e.kind.toLowerCase()} title={statusEffects[e.kind].help}><b>{statusEffects[e.kind].active}</b> · {e.turns} {e.turns===1?'turno':'turnos'}</li>)}</ul>}<p>{profile.name}</p></div>
-      <div className="versus"><Icon name="Logout Block Icon" size={54}/><span>VS</span></div>
-      <div><Icon name={battle.monsterName} src={battle.monsterSprite} size={96}/><h3>{battle.monsterName}</h3><Life label="Vida do monstro" hp={battle.monsterHp} max={battle.monsterMaxHp}/>{ongoing&&battle.monsterStatus&&<p className="status-warning" title={`${statusEffects[battle.monsterStatus].help} Defender no turno impede.`}>{statusWarning[battle.monsterStatus]}</p>}</div></div>
+    <BattleStage battle={battle} heroName={hero.name} vocation={baseVocation(hero.vocation)}/>
+    <div className="fighters staged"><div><h3>{hero.name}</h3><Life label="Sua vida" hp={battle.hp} max={battle.maxHp}/><Life label="Sua mana" kind="mana" hp={battle.mana} max={Math.max(hero.maxMana,battle.mana)}/>{ongoing&&!!battle.effects?.length&&<ul className="status-effects" aria-label="Efeitos ativos">{battle.effects.map(e=><li key={e.kind} className={e.kind.toLowerCase()} title={statusEffects[e.kind].help}><b>{statusEffects[e.kind].active}</b> · {e.turns} {e.turns===1?'turno':'turnos'}</li>)}</ul>}<p>{profile.name}</p></div>
+      <div className="versus"><span>VS</span></div>
+      <div><h3>{battle.monsterName}</h3><Life label="Vida do monstro" hp={battle.monsterHp} max={battle.monsterMaxHp}/>{ongoing&&battle.monsterStatus&&<p className="status-warning" title={`${statusEffects[battle.monsterStatus].help} Defender no turno impede.`}>{statusWarning[battle.monsterStatus]}</p>}</div></div>
     {ongoing?<>{battle.isBoss&&<div className={`boss-phase ${battle.phase===2?'rage':''}`} role="status">{battle.phase===2?`Fase 2 · Em fúria: os golpes dele estão ${bossRage.attackPercent-100}% mais fortes`:`Fase 1 · Abaixo de ${bossRage.atPercent}% de vida ele entra em fúria`}</div>}{battle.isBoss&&battle.phase!==2&&bossLines[battle.monsterName]&&<p className="boss-line">{bossLines[battle.monsterName].intro}</p>}{ongoing&&battle.turnVersion+1>BATTLE_MAX_TURNS-10&&<p className="notice" role="status">Restam {BATTLE_MAX_TURNS-battle.turnVersion} turnos. Sem vencedor até lá, os dois recuam e ninguém leva nada.</p>}{battle.isBoss&&<div className={`boss-intent ${battle.intent?.warning?'warning':''}`} role="status">{battle.intent?.label}</div>}
       <h2 className="arena-title">Habilidades</h2>
       <div className="skill-groups">{skillGroups.map(g=><div key={g.key} role="group" aria-label={g.label} className={`skill-group ${g.key}`}><div className="skill-head"><Icon name={g.icon} size={26}/><span>{g.label}</span></div>

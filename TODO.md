@@ -50,6 +50,7 @@
 - [x] Desempenho (2026-11-12): abas menos usadas carregam sob demanda (arquivo principal de 530 para 381 KB), leitura da Jornada sem travar o personagem, limite da API em 600 pedidos por minuto (`API_RATE_LIMIT`)
 - [x] Acessibilidade (2026-11-12): nenhum font-size abaixo de 12 px (95 regras), atalho "Pular para o conteúdo", alvo mínimo de 24 px em botões de texto e paginação, resumo do herói mais baixo no celular (149 px)
 - [x] Conciliação com alerta de fluxo concentrado (2026-11-12): `npm run economy:reconcile` avisa quando uma conta vendeu no Mercado para 3 ou mais contas criadas há menos de 7 dias (`feederAlerts` em `economy/reconcile.ts`)
+- [x] Arena animada na batalha (2026-11-12): `features/adventure/BattleStage.tsx` encena o último turno com os sprites do manifesto (avanço, projétil, dano, cura, guarda, esquiva, queda, fúria); só CSS, respeita `data-motion="reduce"`. Falta levar a mesma arena para o Duelo e a Caçada em grupo
 - [x] Pendências do jogo registradas no Trello, quadro O Confronto Reborn (https://trello.com/b/dFBF6cYn/o-confronto-reborn), cartões com prefixo [Site] (2026-11-12)
 - [x] Tela: capa e descrição ao compartilhar o link (og:image), "ouro" no lugar de "gp", denúncias sem window.prompt (`ui/AskReason.tsx`), Ferreiro enxerga a mochila inteira, Caçar abre na região liberada mais alta (2026-11-12)
 - [x] `npm run dev:accounts` lista as contas de desenvolvimento do banco; com `-- --bloquear` tranca cada uma (senha aleatória, sem cargo, acessos encerrados, anúncios cancelados), sem apagar nada (2026-11-12)
