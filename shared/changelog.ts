@@ -5,7 +5,7 @@ export const changelog: ChangelogEntry[] = [
     'Seu herói e a criatura agora aparecem frente a frente numa arena e encenam cada turno: quem ataca avança, quem apanha leva o tranco e pisca, e o número do dano sobe na tela.',
     'Cada vocação tem o seu boneco. Arqueiro, Feiticeiro e Druida atacam de longe, com flecha ou magia voando; cura brilha, a guarda ergue o escudo, a esquiva desvia e quem perde cai.',
     'Golpes críticos e golpes pesados dos chefes fazem a arena tremer. Veneno, queimadura e lentidão mudam a cor do herói.',
-    'A arena fica presa no topo enquanto você escolhe as habilidades. Prefere tudo parado? Desligue as animações em Configurações.',
+    'A arena fica presa no topo enquanto você escolhe as habilidades, e vale também no Duelo e na Caçada em grupo. Prefere tudo parado? Use o botão logo abaixo da arena ou Configurações.',
   ] },
   { id: '2026-11-12-bloquear-jogador', date: '2026-11-12', title: 'Bloquear um aventureiro', items: [
     'No perfil de qualquer jogador há agora o botão Bloquear. Quem você bloqueia não deixa mais recado, depoimento nem pedido de amizade para você.',

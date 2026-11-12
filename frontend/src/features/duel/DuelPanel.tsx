@@ -7,6 +7,7 @@ import {Feedback} from '../../ui/Feedback';
 import {LimitedRows} from '../../ui/ShowMore';
 import {Pager,usePaged} from '../../ui/Pager';
 import FriendsBox from './FriendsBox';
+import BattleStage,{heroSpriteOf,shotOf,stageNumber,type Step} from '../../ui/BattleStage';
 import {classLabel,classNames,baseVocation} from '../../../../shared/adventure';
 import {duelActionLabels,modeHelp,modeLabels,outcomeLabels,type DuelAction,type DuelMode,type DuelMove,type DuelOutcome,type DuelRoundRecord} from '../../../../shared/pvp';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
@@ -162,6 +163,27 @@ function Fighter({f,you,openProfile}:{f:Side;you:boolean;openProfile:(n:string)=
     <Bar label={you?'Sua vida':'Vida'} v={f.hp} max={f.maxHp}/><Bar label={you?'Sua mana':'Mana'} kind="mana" v={f.mana} max={f.maxMana}/>
     <p>{classLabel(f.vocation,f.character.classTier)} · Nv. {f.character.level}</p></div>;
 }
+// Cena da última rodada do duelo: quem tem mais agilidade age primeiro; golpe cortado, cura, guarda, esquiva e rendição têm cena própria.
+function duelScript(r:DuelRoundRecord,voc:Record<string,string>):Step[]{
+  const s:Step[]=[],moves=[...r.moves].sort((a,b)=>Number(b.first)-Number(a.first));
+  for(const m of moves){
+    const target=moves.find(x=>x!==m);if(!target)break;
+    const me=String(m.characterId),you=String(target.characterId),v=voc[me]??'KNIGHT',melee=v==='KNIGHT';
+    if(m.interrupted){s.push({cues:[{who:me,cls:'stagger',float:{text:'Interrompido!',kind:'miss'}}],ms:560});continue;}
+    if(m.action==='FLEE'&&m.acted){s.push({cues:[{who:me,cls:'flee'}],ms:560});break;}
+    if(!m.acted){if(m.auto)s.push({cues:[{who:me,cls:'guard'}],ms:320});continue;}
+    if(m.action==='HEAL')s.push({cues:[{who:me,cls:'heal',float:{text:`+${stageNumber(m.healed)}`,kind:'heal'}}],ms:620});
+    else if(m.action==='DEFEND_SHIELD')s.push({cues:[{who:me,cls:'guard'}],ms:320});
+    else{
+      const kill=!m.dodged&&m.dealt>0&&target.hp<=0,guard=target.action==='DEFEND_SHIELD';
+      s.push({cues:[{who:me,cls:melee?'lunge':'cast',shot:melee?undefined:shotOf(v)},
+        m.dodged?{who:you,cls:'dodge late',float:{text:'Esquiva!',kind:'miss'}}
+          :{who:you,cls:`hit late${guard?' guard':''}${kill?' dying':''}`,float:{text:`−${stageNumber(m.dealt)}`,kind:m.crit?'crit':'dmg'}}],shake:m.crit&&!m.dodged,ms:kill?900:640});
+      if(kill)break;
+    }
+  }
+  return s;
+}
 function DuelView({d,hero,left,busy,surrender,setSurrender,choose,forfeit,reload,close,ransom,openProfile}:{d:Duel;hero:Hero;left:number;busy:boolean;surrender:boolean;setSurrender:(v:boolean)=>void;
   choose:(a:DuelAction)=>void;forfeit:()=>void;reload:()=>void;close:()=>void;ransom:(id:number)=>void;openProfile:(n:string)=>void}){
   const fighting=d.status==='FIGHTING',last=d.rounds.at(-1),pick=d.actions.find(a=>a.key===d.me.action);
@@ -169,6 +191,9 @@ function DuelView({d,hero,left,busy,surrender,setSurrender,choose,forfeit,reload
   return <section className="arena duel-arena">
     <div className="arena-head"><span className="eyebrow">{fighting?`${modeLabels[d.mode].toUpperCase()}${d.mode==='GOLD'?` · POTE ${gold(BigInt(d.stake)*2n)}`:''} · ${d.foe.ready?'O oponente já escolheu':'O oponente está escolhendo'}`:outcomeLabels[d.outcome].toUpperCase()}</span>
       <b>{fighting?`Rodada ${d.round} · resolve ${relative(left)}`:`Rodada ${d.round}`}</b></div>
+    <BattleStage scene={d.id} turn={last?.round??0} steps={last?duelScript(last,{[d.me.characterId]:baseVocation(d.me.vocation),[d.foe.characterId]:baseVocation(d.foe.vocation)}):[]}
+      left={[{id:String(d.me.characterId),name:d.me.character.name,src:heroSpriteOf(baseVocation(d.me.vocation)),down:!fighting&&d.me.hp<=0,gone:!fighting&&d.me.hp>0&&d.winnerId===d.foe.characterId}]}
+      right={[{id:String(d.foe.characterId),name:d.foe.character.name,src:heroSpriteOf(baseVocation(d.foe.vocation)),down:!fighting&&d.foe.hp<=0,gone:!fighting&&d.foe.hp>0&&d.winnerId===d.me.characterId}]}/>
     <div className="fighters"><Fighter f={d.me} you openProfile={openProfile}/><div className="versus"><Icon name="Logout Block Icon" size={54}/><span>VS</span></div><Fighter f={d.foe} you={false} openProfile={openProfile}/></div>
     {fighting?<>
       {d.me.missed>0&&<p className="notice">Você não escolheu na rodada passada e só defendeu. Mais uma rodada sem escolher é derrota.</p>}
