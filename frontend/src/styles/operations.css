@@ -96,6 +96,7 @@
 .post{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,currentColor 14%,transparent)}.post.pending{opacity:.85;border-left:3px solid #b9892f;padding-left:10px}
 .post-avatar{padding:2px;background:transparent;border:0}.post-head{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}.post-head small{font-size:11px;opacity:.65}
 .post-text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.6;margin:4px 0}.post-actions{display:flex;gap:14px}
+.rares-panel>input{width:100%;margin:8px 0}.rare-row{border-top:1px solid #ffffff14}.rare-row.destroyed h3{text-decoration:line-through;opacity:.75}.rare-history{padding:0 0 12px 52px}.rare-history ol{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px}.rare-history small{opacity:.7}@media(max-width:640px){.rare-history{padding-left:0}.rares-totals{grid-template-columns:repeat(2,1fr)}}
 .duel-record{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 10px;text-align:center}.duel-record dt{font-size:12px;opacity:.7}.duel-record dd{margin:0;font-size:18px;font-weight:600}
 .duel-recent{list-style:none;margin:0;padding:0;display:grid;gap:6px}.duel-recent li{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-size:13px;padding-left:8px;border-left:3px solid #8a8a8a}.duel-recent li.win{border-color:#5fae6b}.duel-recent li.loss{border-color:#c0564b}.duel-recent small{opacity:.7;white-space:nowrap}
 .profile-subtitle{font-size:14px;margin:16px 0 6px}

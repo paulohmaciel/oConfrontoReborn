@@ -37,12 +37,23 @@ economyRoutes.get('/market/sales', asyncRoute(async (_req, res) => {
 // ----- Itens raros (equipamentos +10): inspeção para qualquer jogador conectado -----
 const rareInclude = { blueprint: { select: { name: true, spriteUrl: true } }, creator: { select: { name: true, fameHidden: true } } } as const;
 economyRoutes.get('/rare-items', asyncRoute(async (req, res) => {
-  const blueprintId = req.query.blueprintId ? integer(Number(req.query.blueprintId)) : undefined;
-  const [rows, circulating, destroyed] = await Promise.all([
-    prisma.rareItem.findMany({ where: blueprintId ? { blueprintId } : {}, include: rareInclude, orderBy: { id: 'desc' }, take: 50 }),
+  // Coleção pública em páginas de 10: filtro por situação (circulating | destroyed | first), busca pelo nome do item e, opcionalmente, um tipo de item.
+  const blueprintId = req.query.blueprintId ? integer(Number(req.query.blueprintId)) : undefined, { page, skip, take } = pageOf(req.query);
+  const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 60) : '', status = String(req.query.status ?? '');
+  const where = { ...(blueprintId ? { blueprintId } : {}), ...(q ? { blueprint: { name: { contains: q } } } : {}),
+    ...(status === 'circulating' ? { status: 'CIRCULATING' } : status === 'destroyed' ? { status: { not: 'CIRCULATING' } } : status === 'first' ? { firstOfKind: true } : {}) };
+  const [rows, total, circulating, destroyed] = await Promise.all([
+    prisma.rareItem.findMany({ where, include: rareInclude, orderBy: { id: 'desc' }, skip, take }),
+    prisma.rareItem.count({ where }),
     prisma.rareItem.count({ where: { status: 'CIRCULATING', ...(blueprintId ? { blueprintId } : {}) } }),
     prisma.rareItem.count({ where: { status: { not: 'CIRCULATING' }, ...(blueprintId ? { blueprintId } : {}) } })]);
-  res.json({ circulating, destroyed, items: rows.map(publicRare) });
+  res.json({ circulating, destroyed, ...paged(rows.map(publicRare), total, page) });
+}));
+// Totais do mundo (vem antes de /rare-items/:id para "totals" não ser lido como id).
+economyRoutes.get('/rare-items/totals', asyncRoute(async (_req, res) => {
+  const [circulating, destroyed, firsts] = await Promise.all([prisma.rareItem.count({ where: { status: 'CIRCULATING' } }),
+    prisma.rareItem.count({ where: { status: { not: 'CIRCULATING' } } }), prisma.rareItem.count({ where: { firstOfKind: true } })]);
+  res.json({ circulating, destroyed, firsts });
 }));
 economyRoutes.get('/rare-items/:id', asyncRoute(async (req, res) => {
   const r = await prisma.rareItem.findUnique({ where: { id: integer(Number(req.params.id)) }, include: { ...rareInclude, events: { orderBy: { id: 'asc' }, take: 50 } } });

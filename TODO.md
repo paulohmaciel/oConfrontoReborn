@@ -93,7 +93,7 @@
 - [x] Inspeção: `GET /rare-items` (contagem em circulação × destruídos) e `/rare-items/:id`; Nº aparece na mochila e na Forja
 - [x] Testes: unitário (anonimato) + integração (sequência, mercado, NPC, privacidade)
 - [ ] **Você:** `npx prisma migrate deploy` e `npx prisma generate` (schema mudou) antes de rodar os testes
-- [ ] Tela pública de inspeção / coleção de raros (hoje só API + Nº na mochila)
+- [x] Tela pública de coleção de raros (2026-11-12): aba Itens raros (/itens-raros) com totais, busca, filtros, páginas de 10 e a história de cada item; `GET /rare-items` paginado e `/rare-items/totals`
 - [ ] Anúncio no mundo de +10 / primeiro do tipo (respeitando anonimato)
 - [ ] Itens raros obtidos por outras rotas (chefes/fabricação) — Astra sugeriu; hoje raro = +10
 - [x] Efeito visual do +10: moldura de fogo animada criada pelo dono (GIF `fx/fire-frame.gif`, 16 quadros) em volta do ícone da mochila, equipamento e Forja; parada (1º quadro) com "reduzir movimento" (2026-10-28)
