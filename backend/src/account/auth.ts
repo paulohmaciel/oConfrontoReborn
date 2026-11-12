@@ -6,9 +6,19 @@ import { asyncRoute } from '../core/http';
 import { GameError } from '../core/engine';
 import { hashPassword, verifyPassword } from '../core/password';
 import { vocations, type BaseVocation } from '../../../shared/adventure';
+import { BASE_ATTRIBUTE, expForLevel, levelGains, typicalAttributes } from '../../../shared/progression';
 import { createCharacterKit, parseCharacterName } from '../game/characterService';
+import { addItem, recordGold } from '../economy/economy';
 import { sendVerification } from './accountTokens';
+import { notifyMail, publicUrl } from '../core/mailer';
 export const digest = (value: string) => createHash('sha256').update(value).digest('hex');
+// Conta de desenvolvimento local. Nunca recebe e-mail de redefinição e só existe fora de produção.
+export const MASTER_EMAIL = 'mestre@localhost.dev';
+// Segundo jogador de teste (só desenvolvimento): para duelar contra o Mestre jogando pelos dois lados.
+export const RIVAL_EMAIL = 'rival@localhost.dev';
+// Cópia do Mestre (só desenvolvimento): mesmo nível, atributos, classe e equipamento vestido, em outra conta para poder duelar com ele.
+export const COPY_EMAIL = 'mestre1@localhost.dev';
+export const isLoopbackHost = (host = '127.0.0.1') => ['127.0.0.1', '::1', 'localhost'].includes(host.trim().toLowerCase());
 
 function tokenFromCookie(cookie = '') { return cookie.split(';').map(s => s.trim()).find(s => s.startsWith('oc_session='))?.slice(11) ?? ''; }
 export async function activeBan(accountId: number) {
@@ -70,7 +80,15 @@ authRouter.post('/register', asyncRoute(async (req, res) => {
     void sendVerification(account.id, email);
     res.status(201).json({ ok: true });
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') throw new GameError(409, 'E-mail ou nome indisponível.');
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      const target = String((e.meta as { target?: unknown } | undefined)?.target ?? '');
+      // Nome de personagem é público (perfil, busca): pode dizer que está em uso.
+      if (target.includes('name')) throw new GameError(409, 'Esse nome de personagem já está em uso. Escolha outro.');
+      // E-mail já cadastrado: resposta igual à de sucesso (sem revelar que a conta existe); o dono do endereço recebe um aviso.
+      notifyMail(email, 'Tentativa de cadastro — O Confronto', `Alguém tentou criar uma conta em O Confronto com este e-mail, que já está cadastrado.\n\nSe foi você, entre normalmente em ${publicUrl()} ou use "Esqueci minha senha". Se não foi, ignore esta mensagem; nada mudou na sua conta.`);
+      res.status(202).json({ ok: true, pending: true, message: 'Quase lá! Enviamos um e-mail para concluir o cadastro. Confira sua caixa de entrada.' });
+      return;
+    }
     throw e;
   }
 }));
@@ -86,29 +104,84 @@ authRouter.post('/login', asyncRoute(async (req, res) => {
   res.json({ ok: true });
 }));
 // ----- Entrada "mestre" SÓ PARA DESENVOLVIMENTO LOCAL -----
-// Só funciona com DEV_QUICK_LOGIN=1 no .env, NODE_ENV diferente de "production" e pedido vindo do próprio computador (loopback, sem proxy).
-// A conta usa uma senha aleatória que ninguém conhece; não existe senha padrão. Em produção a rota responde "desativado".
+// Só funciona com DEV_QUICK_LOGIN=1, NODE_ENV=development (explícito), servidor escutando só em loopback (HOST)
+// e pedido vindo do próprio computador, sem proxy. A conta usa uma senha aleatória que ninguém conhece; não existe senha padrão.
+// Esta rota NUNCA muda o cargo de uma conta existente: cargos só por `npm run admin:role`.
+export const devQuickLoginEnabled = () =>
+  process.env.DEV_QUICK_LOGIN === '1' && process.env.NODE_ENV === 'development' && isLoopbackHost(process.env.HOST);
 const devQuickLogin = (req: Parameters<RequestHandler>[0]) =>
-  process.env.DEV_QUICK_LOGIN === '1' && process.env.NODE_ENV !== 'production' && !req.headers['x-forwarded-for']
+  devQuickLoginEnabled() && !req.headers['x-forwarded-for'] && !req.headers['x-real-ip']
   && ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress ?? '');
 authRouter.get('/dev-login', (req, res) => { res.json({ enabled: devQuickLogin(req) }); });
 authRouter.post('/dev-login', asyncRoute(async (req, res) => {
   if (!devQuickLogin(req)) throw new GameError(404, 'Rota não encontrada.');
-  const email = 'mestre@localhost.dev';
-  let account = await prisma.account.findUnique({ where: { email } });
+  if (req.body?.who === 'rival') { await loginCookie(res, await devRival()); res.json({ ok: true }); return; }
+  if (req.body?.who === 'copy') { await loginCookie(res, await devCopy()); res.json({ ok: true }); return; }
+  let account = await prisma.account.findUnique({ where: { email: MASTER_EMAIL } });
   if (!account) {
     const hash = await hashPassword(randomBytes(24).toString('hex'));
     account = await prisma.$transaction(async tx => {
-      const a = await tx.account.create({ data: { email, password: hash, role: 'ADMIN', emailVerifiedAt: new Date() } });
+      const a = await tx.account.create({ data: { email: MASTER_EMAIL, password: hash, role: 'ADMIN', emailVerifiedAt: new Date() } });
       await createCharacterKit(tx, a.id, 'Mestre', 'KNIGHT', { vocationChosen: true, startingGold: 1_000_000n });
       return a;
     });
   } else if (account.role !== 'ADMIN') {
-    account = await prisma.account.update({ where: { id: account.id }, data: { role: 'ADMIN' } });
+    throw new GameError(403, `A conta ${MASTER_EMAIL} existe sem cargo ADMIN. Conceda o cargo pelo terminal: npm run admin:role -- ${MASTER_EMAIL} ADMIN`);
   }
   await loginCookie(res, account.id);
   res.json({ ok: true });
 }));
+// Rival de Treino: conta comum (PLAYER), no nível do Mestre (para caber na faixa do duelo), amigo dele e com ouro para testar apostas.
+// Criada na primeira entrada; nas seguintes, só volta ao nível do Mestre se ele tiver subido. Senha aleatória que ninguém conhece.
+async function devRival() {
+  const master = await prisma.character.findFirst({ where: { account: { email: MASTER_EMAIL } }, orderBy: { level: 'desc' } });
+  if (!master) throw new GameError(409, 'Entre como Mestre uma vez antes de chamar o Rival.');
+  const level = master.level, attrs = typicalAttributes('SORCERER', level);
+  const stats = { level, experience: expForLevel(level), ...attrs, vocation: level >= 20 ? 'MASTER_SORCERER' as const : 'SORCERER' as const,
+    maxHp: 150 + (level - 1) * levelGains.hp + (attrs.vitality - BASE_ATTRIBUTE) * 15, maxMana: 55 + (level - 1) * levelGains.mana + (attrs.resistance - BASE_ATTRIBUTE) * 15 };
+  return prisma.$transaction(async tx => {
+    let account = await tx.account.findUnique({ where: { email: RIVAL_EMAIL }, include: { characters: true } });
+    if (!account) {
+      const a = await tx.account.create({ data: { email: RIVAL_EMAIL, password: await hashPassword(randomBytes(24).toString('hex')), role: 'PLAYER', emailVerifiedAt: new Date() } });
+      await createCharacterKit(tx, a.id, 'Rival de Treino', 'SORCERER', { vocationChosen: true, startingGold: 1_000_000n });
+      account = await tx.account.findUniqueOrThrow({ where: { id: a.id }, include: { characters: true } });
+    }
+    const rival = account.characters[0];
+    if (rival.level !== level) await tx.character.update({ where: { id: rival.id }, data: { ...stats, hp: stats.maxHp, mana: stats.maxMana } });
+    const friends = await tx.friendship.findFirst({ where: { OR: [{ requesterId: master.id, addresseeId: rival.id }, { requesterId: rival.id, addresseeId: master.id }] } });
+    if (!friends) await tx.friendship.create({ data: { requesterId: master.id, addresseeId: rival.id, status: 'ACCEPTED', respondedAt: new Date() } });
+    else if (friends.status !== 'ACCEPTED') await tx.friendship.update({ where: { id: friends.id }, data: { status: 'ACCEPTED', respondedAt: new Date() } });
+    return account.id;
+  });
+}
+// "Mestre 1": cópia do personagem de maior nível do Mestre, criada na primeira entrada (as seguintes só entram).
+// Ouro e itens entram pelos livros-razão (STARTER e ADMIN_GRANT), como qualquer item criado no jogo. Itens raros não são copiados (são únicos).
+async function devCopy() {
+  const master = await prisma.character.findFirst({ where: { account: { email: MASTER_EMAIL } }, orderBy: { level: 'desc' },
+    include: { inventory: { where: { isEquipped: true } } } });
+  if (!master) throw new GameError(409, 'Entre como Mestre uma vez antes de chamar o Mestre 1.');
+  return prisma.$transaction(async tx => {
+    let account = await tx.account.findUnique({ where: { email: COPY_EMAIL }, include: { characters: true } });
+    if (!account) {
+      const a = await tx.account.create({ data: { email: COPY_EMAIL, password: await hashPassword(randomBytes(24).toString('hex')), role: 'PLAYER', emailVerifiedAt: new Date() } });
+      const c = await tx.character.create({ data: { accountId: a.id, name: 'Mestre 1', vocation: master.vocation, vocationChosen: master.vocationChosen, journeyStep: master.journeyStep,
+        level: master.level, experience: master.experience, hp: master.maxHp, maxHp: master.maxHp, mana: master.maxMana, maxMana: master.maxMana, energy: master.maxEnergy, maxEnergy: master.maxEnergy,
+        strength: master.strength, vitality: master.vitality, agility: master.agility, resistance: master.resistance, statPoints: master.statPoints,
+        classTier: master.classTier, promotedAt: master.promotedAt, goldInHand: master.goldInHand } });
+      if (master.goldInHand > 0n) await recordGold(tx, c.id, master.goldInHand, master.goldInHand, 'STARTER');
+      for (const i of master.inventory) {
+        const copy = await addItem(tx, c.id, i.blueprintId, i.quantity, 'ADMIN_GRANT', { type: 'devCopy', id: master.id }, i.upgradeTier);
+        await tx.inventoryItem.update({ where: { id: copy.id }, data: { isEquipped: true, equippedSlot: i.equippedSlot } });
+      }
+      account = await tx.account.findUniqueOrThrow({ where: { id: a.id }, include: { characters: true } });
+    }
+    const copy = account.characters[0];
+    const friends = await tx.friendship.findFirst({ where: { OR: [{ requesterId: master.id, addresseeId: copy.id }, { requesterId: copy.id, addresseeId: master.id }] } });
+    if (!friends) await tx.friendship.create({ data: { requesterId: master.id, addresseeId: copy.id, status: 'ACCEPTED', respondedAt: new Date() } });
+    else if (friends.status !== 'ACCEPTED') await tx.friendship.update({ where: { id: friends.id }, data: { status: 'ACCEPTED', respondedAt: new Date() } });
+    return account.id;
+  });
+}
 authRouter.post('/logout', asyncRoute(async (req, res) => {
   await prisma.session.deleteMany({ where: { tokenHash: digest(tokenFromCookie(req.headers.cookie)) } });
   res.clearCookie('oc_session', { path: '/' }); res.json({ ok: true });

@@ -3,7 +3,10 @@ import { BattleService } from './battleService';
 import { GameError, integer } from '../core/engine';
 import { recordError } from '../core/monitor';
 import { buyNpc, equip } from './inventoryService';
-import { addStat, heal, sellNpc, unequip, upgrade, usePotion } from './gameService';
+import { addStat, heal, resetStats, sellNpc, unequip, upgrade, usePotion } from './gameService';
+import { craft, forgeOverview, reforge, salvage } from './forgeService';
+import { advanceDuel, answerDuel, cancelChallenge, challenge, chooseDuelAction, duelHistory, duelRanking, duelState, forfeitDuel, honorCosmeticAction, ransomLoot } from './duelService';
+import { advanceGroupRound, answerInvite, chooseGroupAction, createParty, groupState, inviteFriend, leaveParty, removeMember, startGroupHunt } from './groupHuntService';
 
 // O middleware de autenticação DEVE validar sessão/token e preencher res.locals.accountId.
 // Não use IDs recebidos em headers/query/body como identidade autenticada.
@@ -23,14 +26,40 @@ export function gameRouter() {
   router.get('/characters/:characterId/battles/:battleId', handle((a, c, req) => BattleService.snapshot(a, c, integer(Number(req.params.battleId)))));
   router.post('/characters/:characterId/battles/:battleId/turns', handle((a, c, req) =>
     BattleService.turn(a, c, integer(Number(req.params.battleId)), integer(req.body?.expectedTurn, 0), req.body?.action)));
+  // Caçada em grupo com amigos (A Caçada das Quatro Marcas).
+  router.get('/characters/:characterId/group', handle((a, c, req) => groupState(a, c, req.query.q)));
+  router.post('/characters/:characterId/group/party', handle((a, c, req) => createParty(a, c, req.body?.huntKey)));
+  router.post('/characters/:characterId/group/invite', handle((a, c, req) => inviteFriend(a, c, req.body?.name)));
+  router.post('/characters/:characterId/group/invites/:memberId/:answer(accept|decline)', handle((a, c, req) => answerInvite(a, c, integer(Number(req.params.memberId)), req.params.answer === 'accept')));
+  router.post('/characters/:characterId/group/leave', handle((a, c) => leaveParty(a, c)));
+  router.post('/characters/:characterId/group/remove', handle((a, c, req) => removeMember(a, c, integer(req.body?.memberId))));
+  router.post('/characters/:characterId/group/start', handle((a, c) => startGroupHunt(a, c)));
+  router.post('/characters/:characterId/group/battles/:battleId/act', handle((a, c, req) => chooseGroupAction(a, c, integer(Number(req.params.battleId)), integer(req.body?.round, 1), req.body?.action)));
+  router.post('/characters/:characterId/group/battles/:battleId/advance', handle((a, c, req) => advanceGroupRound(a, c, integer(Number(req.params.battleId)), integer(req.body?.round, 1))));
+  router.get('/characters/:characterId/duel', handle((a, c, req) => duelState(a, c, req.query.q)));
+  router.get('/characters/:characterId/duel/history', handle((a, c, req) => duelHistory(a, c, req.query as Record<string, unknown>)));
+  router.get('/duel/ranking', async (req, res, next) => { try { res.json(await duelRanking(req.query.tier)); } catch (e) { next(e); } });
+  router.post('/characters/:characterId/duel/challenge', handle((a, c, req) => challenge(a, c, req.body?.name, req.body?.mode, req.body?.wager)));
+  router.post('/characters/:characterId/duel/loot/:lootId/ransom', handle((a, c, req) => ransomLoot(a, c, integer(Number(req.params.lootId)))));
+  router.post('/characters/:characterId/duel/honor/:action(buy|use)', handle((a, c, req) => honorCosmeticAction(a, c, req.body?.key, req.params.action === 'buy')));
+  router.post('/characters/:characterId/duel/invites/:duelId/:answer(accept|decline)', handle((a, c, req) => answerDuel(a, c, integer(Number(req.params.duelId)), req.params.answer === 'accept')));
+  router.post('/characters/:characterId/duel/invites/:duelId/cancel', handle((a, c, req) => cancelChallenge(a, c, integer(Number(req.params.duelId)))));
+  router.post('/characters/:characterId/duel/:duelId/act', handle((a, c, req) => chooseDuelAction(a, c, integer(Number(req.params.duelId)), integer(req.body?.round, 1), req.body?.action)));
+  router.post('/characters/:characterId/duel/:duelId/advance', handle((a, c, req) => advanceDuel(a, c, integer(Number(req.params.duelId)), integer(req.body?.round, 1))));
+  router.post('/characters/:characterId/duel/:duelId/forfeit', handle((a, c, req) => forfeitDuel(a, c, integer(Number(req.params.duelId)))));
   router.post('/characters/:characterId/equip', handle((a, c, req) => equip(a, c, integer(req.body?.itemId))));
   router.post('/characters/:characterId/shop', handle((a, c, req) => buyNpc(a, c, integer(req.body?.blueprintId), integer(req.body?.quantity), req.get('idempotency-key') ?? '')));
   router.post('/characters/:characterId/unequip', handle((a, c, req) => unequip(a, c, integer(req.body?.itemId))));
-  router.post('/characters/:characterId/stats', handle((a, c, req) => addStat(a, c, req.body?.stat, req.get('idempotency-key') ?? '')));
+  router.post('/characters/:characterId/stats', handle((a, c, req) => addStat(a, c, req.body?.stat, req.get('idempotency-key') ?? '', integer(req.body?.amount ?? 1))));
+  router.post('/characters/:characterId/stats/reset', handle((a, c, req) => resetStats(a, c, req.get('idempotency-key') ?? '')));
   router.post('/characters/:characterId/temple', handle((a, c) => heal(a, c)));
   router.post('/characters/:characterId/sell', handle((a, c, req) => sellNpc(a, c, integer(req.body?.itemId), req.body?.confirmUpgraded === true)));
   router.post('/characters/:characterId/upgrade', handle((a, c, req) => upgrade(a, c, integer(req.body?.itemId), integer(req.body?.expectedTier, 0), String(req.get('idempotency-key') ?? ''), req.body?.useProtection === true)));
   router.post('/characters/:characterId/use', handle((a, c, req) => usePotion(a, c, integer(req.body?.itemId), req.get('idempotency-key') ?? '')));
+  router.get('/characters/:characterId/forge', handle((a, c) => forgeOverview(a, c)));
+  router.post('/characters/:characterId/forge/craft', handle((a, c, req) => craft(a, c, integer(req.body?.blueprintId), req.get('idempotency-key') ?? '')));
+  router.post('/characters/:characterId/forge/reforge', handle((a, c, req) => reforge(a, c, integer(req.body?.itemId), integer(req.body?.targetId), req.get('idempotency-key') ?? '')));
+  router.post('/characters/:characterId/forge/salvage', handle((a, c, req) => salvage(a, c, integer(req.body?.itemId), req.body?.confirmUpgraded === true, req.get('idempotency-key') ?? '')));
   return router;
 }
 export const gameErrorHandler: ErrorRequestHandler = (error, req, res, _next) => {

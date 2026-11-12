@@ -1,0 +1,75 @@
+/* Duelo (features/duel/DuelPanel). Reaproveita a arena, os grupos de habilidades e o quadro da rodada de styles/battle.css. */
+.duel-page{display:grid;gap:18px}
+.duel-intro p{max-width:520px}
+.duel-record{display:grid;grid-template-columns:repeat(5,minmax(64px,1fr));gap:8px;text-align:center}
+.duel-record div{padding:10px 8px;border:1px solid #48513d;border-radius:6px;background:#1c2621}
+.duel-record b{display:block;font-family:Georgia,serif;font-size:26px;color:#e0cf98}
+.duel-record span{font-size:12px;color:#9aab9c}
+.duel-arena .fighters>div>.sprite{height:72px}
+.duel-name{font-family:Georgia,serif;font-size:inherit;font-weight:700;color:inherit}
+.duel-skills{grid-template-columns:1.75fr 1fr}
+.skill-help{font-size:12px;line-height:1.4;color:#93a596;max-width:22ch}
+.duel-waiting{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px 18px;border:1px solid #4a5a4d;border-radius:6px;background:#1a2421}
+.duel-waiting>div{flex:1}.duel-waiting b{font-family:Georgia,serif;font-size:17px}.duel-waiting p{margin-top:4px}
+.duel-surrender{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:13px}
+.duel-surrender button{display:inline-flex;align-items:center;gap:8px;min-height:36px}
+.danger-button{background:#5a2a24;border-color:#a0503f;color:#f2d6cc}
+.danger-button:hover:not(:disabled){background:#6e322a;border-color:#c06048}
+.duel-lines{min-height:0;margin-top:12px;font-size:12px}
+.duel-rounds{margin-top:14px}
+.duel-rounds summary{cursor:pointer;color:#c6ae77;font-size:14px;padding:6px 0;min-height:24px}
+.duel-rank{min-width:2.5em;font-family:Georgia,serif;font-size:16px}
+.duel-page .section-title select{max-width:200px;font-size:13px}
+.duel-page .market-row p,.duel-page .section-title>span,.duel-page .muted{font-size:12px}
+.duel-page .market-row h3,.duel-page .market-row h3 .link-button{font-size:14px}
+.duel-page .market-row button{font-size:13px;min-height:36px}
+.duel-page .tag{font-size:11px}
+
+:root[data-theme="light"] .duel-record div{background:#f6e6c2;border-color:#d2a964}
+:root[data-theme="light"] .duel-record b{color:#633113}:root[data-theme="light"] .duel-record span{color:#6e4f26}
+:root[data-theme="light"] .skill-help{color:#6e4f26}
+:root[data-theme="light"] .duel-waiting{background:#f6e6c2;border-color:#d2a964}
+:root[data-theme="light"] .danger-button{background:#b5452c;border-color:#8a2a12;color:#fff4e0}
+:root[data-theme="light"] .danger-button:hover:not(:disabled){background:#9c3a22}
+:root[data-theme="light"] .duel-rounds summary{color:#742e12}
+
+@media(max-width:760px){
+  .duel-intro{flex-direction:column;align-items:stretch}
+  .duel-record b{font-size:21px}
+  .duel-skills{grid-template-columns:1fr}
+  .skill-help{display:none}
+  .duel-surrender{justify-content:flex-start}
+  .duel-page .market-row{flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){.duel-page *{transition:none!important}}
+.duel-report{flex-basis:100%;margin-top:8px}
+.duel-report label{display:block;font-size:13px}
+.duel-report textarea{width:100%;margin-top:6px;font:inherit;font-size:13px;padding:8px;border-radius:5px;border:1px solid #404b4d;background:#161d20;color:inherit}
+:root[data-theme="light"] .duel-report textarea{background:#fff8e6;border-color:#c5a26a}
+.duel-page .market-row:has(.duel-report){flex-wrap:wrap}
+/* O que está em jogo: escolha da forma, aviso e confirmação (Comando 9). */
+.duel-modes{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+.duel-modes button{display:inline-flex;align-items:center;gap:8px;min-height:40px;font-size:14px}
+.duel-stake{font-size:13px;line-height:1.6;margin:8px 0;padding:10px 12px;border-radius:5px;border:1px solid #3f5a44;background:#1f2d24}
+.duel-stake.risky{border-color:#8a5a3a;background:#33261d}
+.duel-stake b{margin-right:6px;letter-spacing:1px}
+.duel-confirm{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0}
+.duel-confirm input{width:20px;height:20px;flex:none}
+.duel-page .price-label{flex-wrap:wrap;font-size:13px}
+.duel-page .price-label input{max-width:180px}
+:root[data-theme="light"] .duel-stake{background:#eef0d2;border-color:#a9a66a}
+:root[data-theme="light"] .duel-stake.risky{background:#f6dcc4;border-color:#cf8a62}
+@media(max-width:760px){.duel-record{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* Aposta de ouro: valores rápidos e aviso. Amigos: busca e pedidos dentro do Duelo. */
+.duel-wager{margin:6px 0 10px}
+.duel-wager .price-label{margin-bottom:8px}
+.duel-wager-quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.duel-wager-quick button{font-size:13px;min-height:34px;padding:6px 12px}
+.duel-wager .error{margin-top:6px}
+.duel-why{margin-top:8px}
+.friends-search{display:block;font-size:13px;margin:12px 0 4px}
+.friends-search input{display:block;margin-top:6px;max-width:420px}
+.friends-box .profile-subtitle{margin-top:14px}
+.friends-box .market-row h3,.friends-box .market-row h3 .link-button{font-size:14px}
+.friends-box .market-row p{font-size:12px}
+.friends-box .market-row button{font-size:13px;min-height:36px}

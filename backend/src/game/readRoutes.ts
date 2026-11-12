@@ -1,17 +1,18 @@
 import { PROTECTION_STONE } from '../../../shared/economy';
 import { Router } from 'express';
 import type { Prisma, ItemSlot } from '@prisma/client';
-import { asyncRoute } from '../core/http';
+import { asyncRoute, pageOf, paged } from '../core/http';
 import { prisma, transaction, lockCharacter } from '../core/db';
 import { GameError, integer, getExpForLevel } from '../core/engine';
 import { buyListing, cancelListing, listItem, expireListings } from '../economy/marketService';
 import { loadSettings } from '../core/settings';
 import { isPremium } from '../premium/premium';
 import { npcBuyPrice } from '../../../shared/economy';
+import { forgeableSlots } from '../../../shared/forge';
 import { combatStats } from './combatStats';
 export const readRoutes = Router();
 readRoutes.get('/me', asyncRoute(async (_req, res) => {
-  const characters = await prisma.character.findMany({ where: { accountId: res.locals.accountId }, select: { id: true, name: true, level: true, vocation: true } });
+  const characters = await prisma.character.findMany({ where: { accountId: res.locals.accountId }, select: { id: true, name: true, level: true, vocation: true, classTier: true } });
   res.json({ characters });
 }));
 readRoutes.get('/characters/:id', asyncRoute(async (req, res) => {
@@ -30,25 +31,37 @@ readRoutes.get('/characters/:id/inventory', asyncRoute(async (req, res) => {
   const page = integer(Number(req.query.page ?? 1));
   const character = await prisma.character.findFirst({ where: { id, accountId: res.locals.accountId }, select: { id: true } });
   if (!character) throw new GameError(404, 'Personagem não encontrado.');
-  const slot = typeof req.query.slot === 'string' && /^[A-Z]{3,12}$/.test(req.query.slot) ? req.query.slot : undefined;
+  // Um ou mais tipos separados por vírgula (as abas juntam tipos, ex.: AMULET,RING em Joias).
+  const slot = typeof req.query.slot === 'string' ? req.query.slot.split(',').filter(s => /^[A-Z]{3,12}$/.test(s)).slice(0, 12) as ItemSlot[] : [];
   const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 40) : '';
   const onlyFavorites = req.query.favorites === '1';
   // Busca por nome e favoritos fazem parte da organização avançada da mochila (Premium).
   if ((q || onlyFavorites) && !await isPremium(prisma, res.locals.accountId)) throw new GameError(402, 'Busca e favoritos fazem parte do Premium.');
-  const blueprint: Prisma.ItemBlueprintWhereInput = { ...(slot ? { slot: slot as ItemSlot } : {}), ...(q ? { name: { contains: q } } : {}) };
+  const blueprint: Prisma.ItemBlueprintWhereInput = { ...(slot.length ? { slot: { in: slot } } : {}), ...(q ? { name: { contains: q } } : {}) };
   const where: Prisma.InventoryItemWhereInput = { characterId: id, isEquipped: false, ...(Object.keys(blueprint).length ? { blueprint } : {}), ...(onlyFavorites ? { favorite: true } : {}) };
-  const [items,total] = await Promise.all([prisma.inventoryItem.findMany({ where, include: { blueprint: true, rareItem: { select: { id: true, serial: true, status: true } } }, orderBy: { id: 'asc' }, take: 20, skip: (page-1)*20 }),prisma.inventoryItem.count({ where })]);
-  res.json({ items, total, page });
+  const [items,total] = await Promise.all([prisma.inventoryItem.findMany({ where, include: { blueprint: true, rareItem: { select: { id: true, serial: true, status: true } } }, orderBy: { id: 'asc' }, take: 10, skip: (page-1)*10 }),prisma.inventoryItem.count({ where })]);
+  res.json(paged(items, total, page));
 }));
 readRoutes.get('/monsters', asyncRoute(async (_req,res) => { res.json(await prisma.monster.findMany({ orderBy: { level: 'asc' }, take: 200 })); }));
 readRoutes.get('/shop', asyncRoute(async (_req,res) => {
-  const [items, settings] = await Promise.all([prisma.itemBlueprint.findMany({ where: { npcPrice: { gt: 0 } }, orderBy: { npcPrice: 'asc' }, take: 200 }), loadSettings(prisma)]);
+  // Equipamento acima do nível configurado só sai do Ferreiro (fabricar/reforjar) ou do loot.
+  const settings = await loadSettings(prisma);
+  const items = await prisma.itemBlueprint.findMany({ where: { npcPrice: { gt: 0 }, OR: [{ slot: { notIn: [...forgeableSlots] } }, { minLevel: { lte: settings['shop.maxEquipmentLevel'] } }] }, orderBy: { npcPrice: 'asc' }, take: 400 });
   res.json(items.map(i => ({ ...i, price: Number(npcBuyPrice(i.npcPrice, settings['economy.npcBuyPercent'])) })));
 }));
 readRoutes.get('/market', asyncRoute(async (req,res) => {
-  const after = integer(Number(req.query.after ?? 0), 0);
+  const { page, skip, take } = pageOf(req.query), q = String(req.query.q ?? '').trim().slice(0, 40);
+  // Filtros opcionais: tipo de item (slot), nível máximo de uso e melhoria mínima.
+  const slots = ['WEAPON', 'ARMOR', 'HELMET', 'LEGS', 'BOOTS', 'SHIELD', 'AMULET', 'RING', 'AMMO', 'BACKPACK', 'LOOT', 'CONSUMABLE'];
+  // Um ou mais tipos separados por vírgula (ex.: HELMET,ARMOR,LEGS,BOOTS para a aba Armaduras).
+  const slot = String(req.query.slot ?? '').split(',').filter(x => slots.includes(x)) as ItemSlot[];
+  const maxLevel = req.query.maxLevel ? Math.min(1000, integer(Number(req.query.maxLevel))) : undefined, minTier = req.query.minTier ? Math.min(10, integer(Number(req.query.minTier), 0)) : 0;
   await expireListings(20);
-  res.json(await prisma.marketListing.findMany({ where: { status: 'OPEN', id: { gt: after }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }, include: { blueprint: true, seller: { select: { name: true } } }, orderBy: { id: 'asc' }, take: 50 }));
+  // Mais recentes primeiro; a busca filtra pelo nome do item.
+  const blueprint: Prisma.ItemBlueprintWhereInput = { ...(q ? { name: { contains: q } } : {}), ...(slot.length ? { slot: { in: slot } } : {}), ...(maxLevel ? { minLevel: { lte: maxLevel } } : {}) };
+  const where: Prisma.MarketListingWhereInput = { status: 'OPEN', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }], ...(Object.keys(blueprint).length ? { blueprint } : {}), ...(minTier ? { upgradeTier: { gte: minTier } } : {}) };
+  const [items, total] = await Promise.all([prisma.marketListing.findMany({ where, include: { blueprint: true, seller: { select: { name: true } } }, orderBy: { id: 'desc' }, skip, take }), prisma.marketListing.count({ where })]);
+  res.json(paged(items, total, page));
 }));
 readRoutes.post('/characters/:id/market', asyncRoute(async (req,res) => { res.json(await listItem(res.locals.accountId, integer(Number(req.params.id)), integer(req.body?.itemId), req.body?.price, req.get('idempotency-key') ?? '')); }));
 readRoutes.post('/characters/:id/market/:listing/buy', asyncRoute(async (req,res) => { res.json(await buyListing(res.locals.accountId, integer(Number(req.params.id)), integer(Number(req.params.listing)))); }));

@@ -9,14 +9,20 @@
 - `gameService.ts`, `inventoryService.ts` – atributos, templo, forja com risco, loja NPC, equipar
 - `characterService.ts`, `characterRoutes.ts` – criar/trocar personagens e promover classe
 - `adventureService.ts`, `adventureRoutes.ts`, `taskRoutes.ts` – jornada, conquistas, diário, tarefas
+- `duelEngine.ts` (puro, com testes) e `duelService.ts` – Duelo entre amigos: desafio, rodadas com prazo, rendição, histórico, ranking de honra, varredura `expireDuels` (server.ts). Regras em `shared/pvp.ts`, números em `pvp.*`. Nunca altera vida, mana ou XP. Duelo valendo: aposta de ouro (DUEL_WAGER/PRIZE/REFUND/FEE), espólio com resgate (`DuelLoot`, DUEL_LOOT_*/DUEL_RANSOM*), honra tipo Elo e marcas (`CharacterCosmetic`). Teste: `backend/tests/duel-stakes-integration.ts`. Teste: `backend/tests/duel-integration.ts`; equilíbrio: `npm run duel:simulate`.
+- `forgeService.ts` – Ferreiro além da melhoria: fabricar com materiais, reforjar para item de nível maior (guarda metade da melhoria), desmontar em materiais; `GET /characters/:id/forge` monta a tela
 
 ## Rotas
-`/characters/*`, `/monsters`, `/shop`, `/market`, `/characters/:id/{battles,equip,shop,sell,upgrade,use,temple,stats,journey,tasks}`.
+`/characters/*`, `/characters/:id/duel*`, `/duel/ranking`, `/monsters`, `/shop`, `/market`, `/characters/:id/{battles,equip,shop,sell,upgrade,use,temple,stats,journey,tasks}`.
 
 ## Dependências permitidas
 Depende de `core`, `economy` e `premium` (só `isPremium`).
 
 ## Regras que não podem quebrar
+Subida de nível só por `gainExperience` (`gameRules.ts`), que usa `shared/progression.ts` (teto `MAX_LEVEL`, ganhos por nível). Conteúdo novo de nível passa antes por `npm run levels:simulate`.
+Ferreiro: regras em `shared/forge.ts` (material por faixa), preços e quantidades em `forge.*` e `shop.maxEquipmentLevel` (`loadSettings`). Raros (+10) não são reforjados nem desmontados. Teste: `backend/tests/forge-integration.ts`.
+Itens e monstros ficam em `backend/prisma/catalog.ts` (o seed só grava). Monstro novo: entra no catálogo com XP/ouro da curva e `npm run levels:calibrate -- --write` define vida, ataque e defesa.
+Classes: `shared/adventure.ts` (`classLevels`, `classNames`, `classBonus`, `classCost`); a 1ª é a promoção (muda a vocação), da 2ª à 8ª ficam em `Character.classTier`. `promoteCharacter` sobe uma por vez.
 Fórmulas de atributos só em `combatStats.ts`. Vocações/regiões em `shared/adventure.ts`. Melhoria: sorteio no servidor, chance e quebra configuráveis, resultado repetível pela chave.
 
 ## Testes

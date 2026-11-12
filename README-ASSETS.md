@@ -18,6 +18,14 @@ node scripts/import-icons.mjs --all --limit 100
 
 O manifesto grava `status: unavailable` e motivo quando um arquivo falha. A interface deve usar fallback local para esse estado. O importador não transforma arquivos ausentes em URLs inventadas nem executa conteúdo baixado.
 
+## Ícones dos locais de caça (arte própria)
+
+Os 16 ícones em `frontend/public/assets/regions/*.svg` foram desenhados para o projeto (não vêm do TibiaWiki), a pedido do dono. São gerados por `node scripts/region-icons.mjs`; para ajustar um desenho, edite o script e rode de novo. Se um ícone não carregar, a tela usa o sprite do TibiaWiki da região como reserva.
+
+## Materiais do Ferreiro (2026-10-31)
+
+Importados com `node scripts/import-icons.mjs --verified-sources scripts/sprites-materiais.json`: Iron Ore, Small Ruby, Small Sapphire, Small Emerald, Small Diamond, Gold Ingot, Soul Orb, Demonic Essence (usados), além de Small Amethyst e Small Topaz (reserva). Draconian Steel e Hell Steel não responderam com imagem nesse nome de arquivo e ficaram como `unavailable` no manifesto; nada foi contornado.
+
 ## Origem e verificação
 
 A API pública `https://www.tibiawiki.com.br/api.php` respondeu HTTP 403 com desafio Cloudflare em 28/10/2026. Não foi contornado. O catálogo inicial pôde ser obtido dos arquivos de imagem públicos do próprio domínio. Rat e Magic Plate Armor tiveram URLs confirmadas pelos links das páginas de arquivo; os demais nomes foram resolvidos pelo esquema de arquivos MediaWiki e aceitos apenas após validar a resposta de imagem. Isso está distinguido em `sourceMethod`: `wiki-file-page` ou `public-file-verified`. Futuras consultas à API registram `mediawiki-api` e seus metadados quando acessíveis.

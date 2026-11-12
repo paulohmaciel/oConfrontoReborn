@@ -8,6 +8,7 @@
 | `styles/` | CSS (tema claro/escuro) |
 | `features/auth` | `LoginScreen`, `RecoveryForms` (esqueci/redefinir/verificar e-mail) |
 | `features/adventure` | Jornada, Diário, Caçar (`HuntPanel`), escolha de vocação |
+| `features/group` · `duel` | Caçada em grupo (`GroupHuntPanel`), Duelo entre amigos (`DuelPanel`: desafios, rodadas, histórico, ranking de honra; `FriendsBox`: buscar e adicionar amigos pelas rotas da comunidade) |
 | `features/hero` | `Sidebar`, `StatsPanel` (atributos), `TemplePanel` |
 | `features/inventory` | `BagPanel` (mochila), `EquipmentPanel` |
 | `features/shop` · `market` · `forge` · `tasks` | Mercador, Mercado, Ferreiro (risco de quebra), Tarefas |

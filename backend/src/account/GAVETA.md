@@ -6,9 +6,10 @@
 - `auth.ts` – cadastro, login, logout, `authenticate`, `protectOrigin`, `activeBan`
 - `accountTokens.ts` – tokens de e-mail (hash, uso único)
 - `emailRoutes.ts` – esqueci/redefinir/verificar/reenviar
+- `analyticsRoutes.ts` – registro de eventos de produto autenticados, sem dados pessoais
 
 ## Rotas
-`/auth/{register,login,logout,forgot-password,reset-password,verify-email,resend-verification}`, `/me`.
+`/auth/{register,login,logout,forgot-password,reset-password,verify-email,resend-verification}`, `/me`, `/analytics/events`.
 
 ## Dependências permitidas
 Depende de `core`, `economy`, `premium`, `game` (cria o primeiro personagem).

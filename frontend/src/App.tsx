@@ -1,24 +1,35 @@
 import {useEffect,useRef,useState} from 'react';
 import {api,ApiError} from './lib/api';
+import {trackPageView,trackSelect} from './lib/analytics';
 import {fmt} from './lib/format';
 import ThemeToggle from './ui/ThemeToggle';
 import Icon from './ui/GameIcon';
-import {tabs,adminTab,type Tab} from './lib/tabs';
+import {emptyPage,type Page} from './ui/Pager';
+import {tabs,adminTab,pathForTab,tabFromPath,paramFromPath,type Tab} from './lib/tabs';
+import ProfilePanel from './features/profile/ProfilePanel';
+import ForumPanel from './features/forum/ForumPanel';
+import GroupHuntPanel from './features/group/GroupHuntPanel';
+import DuelPanel from './features/duel/DuelPanel';
+import NewsPanel from './features/news/NewsPanel';
+import NoticeBanner from './features/news/NoticeBanner';
+import {slotParam} from './ui/ItemTabs';
 import HuntPanel from './features/adventure/HuntPanel';
 import {JourneyPanel,JournalPanel} from './features/adventure/AdventurePanels';
 import {type BaseVocation} from '../../shared/adventure';
 import LoginScreen from './features/auth/LoginScreen';
 import {verifyEmailToken} from './features/auth/RecoveryForms';
 import Sidebar from './features/hero/Sidebar';
+import {MobileBar,MobileDrawer} from './features/hero/MobileNav';
 import TemplePanel from './features/hero/TemplePanel';
 import StatsPanel from './features/hero/StatsPanel';
 import BagPanel from './features/inventory/BagPanel';
 import EquipmentPanel from './features/inventory/EquipmentPanel';
 import ShopPanel from './features/shop/ShopPanel';
-import MarketPanel from './features/market/MarketPanel';
+import MarketPanel,{marketQuery,type MarketPage} from './features/market/MarketPanel';
 import ForgePanel from './features/forge/ForgePanel';
 import TasksPanel from './features/tasks/TasksPanel';
 import AtlasPanel from './features/atlas/AtlasPanel';
+import SettingsPanel from './features/settings/SettingsPanel';
 import CharactersPanel from './features/characters/CharactersPanel';
 import PremiumPanel,{type PaymentReturn} from './features/premium/PremiumPanel';
 import {premiumPhase} from '../../shared/premium';
@@ -28,18 +39,27 @@ import AdminPanel from './features/admin/AdminPanel';
 import type {Hero,Item,Monster,Battle,Blueprint,Listing,Task,JourneyState,GameConfig} from './lib/types';
 export default function App(){
  const [signed,setSigned]=useState(false),[checking,setChecking]=useState(true),[register,setRegister]=useState(false);
- const [hero,setHero]=useState<Hero|null>(null),[tab,setTab]=useState<Tab>('journey'),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState('');
+ const [hero,setHero]=useState<Hero|null>(null),[tab,setTab]=useState<Tab>(()=>tabFromPath(location.pathname)??'journey'),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState('');
  const [monsters,setMonsters]=useState<Monster[]>([]),[shop,setShop]=useState<Blueprint[]>([]),[inventory,setInventory]=useState<{items:Item[];total:number;page:number}>({items:[],total:0,page:1});
- const [market,setMarket]=useState<Listing[]>([]),[tasks,setTasks]=useState<Task[]>([]),[battle,setBattle]=useState<Battle|null>(null),[selected,setSelected]=useState<Item|null>(null),[price,setPrice]=useState('100'),[search,setSearch]=useState('');
+ const [market,setMarket]=useState<MarketPage>(emptyPage<Listing>()),[tasks,setTasks]=useState<Task[]>([]),[battle,setBattle]=useState<Battle|null>(null),[selected,setSelected]=useState<Item|null>(null),[price,setPrice]=useState('100'),[search,setSearch]=useState('');
  const [atlasSearch,setAtlasSearch]=useState('');
  const [journeyState,setJourneyState]=useState<JourneyState|null>(null),[signupVocation,setSignupVocation]=useState<BaseVocation>('KNIGHT');
  const [config,setConfig]=useState<GameConfig|null>(null),[staff,setStaff]=useState(false),[premiumActive,setPremiumActive]=useState(false),[premiumSoon,setPremiumSoon]=useState(false),[premiumReturn,setPremiumReturn]=useState<PaymentReturn|null>(null),[roster,setRoster]=useState<{id:number;name:string;level:number;vocation:string}[]>([]);
  const [authView,setAuthView]=useState<'form'|'forgot'|'reset'>(()=>new URLSearchParams(location.search).has('redefinir')?'reset':'form'),[resetToken]=useState(()=>new URLSearchParams(location.search).get('redefinir')??''),[landing,setLanding]=useState('');
  const [bagFilter,setBagFilter]=useState({slot:'',q:'',fav:false}),bagFilterRef=useRef(bagFilter);
+ const [menuOpen,setMenuOpen]=useState(false),[routeParam,setRouteParam]=useState(()=>paramFromPath(location.pathname));
+ // A aba vive na URL: trocar de aba grava o endereço; voltar/avançar do navegador troca a aba.
+ useEffect(()=>{const path=pathForTab(tab,tab==='profile'||tab==='forum'?routeParam:'');if(location.pathname===path)return;
+  // Endereço desconhecido (ex.: /xyz) é corrigido sem criar entrada no histórico.
+  if(tabFromPath(location.pathname)===null)history.replaceState(null,'',path);else history.pushState(null,'',path);},[tab,routeParam]);
+ useEffect(()=>{const back=()=>{setTab(tabFromPath(location.pathname)??'journey');setRouteParam(paramFromPath(location.pathname));};window.addEventListener('popstate',back);return()=>window.removeEventListener('popstate',back);},[]);
+ useEffect(()=>{if(signed)trackPageView(location.pathname);},[signed,tab,routeParam]);
+ useEffect(()=>{if(!signed)return;const onChange=(event:Event)=>{if(event.target instanceof HTMLSelectElement)trackSelect(event.target);};document.addEventListener('change',onChange);return()=>document.removeEventListener('change',onChange);},[signed]);
+ useEffect(()=>{const label=[...tabs,adminTab].find(t=>t[0]===tab)?.[1];document.title=label&&tab!=='journey'?`${label} · O Confronto`:'O Confronto · Crônicas de um aventureiro';},[tab]);
  const bagPage=useRef(1); const lock=useRef(false);const heroId=useRef<number|null>(null);
  const notifyError=(e:unknown)=>{setError(e instanceof Error?e.message:'Ocorreu um erro.');if(e instanceof ApiError&&e.status===401){setSigned(false);setHero(null);heroId.current=null;}};
  async function refresh(id:number,page=1){
-  const f=bagFilterRef.current,query=`page=${page}${f.slot?`&slot=${f.slot}`:''}${f.q?`&q=${encodeURIComponent(f.q)}`:''}${f.fav?'&favorites=1':''}`;
+  const f=bagFilterRef.current,query=`page=${page}${f.slot?`&slot=${slotParam(f.slot)}`:''}${f.q?`&q=${encodeURIComponent(f.q)}`:''}${f.fav?'&favorites=1':''}`;
   const [h,bag]=await Promise.all([api<Hero>(`/characters/${id}`),api<typeof inventory>(`/characters/${id}/inventory?${query}`)]);
   bagPage.current=bag.page; setHero(h);setInventory(bag);
   setJourneyState(await api<JourneyState>(`/characters/${id}/journey`));
@@ -68,23 +88,33 @@ export default function App(){
   enter().catch(e=>{if(!(e instanceof ApiError&&e.status===401))notifyError(e);else if(paid)setLanding(paid==='ok'?'Pagamento recebido! Entre na sua conta para acompanhar a liberação do Premium.':paid==='pendente'?'Pagamento pendente. Assim que for confirmado, o Premium é liberado automaticamente.':'O pagamento não foi concluído. Você pode tentar novamente quando quiser.');}).finally(()=>setChecking(false));
  },[]);
  useEffect(()=>{if(!signed||!heroId.current)return;const id=heroId.current;
-   if(tab==='market')api<Listing[]>('/market').then(setMarket).catch(notifyError);
+   if(tab==='market')api<Page<Listing>>('/market').then(setMarket).catch(notifyError);
    if(tab==='tasks')api<Task[]>(`/characters/${id}/tasks`).then(setTasks).catch(notifyError);
  },[tab,signed]);
- async function perform(work:()=>Promise<unknown>,message='Ação concluída.'){if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{const result=await work();const serverMessage=result&&typeof result==='object'&&'message' in result&&typeof result.message==='string'?result.message:'';setNotice(typeof result==='string'&&result?result:serverMessage||message);setSelected(null);if(heroId.current)await refresh(heroId.current,bagPage.current);
-  if(tab==='market')setMarket(await api<Listing[]>('/market'));if(tab==='tasks'&&heroId.current)setTasks(await api<Task[]>(`/characters/${heroId.current}/tasks`));
+ async function perform(work:()=>Promise<unknown>,message='Feito, aventureiro.'){if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{const result=await work();const serverMessage=result&&typeof result==='object'&&'message' in result&&typeof result.message==='string'?result.message:'';setNotice(typeof result==='string'&&result?result:serverMessage||message);setSelected(null);if(heroId.current)await refresh(heroId.current,bagPage.current);
+  if(tab==='market'&&heroId.current)setMarket({...await api<Page<Listing>>(`/market?page=${market.page}${marketQuery(market.filters,hero?.level??1)}`),filters:market.filters});if(tab==='tasks'&&heroId.current)setTasks(await api<Task[]>(`/characters/${heroId.current}/tasks`));
  }catch(e){notifyError(e);if(heroId.current)await refresh(heroId.current,bagPage.current).catch(()=>{});}finally{lock.current=false;setBusy(false);}}
  const command=(action:string,body:unknown={})=>perform(()=>api(`/characters/${heroId.current}/${action}`,body,crypto.randomUUID()));
- async function authenticateDev(){await perform(async()=>{await api('/auth/dev-login',{});await enter();},'Bem-vindo, Mestre.');}
- async function authenticate(form:HTMLFormElement){const values={...Object.fromEntries(new FormData(form)),...(register?{vocation:signupVocation}:{})};await perform(async()=>{await api(`/auth/${register?'register':'login'}`,values);await enter();},'Bem-vindo ao Confronto.');}
+ async function authenticateDev(who:'master'|'rival'|'copy'='master'){await perform(async()=>{await api('/auth/dev-login',who==='master'?{}:{who});await enter();},who==='rival'?'Bem-vindo, Rival de Treino.':who==='copy'?'Bem-vindo, Mestre 1.':'Bem-vindo, Mestre.');}
+ // Cadastro com e-mail já usado responde como sucesso "pendente" (sem revelar que a conta existe): mostra o aviso e não entra.
+ async function authenticate(form:HTMLFormElement){const values={...Object.fromEntries(new FormData(form)),...(register?{vocation:signupVocation}:{})};await perform(async()=>{const r=await api<{ok:boolean;pending?:boolean;message?:string}>(`/auth/${register?'register':'login'}`,values);if(r.pending){setLanding(r.message??'Confira seu e-mail para continuar.');return '';}await enter();},'Bem-vindo ao Confronto.');}
  async function turn(action:string){if(!battle)return;await perform(async()=>{const result=await api<Battle>(`/characters/${heroId.current}/battles/${battle.battleId}/turns`,{action,expectedTurn:battle.turnVersion});setBattle(result);},'');}
  const start=(m:Monster)=>perform(async()=>{const b=await api<{id:number}>(`/characters/${heroId.current}/battles`,{monsterId:m.id});setBattle(await api<Battle>(`/characters/${heroId.current}/battles/${b.id}`));},'');
  if(checking)return <div className="loading-screen">Abrindo os portões…</div>;
- if(!signed||!hero)return <LoginScreen authView={authView} setAuthView={setAuthView} resetToken={resetToken} register={register} setRegister={setRegister} signupVocation={signupVocation} setSignupVocation={setSignupVocation} busy={busy} error={error} setError={setError} landing={landing} authenticate={authenticate} authenticateDev={authenticateDev}/>;
+ if(!signed||!hero)return <><NoticeBanner/><LoginScreen authView={authView} setAuthView={setAuthView} resetToken={resetToken} register={register} setRegister={setRegister} signupVocation={signupVocation} setSignupVocation={setSignupVocation} busy={busy} error={error} setError={setError} landing={landing} authenticate={authenticate} authenticateDev={authenticateDev}/></>;
  const fighting=!!hero.activeBattleId,allTabs:readonly (readonly [Tab,string,string])[]=staff?[...tabs,adminTab]:tabs;
- return <div className={`shell ${hero.profileFrame?`frame-${hero.profileFrame}`:''}`}><header className="topbar"><div className="wordmark">O CONFRONTO<span>CRÔNICAS DE UM AVENTUREIRO</span></div><div className="top-meta"><ThemeToggle/><span className="online-dot"/> Mundo local <span className="separator">|</span><Icon name="Gold Coin" size={24}/><b>{fmt(hero.goldInHand)}</b><button className="quiet" onClick={()=>void perform(async()=>{await api('/auth/logout',{});setSigned(false);setHero(null);heroId.current=null;setBattle(null);setStaff(false);setPremiumActive(false);setPremiumSoon(false);},'')}>Sair</button></div></header>
- <div className="game-layout"><Sidebar hero={hero} premiumSoon={premiumSoon} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={id=>{setTab(id);setSearch('');setSelected(null);}} onSelectCharacter={id=>void selectCharacter(id)}/>
- <main><div className="page-heading"><div><span className="eyebrow">{fighting?'COMBATE EM ANDAMENTO':'PREPARE SEU PRÓXIMO PASSO'}</span><h1>{allTabs.find(t=>t[0]===tab)?.[1]}</h1></div><span className="world-tag">THAIS · AVENTUREIROS</span></div>{error&&<div className="error notice" role="alert">{error}</div>}{notice&&<div className="success notice" role="status">{notice}</div>}{landing&&<div className="success notice" role="status">{landing} <button className="link-button" onClick={()=>setLanding('')}>Fechar</button></div>}{fighting&&tab!=='hunt'&&<div className="notice">Seu combate continua ativo. <button className="link-button" onClick={()=>setTab('hunt')}>Voltar ao combate</button></div>}
+ // Clique num lugar do equipamento: abre o Inventário filtrado por aquele tipo (a Mochila mostra as mochilas).
+ const openSlot=(slot:string)=>{const f={slot,q:'',fav:false};setBagFilter(f);bagFilterRef.current=f;setSelected(null);setTab('bag');if(hero)void perform(()=>refresh(hero.id,1),'');};
+ const openProfile=(name:string)=>{setRouteParam(name);setTab('profile');window.scrollTo(0,0);};
+ const openPost=(id:string)=>{setRouteParam(id);setTab('forum');window.scrollTo(0,0);};
+ const goTab=(id:Tab)=>{setRouteParam('');setTab(id);setSearch('');setSelected(null);window.scrollTo(0,0);};
+ const logout=()=>void perform(async()=>{await api('/auth/logout',{});setSigned(false);setHero(null);heroId.current=null;setBattle(null);setStaff(false);setPremiumActive(false);setPremiumSoon(false);},'');
+ return <div className={`shell ${hero.profileFrame?`frame-${hero.profileFrame}`:''}`}><header className="topbar"><div className="wordmark">O CONFRONTO<span>CRÔNICAS DE UM AVENTUREIRO</span></div><div className="top-meta"><ThemeToggle/><span className="online-dot"/> Mundo local <span className="separator">|</span><Icon name="Gold Coin" size={24}/><b>{fmt(hero.goldInHand)}</b><button className="quiet logout" onClick={logout}>Sair</button>
+  <button type="button" className="menu-button" aria-label="Abrir menu" aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={()=>setMenuOpen(true)}><span/><span/><span/>{hero.statPoints>0&&<i className="menu-dot" aria-label="Pontos de atributo para distribuir"/>}</button></div></header>
+ <MobileDrawer open={menuOpen} onClose={()=>setMenuOpen(false)} hero={hero} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={goTab} onSelectCharacter={id=>void selectCharacter(id)} onLogout={logout}/>
+ <MobileBar tabs={allTabs} tab={tab} fighting={fighting} onTab={goTab}/>
+ <div className="game-layout"><Sidebar hero={hero} premiumSoon={premiumSoon} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={goTab} onSelectCharacter={id=>void selectCharacter(id)}/>
+ <main><NoticeBanner onOpenNews={()=>setTab('news')}/><div className="page-heading"><div><span className="eyebrow">{fighting?'COMBATE EM ANDAMENTO':'PREPARE SEU PRÓXIMO PASSO'}</span><h1>{allTabs.find(t=>t[0]===tab)?.[1]}</h1></div><span className="world-tag">CAPRIEL · AVENTUREIROS</span></div>{error&&<div className="error notice" role="alert">{error}</div>}{notice&&<div className="success notice" role="status">{notice}</div>}{landing&&<div className="success notice" role="status">{landing} <button className="link-button" onClick={()=>setLanding('')}>Fechar</button></div>}{fighting&&tab!=='hunt'&&<div className="notice">Seu combate continua ativo. <button className="link-button" onClick={()=>setTab('hunt')}>Voltar ao combate</button></div>}
  {tab==='journey'&&<JourneyPanel hero={hero} state={journeyState} busy={busy} command={command} go={setTab}/>}
  {tab==='journal'&&<JournalPanel characterId={hero.id}/>}
  {tab==='characters'&&<CharactersPanel hero={hero} config={config} command={command} onPremium={()=>setTab('premium')} onSelect={id=>void selectCharacter(id)} onCreated={id=>void afterCreated(id)}/>}
@@ -93,13 +123,20 @@ export default function App(){
  {tab==='support'&&<SupportPanel/>}
  {tab==='admin'&&staff&&<AdminPanel/>}
  {tab==='hunt'&&<HuntPanel hero={hero} state={journeyState} monsters={monsters} battle={battle} busy={busy} start={start} turn={turn} goTemple={()=>setTab('temple')} dismiss={()=>setBattle(null)}/>}
+ {tab==='bag'&&<div className="equipment-inline"><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div>}
  {tab==='bag'&&<BagPanel hero={hero} inventory={inventory} selected={selected} setSelected={setSelected} bagFilter={bagFilter} setBagFilter={setBagFilter} premiumActive={premiumActive} onPremium={()=>setTab('premium')} busy={busy} fighting={fighting} config={config} price={price} setPrice={setPrice} command={command} perform={perform} onApplyFilter={()=>{bagFilterRef.current=bagFilter;void perform(()=>refresh(hero.id,1),'');}} goPage={p=>void perform(()=>refresh(hero.id,p),'')}/>}
  {tab==='shop'&&<ShopPanel hero={hero} shop={shop} busy={busy} command={command}/>}
  {tab==='market'&&<MarketPanel hero={hero} market={market} setMarket={setMarket} config={config} busy={busy} perform={perform} command={command}/>}
  {tab==='forge'&&<ForgePanel hero={hero} inventory={inventory} config={config} busy={busy} fighting={fighting} perform={perform}/>}
  {tab==='temple'&&<TemplePanel hero={hero} busy={busy} fighting={fighting} command={command}/>}
  {tab==='tasks'&&<TasksPanel hero={hero} tasks={tasks} config={config} busy={busy} fighting={fighting} command={command}/>}
- {tab==='stats'&&<StatsPanel hero={hero} busy={busy} fighting={fighting} command={command}/>}
+ {tab==='stats'&&<StatsPanel hero={hero} config={config} busy={busy} fighting={fighting} command={command} perform={perform}/>}
  {tab==='atlas'&&<AtlasPanel/>}
- </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command}/></div></div>;
+ {tab==='settings'&&<SettingsPanel/>}
+ {tab==='news'&&<NewsPanel/>}
+ {tab==='group'&&<GroupHuntPanel hero={hero} perform={perform} openProfile={openProfile}/>}
+ {tab==='duel'&&<DuelPanel hero={hero} openProfile={openProfile}/>}
+ {tab==='forum'&&<ForumPanel hero={hero} postId={routeParam} openPost={openPost} openProfile={openProfile} perform={perform}/>}
+ {tab==='profile'&&<ProfilePanel hero={hero} name={routeParam||hero.name} openProfile={openProfile} perform={perform}/>}
+ </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div></div>;
 }

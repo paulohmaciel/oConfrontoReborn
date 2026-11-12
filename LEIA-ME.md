@@ -24,6 +24,7 @@ O tema claro está em `frontend/src/theme-classic.css`, limitado ao atributo dat
 - Chefes com preparação visível e golpe pesado que pode ser defendido ou interrompido.
 - Diário persistente, cinco conquistas, bestiário e histórico dos últimos 20 combates.
 - Equipamentos com poder mágico, crítico, proteção contra fogo e mobilidade convertida em esquiva.
+- Duelo entre amigos (aba Duelo, `/duelo`): desafio, rodadas secretas com prazo, rendição, histórico, ranking de honra por classe e denúncia. Três formas: Honra (só pontos e marcas cosméticas), Aposta de ouro e Espólio (com resgate). Vida, mana e XP nunca mudam.
 
 Os números de combate e progressão são regras desta adaptação. Não são uma reprodução certificada das fórmulas de O Confronto ou Tibia. O código legado PHP não foi migrado como dados de jogadores.
 
@@ -89,6 +90,8 @@ npm run build
 npm start
 ```
 
+Se aparecer `EPERM: operation not permitted, unlink ...query_engine-windows.dll.node`, é o jogo aberto segurando o motor do Prisma. `npm run generate` já contorna isso (afasta o arquivo em uso e gera o novo); o jogo aberto continua com a versão antiga até ser reiniciado pelo `iniciar.bat`.
+
 O seed é repetível para os registros do catálogo, tabelas de loot e tarefas. Ele não cria contas nem modifica personagens existentes. Durante atualizações, revise mudanças de balanceamento do catálogo antes de executá-lo.
 
 Para desenvolver com atualização instantânea, configure `APP_ORIGIN=http://localhost:5173` no `.env`, inicie `npm run dev` em um terminal e `npm run web` em outro. Abra `http://localhost:5173`. Para voltar à interface construída, restaure APP_ORIGIN para `http://localhost:3333` e execute `npm run build` e `npm start`.
@@ -129,6 +132,8 @@ Depois de ampliar o manifesto, execute `npm run build` para atualizar a bibliote
 | Mercado | Preço em ouro para a pilha inteira. O anúncio mantém o item em custódia até compra, cancelamento ou expiração (48 h, configurável). Taxa de anúncio de 10 de ouro e taxa de 5% sobre a venda (ambas configuráveis). |
 | Promoção | A partir do nível 20, por 5000 de ouro (configurável): +10% de ataque e defesa e +2 de crítico. Usa os itens e a progressão da classe base. |
 | Tarefas | Cinco abates por tarefa do catálogo, aceitação prévia e recompensa única. |
+| Duelo | Só entre amigos de contas diferentes, a partir do nível 20, com até 10% de diferença de nível; 10 por dia; desafio vale 24 h e cada rodada 24 h (quem não escolhe defende; duas seguidas = derrota). Quem tem mais agilidade age primeiro. Só conta vitórias e derrotas. Tudo configurável no painel (grupo Duelo). Equilíbrio entre vocações: `npm run duel:simulate -- 1000`. Migrações aditivas `202611010003_pvp_duel` e `202611010004_duel_stakes`. |
+| Duelo valendo | Escolhido pelo desafiante e aceito pelo oponente, com o que está em jogo escrito no convite. Aposta de ouro: os dois depositam no aceite até 10% do ouro em mãos do mais pobre; o vencedor leva o pote menos 5% de taxa da arena (ralo); empate devolve. Espólio: 25% de chance de o vencedor levar um item da mochila do perdedor (nunca equipado, favorito, +7 ou mais, raro ou empilhável); Pedra de Proteção na mochila salva o item e é gasta; resgate em 48 h pelo preço de loja, pago ao vencedor. No máximo 3 duelos valendo por par a cada 24 h. Honra tipo Elo (K 32) e marcas (10 na vitória, 4 na derrota) que compram títulos e moldura. Tudo no painel (grupo Duelo). Simulação: `npm run duel:stakes`. |
 
 Não há morte permanente nem penalidade de XP nesta versão. A derrota deixa o personagem sem vida e permite recuperação no Templo. O nível do monstro indica dificuldade e não é um bloqueio de acesso.
 
@@ -237,7 +242,7 @@ Veja `VERIFICACAO.md` para os resultados reais. O projeto usa Prisma 5.19.0 fixa
 
 Esta é uma versão local jogável, com os sistemas listados acima. Guildas, reino, PvP, quests de masmorra e caça por duração ainda aparecem apenas como estruturas herdadas do schema e não têm rotas/telas funcionais. A jornada guiada é um sistema próprio, separado das estruturas antigas de QuestBlueprint. Não há modo automático de cinquenta turnos. O arco funciona sem consumo de munição nesta etapa.
 
-Para acesso público, configure domínio e HTTPS, APP_ORIGIN exata e NODE_ENV=production. As sessões passam então a usar cookie Secure. O rate limit incluído é local ao processo; uma implantação com várias instâncias precisa de armazenamento compartilhado. Não exponha o MySQL diretamente. O projeto permanece local nesta entrega. Itens ainda por fazer antes de um lançamento comercial: backups com restauração testada, monitoramento de erros/indisponibilidade, revisão de segurança (OWASP ASVS), termos de uso/privacidade e a questão dos sprites (veja `README-ASSETS.md`: as imagens pertencem à CipSoft e o uso comercial exige autorização ou arte própria).
+Para acesso público, configure domínio e HTTPS, APP_ORIGIN exata e inicie com `npm run start:prod` (força NODE_ENV=production). As sessões passam então a usar cookie Secure. O servidor se recusa a iniciar se APP_ORIGIN for `https://` sem o modo produção, ou se `DEV_QUICK_LOGIN=1` estiver no `.env` com HOST fora de 127.0.0.1. O rate limit incluído é local ao processo; uma implantação com várias instâncias precisa de armazenamento compartilhado. Não exponha o MySQL diretamente. O projeto permanece local nesta entrega. Itens ainda por fazer antes de um lançamento comercial: backups com restauração testada, monitoramento de erros/indisponibilidade, revisão de segurança (OWASP ASVS), termos de uso/privacidade e a questão dos sprites (veja `README-ASSETS.md`: as imagens pertencem à CipSoft e o uso comercial exige autorização ou arte própria).
 
 ## Operação
 Backup com restauração verificada, monitoramento e checklist de segurança: veja `OPERACAO.md`.

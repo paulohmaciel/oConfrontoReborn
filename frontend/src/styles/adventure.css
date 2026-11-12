@@ -11,3 +11,5 @@
 :where(:root[data-theme="light"]) .defeat-advice h3{color:#633113}
 :where(:root[data-theme="light"]) .defeat-advice ul{color:#4a2a12}
 .battle-result .battle-result-actions{align-items:center;margin-top:18px}.battle-result .battle-result-actions .primary{margin-top:0}
+.region-icon{flex-shrink:0;display:inline-block;filter:drop-shadow(0 2px 2px #0003)}
+.region-grid button{grid-template-columns:44px 1fr}.region-grid .region-icon{grid-row:span 2}.intro-banner>.region-icon{filter:drop-shadow(0 10px 12px #0006)}@media(max-width:760px){.intro-banner>.region-icon{width:64px;height:64px}}

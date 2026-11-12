@@ -1,8 +1,11 @@
 import {useEffect,useRef,useState} from 'react';
+import {Limited,LimitedRows} from '../../ui/ShowMore';
 import {api} from '../../lib/api';
 import {fmt,brl,when} from '../../lib/format';
 import {reasonLabel} from '../ledger/reasonLabel';
 import type {Permission} from '../../../../shared/permissions';
+import {Pager,usePaged} from '../../ui/Pager';
+import {outcomeLabels,type DuelOutcome} from '../../../../shared/pvp';
 const msg=(e:unknown)=>e instanceof Error?e.message:'Ocorreu um erro.';
 type Me={role:string;permissions:Permission[]};
 const roleName:Record<string,string>={SUPPORT:'Apoio',MODERATOR:'Moderação',ADMIN:'Administração'};
@@ -15,15 +18,31 @@ const Msg=({error,ok}:{error:string;ok:string})=><>{error&&<div className="error
 export default function AdminPanel({onLeave}:{onLeave?:()=>void}) {
   const [me,setMe]=useState<Me|null>(null),[tab,setTab]=useState(''),[error,setError]=useState('');
   useEffect(()=>{api<Me>('/admin/me').then(m=>{setMe(m);setTab(first(m));}).catch(e=>setError(msg(e)));},[]);
-  const first=(m:Me)=>[['tickets.read','tickets'],['accounts.read','accounts'],['economy.read','economy'],['settings.read','settings'],['orders.read','orders'],['audit.read','audit']].find(([p])=>m.permissions.includes(p as Permission))?.[1]??'';
+  const first=(m:Me)=>[['tickets.read','tickets'],['accounts.read','accounts'],['economy.read','economy'],['analytics.read','analytics'],['settings.read','settings'],['orders.read','orders'],['notices.manage','notices'],['audit.read','audit']].find(([p])=>m.permissions.includes(p as Permission))?.[1]??'';
   if(error)return <section className="panel"><p className="error" role="alert">{error}</p></section>;
   if(!me)return <section className="panel"><p>Carregando…</p></section>;
   const has=(p:Permission)=>me.permissions.includes(p);
-  const tabs=[has('tickets.read')&&['tickets','Atendimento'],has('accounts.read')&&['accounts','Contas'],has('economy.read')&&['economy','Economia'],has('settings.read')&&['settings','Configurações'],has('orders.read')&&['orders','Pagamentos'],has('audit.read')&&['audit','Auditoria']].filter(Boolean) as string[][];
+  const tabs=[has('tickets.read')&&['tickets','Atendimento'],has('accounts.read')&&['accounts','Contas'],has('economy.read')&&['economy','Economia'],has('analytics.read')&&['analytics','Validação'],has('settings.read')&&['settings','Configurações'],has('orders.read')&&['orders','Pagamentos'],has('notices.manage')&&['notices','Avisos'],has('duels.read')&&['duels','Duelos'],has('audit.read')&&['audit','Auditoria']].filter(Boolean) as string[][];
   return <><section className="panel"><div className="section-title"><h2>Painel da equipe</h2><span className="pill">{roleName[me.role]??me.role}</span></div>
     <div className="admin-bar" role="tablist">{tabs.map(([id,label])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?'active-chip':''} onClick={()=>setTab(id)}>{label}</button>)}</div>
     <p className="muted">Toda alteração exige um motivo e fica registrada na auditoria com seu nome.</p></section>
-    {tab==='tickets'&&<Tickets can={has('tickets.reply')}/>}{tab==='accounts'&&<Accounts has={has}/>}{tab==='economy'&&<Economy/>}{tab==='settings'&&<Settings canWrite={has('settings.write')}/>}{tab==='orders'&&<Orders canManage={has('orders.manage')}/>}{tab==='audit'&&<Audit/>}</>;
+    {tab==='tickets'&&<Tickets can={has('tickets.reply')}/>}{tab==='accounts'&&<Accounts has={has}/>}{tab==='economy'&&<Economy/>}{tab==='analytics'&&<Analytics/>}{tab==='settings'&&<Settings canWrite={has('settings.write')}/>}{tab==='orders'&&<Orders canManage={has('orders.manage')}/>}{tab==='notices'&&<Notices/>}{tab==='duels'&&<Duels/>}{tab==='audit'&&<Audit/>}</>;
+}
+
+type AnalyticsEvent={id:number;name:string;page:string|null;contentType:string|null;contentId:string|null;isTest:boolean;createdAt:string;accountId:number};
+type Analytics={days:number;total:number;testEvents:number;byName:{name:string;count:number}[];byPage:{page:string|null;count:number}[];events:{items:AnalyticsEvent[];page:number;pages:number}};
+function Analytics(){
+  const [days,setDays]=useState(7),[data,setData]=useState<Analytics|null>(null),[error,setError]=useState(''),[name,setName]=useState('page_view'),[page,setPage]=useState('/jornada'),[contentType,setContentType]=useState('menu'),[contentId,setContentId]=useState('botao-teste'),[amount,setAmount]=useState('1'),a=useAct();
+  const load=(nextDays=days)=>{setError('');return api<Analytics>(`/admin/analytics?days=${nextDays}`).then(setData).catch(e=>setError(msg(e)));};
+  useEffect(()=>{void load();},[days]);
+  const send=async(overrides:Partial<{name:string;amount:number}>={})=>{const count=Math.max(1,Math.min(100,Number(overrides.amount??amount)||1)),eventName=overrides.name??name,event={name:eventName,page,contentType:eventName==='page_view'?'':contentType,contentId:eventName==='page_view'?'':contentId,test:true};await api('/analytics/events',{events:Array.from({length:count},()=>event)});await load();return count;};
+  return <section className="panel"><div className="section-title"><h2>Validação de eventos</h2><span>{[1,7,30].map(n=><button key={n} className={days===n?'active-chip':''} onClick={()=>setDays(n)}>{n===1?'24 h':`${n} dias`}</button>)}</span></div><Msg error={a.error||error} ok={a.ok}/>
+    <p className="muted">Registro real de telemetria, separado do jogo: <code>page_view</code> para páginas e <code>select_content</code> para escolhas. A navegação e os seletores do jogo já enviam esses eventos automaticamente.</p>
+    {data&&<div className="stat-tiles"><div><b>{data.total}</b><span>eventos no período</span></div><div><b>{data.testEvents}</b><span>eventos de teste</span></div><div><b>{data.byName.find(e=>e.name==='page_view')?.count??0}</b><span>pageviews</span></div><div><b>{data.byName.find(e=>e.name==='select_content')?.count??0}</b><span>seleções</span></div></div>}
+    <div className="admin-grid"><div><h3>Disparo rápido</h3><div className="ops-inline"><button disabled={a.busy} onClick={()=>void a.run(()=>send({name:'page_view',amount:20}).then(n=>`Registrados ${n} pageviews de teste.`))}>+20 pageviews</button><button disabled={a.busy} onClick={()=>void a.run(()=>send({name:'select_content',amount:30}).then(n=>`Registradas ${n} seleções de teste.`))}>+30 select contents</button></div><p className="muted">Cada botão cria um lote real em uma única requisição; não é só contador visual.</p></div><div><h3>O que mais aconteceu</h3>{data?.byName.map(r=><p className="ledger-row" key={r.name}><span><code>{r.name}</code></span><b>{r.count}</b></p>)}</div></div>
+    <form className="ops-form" onSubmit={e=>{e.preventDefault();void a.run(()=>send().then(n=>`Registrados ${n} evento${n===1?'':'s'} de teste.`));}}><h3>Montar lote</h3><label>Evento<select value={name} onChange={e=>setName(e.target.value)}><option value="page_view">page_view</option><option value="select_content">select_content</option><option value="custom_event">custom_event</option></select></label><label>Página<input value={page} onChange={e=>setPage(e.target.value)} maxLength={120} required/></label>{name!=='page_view'&&<><label>Tipo do conteúdo<input value={contentType} onChange={e=>setContentType(e.target.value)} maxLength={64} required/></label><label>Identificador do conteúdo<input value={contentId} onChange={e=>setContentId(e.target.value)} maxLength={120} required/></label></>}<label>Quantidade (até 100)<input type="number" min="1" max="100" value={amount} onChange={e=>setAmount(e.target.value)} required/></label><button className="primary" disabled={a.busy}>Registrar lote</button></form>
+    {data&&<><h3>Páginas mais vistas</h3><table className="admin-table"><thead><tr><th>Página</th><th>Eventos</th></tr></thead><tbody><LimitedRows items={data.byPage} cols={2} render={r=><tr key={r.page??'sem-pagina'}><td>{r.page??'—'}</td><td>{r.count}</td></tr>}/></tbody></table><h3>Últimos eventos</h3><table className="admin-table"><thead><tr><th>Quando</th><th>Evento</th><th>Página</th><th>Conteúdo</th><th>Origem</th></tr></thead><tbody>{data.events.items.map(e=><tr key={e.id}><td>{when(e.createdAt)}</td><td><code>{e.name}</code></td><td>{e.page??'—'}</td><td>{e.contentType?`${e.contentType}: ${e.contentId??'—'}`:'—'}</td><td>{e.isTest?'Teste':'Jogo'}</td></tr>)}</tbody></table><Pager page={data.events.page} pages={data.events.pages} onPage={p=>void api<Analytics>(`/admin/analytics?days=${days}&page=${p}`).then(setData).catch(e=>setError(msg(e)))} busy={false}/></>}
+  </section>;
 }
 
 type TicketRow={id:number;kind:string;subject:string;status:string;updatedAt:string;account:{email:string}};
@@ -34,7 +53,7 @@ function Tickets({can}:{can:boolean}) {
   const open=(id:number)=>api<TicketFull>(`/admin/tickets/${id}`).then(setT).catch(()=>{});
   useEffect(()=>{void load();},[status]);
   return <><section className="panel"><div className="admin-bar"><select aria-label="Filtro" value={status} onChange={e=>setStatus(e.target.value)}><option value="">Todos</option><option value="OPEN">Abertos</option><option value="IN_PROGRESS">Em atendimento</option><option value="RESOLVED">Resolvidos</option></select><button onClick={()=>void load()}>Atualizar</button></div>
-    <table className="admin-table"><thead><tr><th>#</th><th>Tipo</th><th>Assunto</th><th>Conta</th><th>Status</th><th/></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td>{r.id}</td><td>{r.kind==='REPORT'?'Denúncia':'Suporte'}</td><td>{r.subject}</td><td>{r.account.email}</td><td>{r.status}</td><td><button onClick={()=>void open(r.id)}>Abrir</button></td></tr>)}</tbody></table>{!rows.length&&<p className="empty">Nada por aqui.</p>}</section>
+    <table className="admin-table"><thead><tr><th>#</th><th>Tipo</th><th>Assunto</th><th>Conta</th><th>Status</th><th/></tr></thead><tbody><LimitedRows items={rows} cols={10} render={r=><tr key={r.id}><td>{r.id}</td><td>{r.kind==='REPORT'?'Denúncia':'Suporte'}</td><td>{r.subject}</td><td>{r.account.email}</td><td>{r.status}</td><td><button onClick={()=>void open(r.id)}>Abrir</button></td></tr>}/></tbody></table>{!rows.length&&<p className="empty">Nada por aqui.</p>}</section>
     {t&&<section className="panel"><div className="section-title"><h2>#{t.id} · {t.subject}</h2><span className="pill">{t.status}</span></div><Msg error={a.error} ok={a.ok}/>
       <p className="muted">Conta: {t.account.email} (#{t.account.id}){t.reported?` · Denunciado: ${t.reported.name} (personagem #${t.reported.id}, conta #${t.reported.accountId})`:''}</p>
       <div className="thread">{t.messages.map(m=><div key={m.id} className={m.authorAccountId===t.account.id?'bubble':'bubble staff'}><small>{m.authorAccountId===t.account.id?'Jogador':'Equipe'}{m.internal?' · nota interna':''} · {when(m.createdAt)}</small><p>{m.body}</p></div>)}</div>
@@ -58,7 +77,7 @@ function Accounts({has}:{has:(p:Permission)=>boolean}) {
   const act=(work:()=>Promise<unknown>,done?:string)=>a.run(async()=>{await work();if(acc)await open(acc.id);},done);
   async function ledger(id:number){setCharId(id);const [g,i]=await Promise.all([api<{entries:GoldEntry[]}>(`/admin/ledger/gold?characterId=${id}`),api<{entries:ItemEntry[]}>(`/admin/ledger/items?characterId=${id}`)]);setGold(g.entries);setItems(i.entries);}
   return <><section className="panel"><form className="ops-inline" onSubmit={e=>{e.preventDefault();void a.run(async()=>setRows(await api<AccountRow[]>(`/admin/accounts?q=${encodeURIComponent(q)}`)),'');}}><input aria-label="Buscar" placeholder="E-mail ou nome do personagem" value={q} onChange={e=>setQ(e.target.value)} minLength={2} required/><button disabled={a.busy}>Buscar</button></form><Msg error={a.error} ok={a.ok}/>
-    <table className="admin-table"><tbody>{rows.map(r=><tr key={r.id}><td>#{r.id}</td><td>{r.email}{r.role!=='PLAYER'&&<> <span className="pill">{r.role}</span></>}</td><td>{r.characters.map(c=>c.name).join(', ')}</td><td><button onClick={()=>void open(r.id)}>Ver</button></td></tr>)}</tbody></table></section>
+    <table className="admin-table"><tbody><LimitedRows items={rows} cols={10} render={r=><tr key={r.id}><td>#{r.id}</td><td>{r.email}{r.role!=='PLAYER'&&<> <span className="pill">{r.role}</span></>}</td><td>{r.characters.map(c=>c.name).join(', ')}</td><td><button onClick={()=>void open(r.id)}>Ver</button></td></tr>}/></tbody></table></section>
     {acc&&<section className="panel"><div className="section-title"><h2>{acc.email}</h2><span className="pill">{acc.role}</span></div>
       <p className="muted">Conta #{acc.id} · criada em {when(acc.createdAt)} · e-mail {acc.emailVerifiedAt?'confirmado':'não confirmado'} · Premium {acc.premium.active?`até ${when(acc.premium.until)}`:'inativo'}</p>
       <label className="ops-form" style={{margin:'0 0 14px'}}>Motivo (obrigatório para qualquer ação abaixo)<input value={reason} onChange={e=>setReason(e.target.value)} maxLength={500}/></label>
@@ -66,14 +85,20 @@ function Accounts({has}:{has:(p:Permission)=>boolean}) {
       {has('gold.adjust')&&charId&&<form className="ops-inline" onSubmit={e=>{e.preventDefault();void act(()=>api(`/admin/characters/${charId}/gold`,{delta,reason},goldKey.get(`${charId}|${delta}|${reason}`)).then(()=>{goldKey.clear();return ledger(charId);}),'Ouro ajustado.');}}><input aria-label="Variação" inputMode="numeric" placeholder="Ex.: 500 ou -500" value={delta} onChange={e=>setDelta(e.target.value)} required/><button disabled={a.busy}>Ajustar ouro do personagem #{charId}</button></form>}
       {charId&&<><h3>Ouro (últimas entradas)</h3>{gold.map(g=><div className="ledger-row" key={g.id}><span>{when(g.createdAt)}</span><span>{reasonLabel[g.reason]??g.reason}</span><b className={BigInt(g.delta)<0n?'neg':'pos'}>{fmt(g.delta)}</b><small>saldo {fmt(g.balanceAfter)}</small></div>)}
         <h3>Itens (últimas entradas)</h3>{items.map(g=><div className="ledger-row" key={g.id}><span>{when(g.createdAt)}</span><span>{g.item} +{g.upgradeTier} · {g.reason}</span><b className={g.delta<0?'neg':'pos'}>{g.delta>0?'+':''}{g.delta}</b><small/></div>)}</>}
-      {has('punish.apply')&&<><h3>Punições</h3>{acc.punishments.map(p=><div className="ledger-row" key={p.id}><span>{p.kind} · {when(p.startsAt)}</span><span>{p.reason}</span><b>{p.revokedAt?'revogada':p.expiresAt?`até ${when(p.expiresAt)}`:'sem prazo'}</b>{!p.revokedAt&&<button disabled={a.busy} onClick={()=>void act(()=>api(`/admin/punishments/${p.id}/revoke`,{reason}),'Punição revogada.')}>Revogar</button>}</div>)}
-        <form className="ops-inline" onSubmit={e=>{e.preventDefault();void act(()=>api(`/admin/accounts/${acc.id}/punishments`,{kind,reason,...(hours?{hours:Number(hours)}:{})}),'Punição aplicada.');}}><select aria-label="Tipo" value={kind} onChange={e=>setKind(e.target.value)}><option value="WARNING">Advertência</option><option value="MARKET_BAN">Bloquear mercado</option><option value="BAN">Banir conta</option></select><input aria-label="Horas" inputMode="numeric" placeholder="Horas (vazio = sem prazo)" value={hours} onChange={e=>setHours(e.target.value)}/><button disabled={a.busy}>Aplicar</button></form></>}
-      {has('premium.grant')&&<><h3>Premium</h3>{acc.periods.map(p=><div className="ledger-row" key={p.id}><span>{p.source} · {p.days} dias</span><span>{when(p.startsAt)} → {when(p.endsAt)}</span><b>{p.revokedAt?'revogado':'ativo'}</b>{!p.revokedAt&&<button disabled={a.busy} onClick={()=>void act(()=>api(`/admin/premium-periods/${p.id}/revoke`,{reason}),'Período revogado.')}>Revogar</button>}</div>)}
+      {has('punish.apply')&&<><h3>Punições</h3><Limited items={acc.punishments} label="Ver mais" render={p=><div className="ledger-row" key={p.id}><span>{p.kind} · {when(p.startsAt)}</span><span>{p.reason}</span><b>{p.revokedAt?'revogada':p.expiresAt?`até ${when(p.expiresAt)}`:'sem prazo'}</b>{!p.revokedAt&&<button disabled={a.busy} onClick={()=>void act(()=>api(`/admin/punishments/${p.id}/revoke`,{reason}),'Punição revogada.')}>Revogar</button>}</div>}/>
+        <form className="ops-inline" onSubmit={e=>{e.preventDefault();void act(()=>api(`/admin/accounts/${acc.id}/punishments`,{kind,reason,...(hours?{hours:Number(hours)}:{})}),'Punição aplicada.');}}><select aria-label="Tipo" value={kind} onChange={e=>setKind(e.target.value)}><option value="WARNING">Advertência</option><option value="MARKET_BAN">Bloquear mercado</option><option value="PVP_BLOCK">Proibir duelos</option><option value="BAN">Banir conta</option></select><input aria-label="Horas" inputMode="numeric" placeholder="Horas (vazio = sem prazo)" value={hours} onChange={e=>setHours(e.target.value)}/><button disabled={a.busy}>Aplicar</button></form></>}
+      {has('premium.grant')&&<><h3>Premium</h3><Limited items={acc.periods} label="Ver mais" render={p=><div className="ledger-row" key={p.id}><span>{p.source} · {p.days} dias</span><span>{when(p.startsAt)} → {when(p.endsAt)}</span><b>{p.revokedAt?'revogado':'ativo'}</b>{!p.revokedAt&&<button disabled={a.busy} onClick={()=>void act(()=>api(`/admin/premium-periods/${p.id}/revoke`,{reason}),'Período revogado.')}>Revogar</button>}</div>}/>
         <form className="ops-inline" onSubmit={e=>{e.preventDefault();void act(()=>api(`/admin/accounts/${acc.id}/premium`,{days:Number(days),reason},premiumKey.get(`${acc.id}|${days}|${reason}`)).then(r=>{premiumKey.clear();return r;}),'Dias concedidos.');}}><input aria-label="Dias" inputMode="numeric" value={days} onChange={e=>setDays(e.target.value)} required/><button disabled={a.busy}>Conceder dias de Premium</button></form></>}
-      {acc.tickets.length>0&&<><h3>Atendimentos</h3>{acc.tickets.map(t=><div key={t.id}>#{t.id} · {t.subject} <span className="pill">{t.status}</span></div>)}</>}</section>}</>;
+      {acc.tickets.length>0&&<><h3>Atendimentos</h3><Limited items={acc.tickets} label="Ver mais" render={t=><div key={t.id}>#{t.id} · {t.subject} <span className="pill">{t.status}</span></div>}/></>}</section>}</>;
 }
 
 type Econ={days:number;inflow:string;outflow:string;net:string;circulation:{inHand:string;inBank:string;characters:number};gold:{reason:string;kind:string;total:string;count:number}[];items:{reason:string;kind:string;total:number;count:number}[];daily:{day:string;kind:string;total:string}[];market:{byStatus:{status:string;count:number}[];sales:number;volume:string;fees:string};premium:{active:number;paidOrders:number;revenueCents:number}};
+// Por dia: criado, removido, líquido e o acumulado do período (quanto o estoque de ouro do mundo cresceu desde o início da janela).
+function perDay(rows:Econ['daily']){
+  const map=new Map<string,{day:string;in:bigint;out:bigint}>();
+  for(const r of rows){const d=map.get(r.day)??{day:r.day,in:0n,out:0n};if(r.kind==='in')d.in+=BigInt(r.total);else if(r.kind==='out')d.out+=-BigInt(r.total);map.set(r.day,d);}
+  let acc=0n;return [...map.values()].sort((a,b)=>a.day.localeCompare(b.day)).map(d=>{const net=d.in-d.out;acc+=net;return {...d,net,acc};}).reverse();
+}
 function Economy() {
   const [days,setDays]=useState(7),[d,setD]=useState<Econ|null>(null),[err,setErr]=useState('');
   useEffect(()=>{setErr('');api<Econ>(`/admin/economy?days=${days}`).then(setD).catch(e=>setErr(msg(e)));},[days]);
@@ -81,11 +106,13 @@ function Economy() {
   return <section className="panel"><div className="section-title"><h2>Indicadores da economia</h2><span>{[1,7,30].map(n=><button key={n} className={days===n?'active-chip':''} onClick={()=>setDays(n)}>{n===1?'24 h':`${n} dias`}</button>)}</span></div>{err&&<p className="error" role="alert">{err}</p>}
     {d&&<><div className="stat-tiles"><div><b>{fmt(d.inflow)}</b><span>ouro criado</span></div><div><b>{fmt(d.outflow)}</b><span>ouro removido</span></div><div><b className={BigInt(d.net)>0n?'neg':'pos'}>{BigInt(d.net)>0n?'+':''}{fmt(d.net)}</b><span>saldo líquido do mundo</span></div><div><b>{fmt(d.circulation.inHand)}</b><span>em circulação ({d.circulation.characters} personagens)</span></div></div>
       <p className="muted">Saldo líquido positivo = mais ouro entrando do que saindo (inflação). Taxas e compras no NPC são os principais ralos.</p>
-      <table className="admin-table"><thead><tr><th>Origem/destino</th><th>Tipo</th><th>Total</th><th>Eventos</th></tr></thead><tbody>{d.gold.map(g=><tr key={g.reason}><td>{reasonLabel[g.reason]??g.reason}</td><td>{kindName[g.kind]}</td><td>{fmt(g.total)}</td><td>{g.count}</td></tr>)}</tbody></table>
-      <h3>Itens</h3><table className="admin-table"><tbody>{d.items.map(i=><tr key={i.reason}><td>{i.reason}</td><td>{kindName[i.kind]}</td><td>{i.total}</td><td>{i.count}</td></tr>)}</tbody></table>
+      <table className="admin-table"><thead><tr><th>Origem/destino</th><th>Tipo</th><th>Total</th><th>Eventos</th></tr></thead><tbody><LimitedRows items={d.gold} cols={10} render={g=><tr key={g.reason}><td>{reasonLabel[g.reason]??g.reason}</td><td>{kindName[g.kind]}</td><td>{fmt(g.total)}</td><td>{g.count}</td></tr>}/></tbody></table>
+      <h3>Itens</h3><table className="admin-table"><thead><tr><th>Origem/destino</th><th>Tipo</th><th>Quantidade</th><th>Eventos</th></tr></thead><tbody><LimitedRows items={d.items} cols={10} render={i=><tr key={i.reason}><td>{reasonLabel[i.reason]??i.reason}</td><td>{kindName[i.kind]}</td><td>{i.total}</td><td>{i.count}</td></tr>}/></tbody></table>
       <h3>Mercado</h3><p>{d.market.sales} vendas · volume {fmt(d.market.volume)} · taxas coletadas {fmt(d.market.fees)} · anúncios: {d.market.byStatus.map(s=>`${s.status} ${s.count}`).join(', ')||'—'}</p>
       <h3>Premium</h3><p>{d.premium.active} contas ativas · {d.premium.paidOrders} pedidos pagos no período · {brl(d.premium.revenueCents)}</p>
-      <h3>Por dia</h3><table className="admin-table"><tbody>{d.daily.map(r=><tr key={r.day+r.kind}><td>{r.day}</td><td>{kindName[r.kind==='in'?'source':r.kind==='out'?'sink':'transfer']}</td><td>{fmt(r.total)}</td></tr>)}</tbody></table></>}</section>;
+      <h3>Por dia</h3><p className="muted">Acumulado = soma do saldo líquido desde o primeiro dia da janela (quanto o ouro do mundo cresceu ou encolheu). Ouro entre jogadores (mercado) não conta.</p>
+      <table className="admin-table"><thead><tr><th>Dia</th><th>Criado</th><th>Removido</th><th>Líquido</th><th>Acumulado</th></tr></thead><tbody><LimitedRows items={perDay(d.daily)} cols={5} render={r=><tr key={r.day}><td>{new Date(`${r.day}T12:00:00`).toLocaleDateString('pt-BR')}</td><td>{fmt(r.in.toString())}</td><td>{fmt(r.out.toString())}</td><td>{r.net>0n?'+':''}{fmt(r.net.toString())}</td><td>{r.acc>0n?'+':''}{fmt(r.acc.toString())}</td></tr>}/></tbody></table>
+      <p className="muted">Estoque total de ouro hoje: {fmt((BigInt(d.circulation.inHand)+BigInt(d.circulation.inBank)).toString())} (na mão {fmt(d.circulation.inHand)} · no banco {fmt(d.circulation.inBank)}) · média por personagem {fmt((d.circulation.characters?(BigInt(d.circulation.inHand)+BigInt(d.circulation.inBank))/BigInt(d.circulation.characters):0n).toString())}.</p></>}</section>;
 }
 
 type SettingRow={key:string;value:number;label:string;unit:string;group:string;min:number;max:number;default:number};
@@ -108,7 +135,7 @@ function Orders({canManage}:{canManage:boolean}) {
   useEffect(()=>{void load();},[]);
   return <section className="panel"><div className="section-title"><h2>Pedidos do Premium</h2><button onClick={()=>void load()}>Atualizar</button></div><Msg error={a.error} ok={a.ok}/>
     {canManage&&<input aria-label="Motivo" placeholder="Motivo (para marcar reembolso)" value={reason} onChange={e=>setReason(e.target.value)} maxLength={500} style={{marginBottom:10,width:'100%'}}/>}
-    <table className="admin-table"><thead><tr><th>#</th><th>Conta</th><th>Valor</th><th>Status</th><th>Pagamento</th><th/></tr></thead><tbody>{rows.map(o=><tr key={o.id}><td>{o.id}</td><td>{o.account.email}</td><td>{brl(o.amountCents)} · {o.days} d</td><td>{o.status}</td><td>{o.providerPaymentId??'—'}</td><td>{canManage&&o.status==='PAID'&&<button disabled={a.busy} onClick={()=>void a.run(async()=>{await api(`/admin/orders/${o.id}/refund`,{reason});await load();},'Reembolso registrado; acesso revogado.')}>Registrar reembolso</button>}</td></tr>)}</tbody></table>
+    <table className="admin-table"><thead><tr><th>#</th><th>Conta</th><th>Valor</th><th>Status</th><th>Pagamento</th><th/></tr></thead><tbody><LimitedRows items={rows} cols={10} render={o=><tr key={o.id}><td>{o.id}</td><td>{o.account.email}</td><td>{brl(o.amountCents)} · {o.days} d</td><td>{o.status}</td><td>{o.providerPaymentId??'—'}</td><td>{canManage&&o.status==='PAID'&&<button disabled={a.busy} onClick={()=>void a.run(async()=>{await api(`/admin/orders/${o.id}/refund`,{reason});await load();},'Reembolso registrado; acesso revogado.')}>Registrar reembolso</button>}</td></tr>}/></tbody></table>
     <p className="muted">O reembolso em si é feito no painel do Mercado Pago. Normalmente o aviso automático já revoga o acesso; use o botão apenas se ele não chegar.</p></section>;
 }
 
@@ -117,5 +144,35 @@ function Audit() {
   const [rows,setRows]=useState<AuditRow[]>([]),[next,setNext]=useState<number|null>(null);
   useEffect(()=>{api<{entries:AuditRow[];nextBefore:number|null}>('/admin/audit').then(r=>{setRows(r.entries);setNext(r.nextBefore);}).catch(()=>{});},[]);
   async function more(){if(next===null)return;const r=await api<{entries:AuditRow[];nextBefore:number|null}>(`/admin/audit?before=${next}`);setRows([...rows,...r.entries]);setNext(r.nextBefore);}
-  return <section className="panel"><div className="section-title"><h2>Auditoria</h2></div><table className="admin-table"><thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Alvo</th><th>Motivo</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td>{when(r.createdAt)}</td><td>#{r.actorAccountId}</td><td>{r.action}</td><td>{r.targetType}{r.targetId?` #${r.targetId}`:''}</td><td>{r.reason}{r.details?<><br/><small>{JSON.stringify(r.details)}</small></>:null}</td></tr>)}</tbody></table>{next!==null&&<button onClick={()=>void more()}>Ver mais</button>}</section>;
+  return <section className="panel"><div className="section-title"><h2>Auditoria</h2></div><table className="admin-table"><thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Alvo</th><th>Motivo</th></tr></thead><tbody><LimitedRows items={rows} cols={10} render={r=><tr key={r.id}><td>{when(r.createdAt)}</td><td>#{r.actorAccountId}</td><td>{r.action}</td><td>{r.targetType}{r.targetId?` #${r.targetId}`:''}</td><td>{r.reason}{r.details?<><br/><small>{JSON.stringify(r.details)}</small></>:null}</td></tr>}/></tbody></table>{next!==null&&<button onClick={()=>void more()}>Ver mais</button>}</section>;
+}
+
+type NoticeRow={id:number;kind:string;message:string;startsAt:string;endsAt:string|null;endedAt:string|null};
+// Avisos que aparecem no topo do jogo para todos (inclusive na tela de entrada). Manutenção não pode ser fechada pelo jogador.
+function Notices(){
+  const [rows,setRows]=useState<NoticeRow[]>([]),[kind,setKind]=useState('INFO'),[message,setMessage]=useState(''),[hours,setHours]=useState(''),[reason,setReason]=useState(''),a=useAct();
+  const load=()=>api<NoticeRow[]>('/admin/notices').then(setRows).catch(()=>{});
+  useEffect(()=>{void load();},[]);
+  const active=(n:NoticeRow)=>!n.endedAt&&(!n.endsAt||new Date(n.endsAt)>new Date());
+  return <section className="panel"><div className="section-title"><h2>Avisos para os jogadores</h2></div><Msg error={a.error} ok={a.ok}/>
+    <form className="ops-form" onSubmit={e=>{e.preventDefault();void a.run(async()=>{await api('/admin/notices',{kind,message,hours:hours||null,reason});setMessage('');setReason('');await load();},'Aviso publicado.');}}>
+      <label>Tipo<select value={kind} onChange={e=>setKind(e.target.value)}><option value="INFO">Aviso (o jogador pode fechar)</option><option value="MAINTENANCE">Manutenção (fica no topo até encerrar)</option></select></label>
+      <label>Mensagem ({message.length}/300)<textarea value={message} onChange={e=>setMessage(e.target.value)} minLength={5} maxLength={300} rows={3} required/></label>
+      <label>Duração em horas (vazio = até encerrar)<input inputMode="numeric" value={hours} onChange={e=>setHours(e.target.value.replace(/\D/g,''))}/></label>
+      <label>Motivo (fica na auditoria)<input value={reason} onChange={e=>setReason(e.target.value)} minLength={5} maxLength={500} required/></label>
+      <button className="primary" disabled={a.busy}>Publicar aviso</button></form>
+    <Limited items={rows} label="Ver mais" render={n=><div className="ledger-row" key={n.id}><span>{n.kind==='MAINTENANCE'?'Manutenção':'Aviso'} · {when(n.startsAt)}</span><span>{n.message}</span><b>{active(n)?'No ar':n.endedAt?'Encerrado':'Expirado'}</b>
+      {active(n)&&<button disabled={a.busy} onClick={()=>{const r=window.prompt('Motivo para encerrar o aviso (fica na auditoria):');if(r)void a.run(async()=>{await api(`/admin/notices/${n.id}/end`,{reason:r});await load();},'Aviso encerrado.');}}>Encerrar</button>}</div>}/>
+    {!rows.length&&<p className="empty">Nenhum aviso publicado ainda.</p>}</section>;
+}
+
+// Duelos recentes, para investigar contas múltiplas (mesmos pares, vitórias em sequência). Só leitura.
+type DuelRow={id:number;challenger:{id:number;name:string;level:number;accountId:number};opponent:{id:number;name:string;level:number;accountId:number};status:string;outcome:DuelOutcome;winnerId:number|null;round:number;createdAt:string;finishedAt:string|null};
+function Duels(){
+  const list=usePaged<DuelRow>('/admin/duels');
+  const who=(c:DuelRow['challenger'],d:DuelRow)=><>{c.name} <small>(Nv. {c.level} · conta #{c.accountId})</small>{d.winnerId===c.id?<b> · venceu</b>:null}</>;
+  return <section className="panel"><div className="section-title"><h2>Duelos</h2><span>{list.total}</span></div>{list.error&&<p className="error" role="alert">{list.error}</p>}
+    <table className="admin-table"><thead><tr><th>#</th><th>Desafiante</th><th>Desafiado</th><th>Resultado</th><th>Rodadas</th><th>Quando</th></tr></thead><tbody>
+      {list.items.map(d=><tr key={d.id}><td>{d.id}</td><td>{who(d.challenger,d)}</td><td>{who(d.opponent,d)}</td><td>{d.status==='FIGHTING'?'Em andamento':outcomeLabels[d.outcome]}</td><td>{d.round}</td><td>{when(d.finishedAt??d.createdAt)}</td></tr>)}</tbody></table>
+    <Pager page={list.page} pages={list.pages} onPage={p=>void list.go(p)} busy={list.loading}/></section>;
 }

@@ -6,8 +6,10 @@ O projeto é dividido em gavetas: cada pasta tem uma função, regras próprias 
 | Quero mudar… | Gaveta (servidor) | Gaveta (tela) |
 |---|---|---|
 | combate, atributos, loja NPC, forja, tarefas, jornada, classes | `backend/src/game` | `features/adventure`, `hero`, `inventory`, `shop`, `forge`, `tasks`, `characters` |
+| caçada em grupo, duelo (PvP) | `backend/src/game` (`groupHuntService`, `duelService`, `duelEngine`) | `features/group`, `duel` |
 | ouro, itens, taxas, mercado, extrato, conciliação | `backend/src/economy` | `features/market`, `ledger` |
 | Premium e pagamentos | `backend/src/premium` | `features/premium` |
+| perfil, recados, depoimentos, amigos, fórum | `backend/src/community` | `features/profile` |
 | cadastro, login, senha, e-mail, banimento | `backend/src/account` | `features/auth` |
 | painel da equipe, punições, suporte | `backend/src/admin` | `features/admin`, `support` |
 | banco, erros, e-mail, monitoramento | `backend/src/core` | — |
@@ -15,7 +17,7 @@ O projeto é dividido em gavetas: cada pasta tem uma função, regras próprias 
 | tabelas do banco | `backend/prisma/` (migração aditiva) | — |
 
 ## Ordem das dependências (verificada por `npm run check:drawers`)
-Servidor, de baixo para cima: `core` → `economy` → `premium` → `game` → `account` → `admin` → `server.ts`. Uma gaveta só importa as de baixo. Tela: `lib` → `ui` → `features/*` → `App.tsx`.
+Servidor, de baixo para cima: `core` → `economy` → `premium` → `game` → `community` → `account` → `admin` → `server.ts`. Uma gaveta só importa as de baixo. Tela: `lib` → `ui` → `features/*` → `App.tsx`.
 
 ## Como pedir uma manutenção (modelo geral)
 ```

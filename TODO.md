@@ -1,7 +1,7 @@
 # TODO / DONE — O Confronto
 
 > Arquivo vivo. Cada item concluído vira `[x]` na hora, com a data. Itens que dependem da SUA máquina (eu não consigo rodar MySQL/npm real aqui) ficam em "Só você pode fazer".
-> **Segurança:** pendências levantadas em 2026-10-31 estão em `SEGURANCA.md` (13 itens, nada corrigido ainda — o jogo está em teste). Ler antes de publicar.
+> **Segurança:** pendências levantadas em 2026-10-31 estão em `SEGURANCA.md` (13 itens; 1, 2, 3, 4, 8, 9 e 10 corrigidos em 2026-10-31). Ler antes de publicar.
 > Avaliação das propostas do GPT Astra: ver `ASTRA-AVALIACAO.md` (cada seção aceita/adaptada/adiada tem itens aqui, marcados com **[Astra N]**).
 > Regra: ao terminar algo, marque aqui, ajuste o `GAVETA.md` da gaveta tocada e rode `npm run check:drawers`.
 
@@ -41,8 +41,10 @@
 
 - [x] Entrada "Mestre" para desenvolvimento (botão na home só no seu computador; `DEV_QUICK_LOGIN=1`) (2026-10-28)
 - [x] `npm run master:create` cria/redefine o login master (e-mail `mestre@localhost.dev`, senha temporária `Mestre-Temp-2026!`; `-- --aleatoria` gera outra; `-- --senha "..."` escolhe)
-- [ ] **CORRIGIR ANTES DE PUBLICAR (segurança):** a conta `mestre@localhost.dev` usa a senha TEMPORÁRIA `Mestre-Temp-2026!` (definida em `backend/prisma/create-master.ts`). Apagar a conta, remover a constante `TEMP_PASSWORD` e conferir que nenhuma conta de teste ficou no banco de produção
-- [ ] **Antes de publicar:** remover `DEV_QUICK_LOGIN` do `.env` e apagar a conta `mestre@localhost.dev`
+- [x] Senha fixa da conta master removida; `master:create` gera senha aleatória sem exibir; `dev-login` não promove mais conta existente e exige `HOST` loopback + `NODE_ENV=development`; servidor aborta com `DEV_QUICK_LOGIN=1` em host público; `npm run start:prod` (2026-10-31, `SEGURANCA.md` 1–4, 8–10)
+- [ ] **Antes de publicar:** remover `DEV_QUICK_LOGIN` do `.env`, apagar a conta `mestre@localhost.dev` e conferir que nenhuma conta de teste ficou no banco de produção
+- [ ] Segurança ainda pendente (`SEGURANCA.md`): 6 `TRUST_PROXY` no deploy, 7 contas descartáveis, 11 trocar senha/sair de todos, 12 trava do mercado, 13 senha do MySQL
+- [ ] **Antes de publicar:** apagar a conta de teste `vendedor-teste@example.invalid` (Mercador de Testes) e os anúncios dela, criados por `npm run dev:market-demo`
 
 - [x] Tema ESCURO como padrão; home em uma única moldura (capa + menu colado + boas-vindas + conteúdo) (2026-10-28)
 - [ ] Conferir se o que eu gravo na pasta chega mesmo (houve arquivos desatualizados no disco: `package.json`, `main.tsx`, `fire.css`); sempre comparar tamanhos após gravar
@@ -52,24 +54,26 @@
 ### Antes do beta
 - [ ] **[Astra 6]** Início guiado (~30 min): primeira arma melhorada, primeiro chefe, primeira venda
 - [x] **[Astra 4]** Registro de derrota explicando o motivo + revanche com dica (2026-10-31: `game/defeatAdvice.ts`, motivos também vão para o Diário; botões Ir ao Templo → Revanche)
-- [ ] **[Astra 13]** Aviso de manutenção + histórico de atualizações (changelog no jogo)
-- [ ] **[Astra 12]** Opção "reduzir movimento", não depender só de cor para raridade/perigo (ícone + texto)
-- [ ] **[Astra 2]** Bloqueio de item favorito (contra venda, anúncio e Ferreiro)
-- [ ] **[Astra 7]** Indicadores de ouro criado × consumido × acumulado (painel admin)
-- [ ] Aviso de mudança do Ferreiro aos jogadores (changelog)
+- [x] **[Astra 13]** Aviso de manutenção + histórico de atualizações: página Novidades (shared/changelog.ts) e avisos da equipe no topo, inclusive na entrada (notices.manage, motivo e auditoria; migração 202611010002_game_notices) (2026-10-31)
+- [x] **[Astra 12]** Opção "Menos movimento" (botão ao lado do tema; segue o sistema sem escolha salva; desliga animações, transições e o fogo do +10). Perigo/raridade já têm texto além da cor (PERIGOSO/CHEFE, +N, sinais +/−, "caiu") (2026-10-31)
+- [x] **[Astra 2]** Bloqueio de item favorito (contra venda, anúncio, Ferreiro e melhoria que pode quebrar sem Pedra); desfavoritar não exige Premium (2026-10-31)
+- [x] **[Astra 7]** Indicadores de ouro criado × consumido × acumulado (painel admin): por dia com criado, removido, líquido e acumulado; estoque total e média por personagem; motivos vêm de goldReasons (antes Ferreiro/redistribuição/caçada em grupo caíam em "entre jogadores") (2026-10-31)
+- [x] Aviso de mudança do Ferreiro aos jogadores (entrada em Novidades)
 - [ ] Mensagem/limite contra cliques repetidos conferidos em todas as telas novas
 - [ ] SMTP real para e-mails (hoje só log)
-- [ ] Métricas de onboarding/retenção (tempo até 1ª conquista, motivo de derrota, abandono após quebra)
+- [x] Métricas de onboarding/retenção: page_view e select_content registrados, com tela de validação e disparo em lote (2026-11-01)
 
 ### Durante o beta
-- [ ] **[Astra 1]** Histórico pessoal de tentativas do Ferreiro (sucesso/falha/quebra) na tela
-- [ ] **[Astra 1]** Efeito visual por faixa (+7 brilho discreto, +9 forte, +10 exclusivo) — respeitando "reduzir movimento"
+- [x] **[Astra 1]** Histórico pessoal de tentativas do Ferreiro (aba Meu histórico: sucessos, falhas, quebras, Pedra, ouro gasto, em páginas) (2026-10-31)
+- [x] **[Astra 1]** Efeito visual por faixa (+7 brilho discreto, +9 forte, +10 fogo) — parado com "Menos movimento" (2026-10-31)
 - [x] **[Astra 1]** Pedra de Proteção **só obtida jogando** (2026-10-28): cai de monstros nível 5+ (0,3%; chefes 1%), item de loot; marcada na Forja, só é gasta quando evita uma quebra, registrada no extrato (`PROTECTION_USE`). Nunca vendida por dinheiro real. Teste de integração incluso.
 - [ ] Sprite próprio da Pedra de Proteção (hoje sem imagem; só usar TibiaWiki após decidir a licença) e, se quiser, ajustar a chance de queda
 - [ ] Rodar `npm run seed` (cria a pedra e as quedas; é upsert, não apaga nada)
-- [ ] **[Astra 1]** Materiais por categoria + desmontagem de equipamento (também é sumidouro de ouro/itens)
+- [x] **[Astra 1]** Materiais por faixa + Ferreiro fabrica, reforja e desmonta (2026-10-31): 8 materiais com sprite do TibiaWiki, Mercador só vende equipamento até o nível 100 (`shop.maxEquipmentLevel`), custos em `forge.*`, extrato com motivos `FORGE_*`, teste de integração
+- [ ] **Você:** `npm run seed` no seu banco para os materiais caírem dos monstros (sem isso o Ferreiro avisa que faltam materiais)
 - [ ] **[Astra 7]** Sumidouros de ouro além da quebra (taxas, serviços, anúncios) e alerta de duplicação por conciliação agendada
-- [ ] **[Astra 8]** Mercado: busca por nome/classe/nível/aprimoramento, comparar com o equipado, histórico pessoal
+- [x] **[Astra 8]** Mercado: busca por nome, filtros por tipo, "só o que posso usar" e melhoria mínima; comparação ▲/▼ com o equipado; histórico pessoal já está em Extrato (2026-10-31)
+- [x] Poções por faixa de nível (11, sprites TibiaWiki verificados em scripts/sprites-pocoes.json), Mercador/Mercado/mochila por tipo, equipamento leva ao Inventário, nível recomendado nas regiões (2026-10-31). **Você:** rodar `npm run seed` (o iniciar.bat já faz) para as poções novas aparecerem
 - [ ] **[Astra 5]** Chefes individuais com fases
 - [ ] **[Astra 4]** Efeitos de status (veneno, queimadura, lentidão) com duração visível; limite de duração do combate
 - [ ] **[Astra 2]** Atributos secundários nos itens (crítico, mana, resistência) — respeitando `combatStats.ts` como única origem
@@ -87,8 +91,28 @@
 - [ ] Anúncio no mundo de +10 / primeiro do tipo (respeitando anonimato)
 - [ ] Itens raros obtidos por outras rotas (chefes/fabricação) — Astra sugeriu; hoje raro = +10
 - [x] Efeito visual do +10: moldura de fogo animada criada pelo dono (GIF `fx/fire-frame.gif`, 16 quadros) em volta do ícone da mochila, equipamento e Forja; parada (1º quadro) com "reduzir movimento" (2026-10-28)
-- [ ] Brilho discreto no +7 e mais forte no +9 (proposta Astra 1)
+- [x] Brilho discreto no +7 e mais forte no +9 (proposta Astra 1)
 - [ ] Revisar com a LGPD/Privacidade: texto legal deve citar a exibição pública do nome do personagem e o opt-out
+
+### Níveis 60 a 1000 — ver `PLANO-NIVEIS.md` (proposta de 2026-10-31, aguardando decisões ❓1–❓5)
+- [x] Fase 0: subida de nível num só lugar (`gainExperience`), `shared/progression.ts`, `MAX_LEVEL`, `npm run levels:simulate` (2026-10-31)
+  - Achado do simulador: até o nível 40 as lutas acabam em 1–2 turnos (monstros fracos demais para o personagem da faixa); só o Demon (60) é desafiador. Rebalancear vida/ataque na Fase 1.
+- [x] Fase 1: conteúdo até o nível 100 (sprites do manifesto) — 41 monstros, 4 regiões novas, 49 equipamentos, `levels:calibrate` (2026-10-31)
+- [ ] **Você:** `npm run seed` no seu banco depois de juntar a Fase 1 (o `iniciar.bat` já faz)
+- [ ] Rever equilíbrio do Arqueiro (perde ~2× mais vida no simulador; é defesa/vida, não ataque). Armas de mago e Arqueiro resolvidas na Fase 2 com munição/foco
+- [x] Fase 2: conteúdo até o nível 250 (Infernatil) — 17 monstros, 3 regiões (a última é o Vale da Perdição), 38 equipamentos, munição/foco para Arqueiro e magos (2026-10-31)
+- [x] Fase 3: 250–1000 com Eras (decisão ❓4 = B) — 5 Eras, 55 monstros, 65 equipamentos, Apocalypse no 1000; Vale da Perdição é a região final (2026-10-31)
+
+### Comunidade e grupo (pedidos de 2026-10-31)
+- [x] Missões com nome, quem pede e história para os 113 monstros (`shared/missions.ts`); Thais virou Capriel e a primeira região, Campos do Amanhecer
+- [x] 8 classes por vocação (20, 100, 250, 400, 550, 700, 850, 1000): +3% ataque/defesa e +1 crítico por classe após a promoção, custo = promoção × (nível ÷ 20)², migração aditiva `202610310001_class_tiers`, monstros recalibrados (2026-10-31)
+- [x] Perfil de comunidade grátis (/perfil, /perfil/Nome): galeria do TibiaWiki (10 lendárias no Premium), descrição (500; Premium 2.000), recados com intervalo, depoimentos com aprovação, amigos, visitas com modo invisível, denúncia → atendimento REPORT, remoção pela equipe com auditoria; migração `202610310002_community_profile`; menu lateral em seções (2026-10-31)
+- [x] Fórum estilo Reddit (/forum, /forum/id): 6 categorias, votos ▲▼, Em alta/Novos/Mais votados, busca, 10 por página, comentários com respostas, "resolvido" nas dúvidas, intervalo contra spam, denúncia e remoção pela equipe com auditoria; migração `202610310003_forum` (2026-10-31)
+- [x] Regra do site: nenhuma lista com mais de 10 itens de uma vez ("Ver mais" e/ou busca) — `ui/ShowMore.tsx` (Limited, LimitedRows) em todas as telas; Missões em 10 faixas de nível com drill-down e busca; Mercador com busca; regiões ordenadas (liberadas mais altas primeiro); mochila com 10 por página (2026-10-31)
+- [x] Páginas numeradas (Anterior 1 … 4 5 6 … N Próxima) no servidor para o que cresce com os jogadores: mercado (com busca), extrato, histórico do mercado, atendimentos, combates e memórias do diário, recados, depoimentos, amigos, visitas, fórum e mochila (2026-10-31)
+- [x] Caçada em grupo, fase 1 (/cacada-em-grupo): nível 100+, grupo de 2 a 4 amigos, convites, rodadas com prazo (quem não escolhe defende), ações por vocação (Segurar, Mirar, Curar o grupo, Quebrar selo), 1ª caçada "Fera da Serra Vermelha" com o laço, recompensas por loadSettings (group.*) com limite semanal; migração `202611010001_group_hunt`; `npm run group:simulate` (2026-10-31)
+- [x] Caçada em grupo, fase 2: Floresta Oca (encantamento: metade do dano até o Feiticeiro desfazer; bônus), Lago Cinzento (névoa com ilusões que a mira e a luz vencem + veneno que o Druida corta) e o Dragão (selos que o deixam furioso; com 25% de vida o grupo vota derrotar ou fazer dormir, gravado no Diário); conquistas "Ninguém caça sozinho" e "As Quatro Marcas" (2026-10-31)
+- [x] Caçada em grupo com amigos a partir de um nível (fases 1 e 2 prontas) — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
 
 ### Depois de validar o jogo
 - [ ] **[Astra 3]** Talentos / especializações / redistribuição com custo
@@ -97,7 +121,7 @@
 - [ ] **[Astra 10]** Rankings por classe/categoria, temporadas cosméticas (sem ranking de ouro)
 - [ ] **[Astra 11]** Mais benefícios cosméticos/organização no Premium
 - [ ] **[Astra 5]** Regiões novas, bestiário, expedições, eventos de mundo
-- [ ] PvP (só depois de equilibrar monstros)
+- [x] PvP: Duelo entre amigos (2026-10-31) — desafio, rodadas com prazo, rendição, histórico, ranking de honra, PVP_BLOCK, lista da equipe e denúncia. Apostas (Comando 9): Honra com marcas e loja de aparência, Aposta de ouro com taxa, Espólio a 25% com resgate. Fora por ora: bloco "Duelos" no perfil, duelo ao vivo. Equilíbrio: `npm run duel:simulate` (Cavaleiro × Druida chega a ~67%; Paladino abaixo das outras).
 
 ## 🧑‍💻 Só você pode fazer (eu não consigo rodar aqui)
 - [ ] Dê dois cliques em `iniciar.bat`: atualiza tudo (install, generate, migrações, seed, login master, build) e já inicia o jogo em http://localhost:3333.

@@ -1,3 +1,4 @@
+import { honorCosmetics } from './pvp';
 // Benefícios Premium: organização, personalização e conveniência. Nenhum altera as regras de combate.
 export const premiumBenefits = [
   { key: 'appearance', icon: 'Crown Helmet', title: 'Aparência', description: 'Molduras para o retrato do personagem.' },
@@ -13,10 +14,11 @@ export const frames = [
 ] as const;
 export const profileTitles = [
   { key: 'adventurer', name: 'Aventureiro' }, { key: 'hunter', name: 'Caçador' }, { key: 'blacksmith', name: 'Amigo do Ferreiro' },
-  { key: 'explorer', name: 'Explorador' }, { key: 'guardian', name: 'Guardião de Thais' }, { key: 'dragonbane', name: 'Terror dos Dragões' },
+  { key: 'explorer', name: 'Explorador' }, { key: 'guardian', name: 'Guardião de Capriel' }, { key: 'dragonbane', name: 'Terror dos Dragões' },
 ] as const;
 export const emblems = ['Sword', 'Mastermind Shield', 'Dragon', 'Demon', 'Cyclops', 'Magic Longsword', 'Backpack', 'Ring of the Sky'] as const;
-export const titleName = (key: string | null | undefined) => profileTitles.find(t => t.key === key)?.name ?? '';
+// Títulos da honra (duelo) também aparecem no perfil; só se compram com marcas de honra (shared/pvp.ts).
+export const titleName = (key: string | null | undefined) => profileTitles.find(t => t.key === key)?.name ?? honorCosmetics.find(t => t.key === key && t.kind === 'TITLE')?.name ?? '';
 export const premiumPlan = { source: 'PURCHASE', currency: 'BRL', provider: 'MERCADOPAGO' } as const;
 
 const DAY = 86_400_000;

@@ -4,7 +4,10 @@ REM Seguro: nunca sobrescreve o .env nem apaga dados (migracoes aditivas, seed s
 cd /d "%~dp0"
 title O Confronto - iniciando
 echo [0/6] Fechando o servidor antigo (porta 3333), se estiver aberto...
+REM Fecha o servidor deste projeto pela linha de comando (o Windows as vezes informa o processo 0 como dono da porta) e, de reforco, pela porta.
+powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -like '*%~dp0*' -and $_.CommandLine -like '*backend/src/server.ts*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"
 powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 3333 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"
+timeout /t 1 /nobreak >nul
 findstr /b /c:"DEV_QUICK_LOGIN=" .env >nul 2>&1 || (echo.>>.env & echo DEV_QUICK_LOGIN=1>>.env & echo   Adicionei DEV_QUICK_LOGIN=1 ao .env ^(entrada Mestre, so neste computador^).)
 echo [1/6] Instalando dependencias...
 call npm install || goto erro

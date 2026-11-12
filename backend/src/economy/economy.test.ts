@@ -6,6 +6,7 @@ import { goldReasons, itemReasons, settingDefs, settingKeys, validSetting, defau
 import { can, permissionsOf, roles } from '../../../shared/permissions';
 import { vocationAllowed, isPromoted, promotedOf, baseVocation, vocationLabel, promotion } from '../../../shared/adventure';
 import { combatStats } from '../game/combatStats';
+import { isStackable } from './economy';
 
 test('taxas usam inteiros; taxa ligada cobra no mínimo 1 e nunca mais que o preço', () => {
   assert.equal(saleFee(100n, 5), 5n);
@@ -140,4 +141,30 @@ test('item raro: nome do criador some quando ele pede anonimato, inclusive no te
   assert.equal(open.label, 'Espada do Eclipse +10 — Nº 000042'); assert.equal(open.creator, 'Paulo'); assert.equal(open.destroyed, true);
   const hidden = publicRare({ ...base, creator: { name: 'Paulo', fameHidden: true } });
   assert.equal(hidden.creator, null); assert.equal(hidden.anonymous, true); assert(!JSON.stringify(hidden).includes('Paulo'));
+});
+test('só loot e consumíveis empilham; munição e foco são equipamento permanente', () => {
+  assert.equal(isStackable('LOOT'), true); assert.equal(isStackable('CONSUMABLE'), true);
+  for (const slot of ['AMMO', 'WEAPON', 'ARMOR', 'RING']) assert.equal(isStackable(slot), false, slot);
+});
+test('Ferreiro: material por faixa, melhoria guardada ao reforjar e retorno ao desmontar', async () => {
+  const { materialForLevel, reforgeKeptTier, salvageReturn, forgeMaterials, isForgeable } = await import('../../../shared/forge');
+  assert.equal(materialForLevel(1).name, 'Minério de Ferro'); assert.equal(materialForLevel(24).name, 'Minério de Ferro');
+  assert.equal(materialForLevel(25).name, 'Rubi Bruto'); assert.equal(materialForLevel(1000).name, 'Essência Demoníaca');
+  assert.deepEqual(forgeMaterials.map(m => m.minLevel), [...forgeMaterials.map(m => m.minLevel)].sort((a, b) => a - b), 'faixas em ordem');
+  assert.equal(reforgeKeptTier(7), 3); assert.equal(reforgeKeptTier(1), 0);
+  assert.equal(salvageReturn(2, 0), 2); assert.equal(salvageReturn(2, 6), 4);
+  assert.equal(isForgeable('AMMO'), true); assert.equal(isForgeable('LOOT'), false); assert.equal(isForgeable('CONSUMABLE'), false);
+  for (const r of ['FORGE_CRAFT', 'FORGE_REFORGE']) assert.equal(goldReasons[r as keyof typeof goldReasons], 'sink');
+  for (const r of ['FORGE_MATERIAL_USE', 'FORGE_REFORGE_OUT', 'FORGE_SALVAGE']) assert.equal(itemReasons[r as keyof typeof itemReasons], 'sink');
+});
+test('configuração: desmontar não pode devolver tanto material quanto fabricar gasta', async () => {
+  const { settingsConflict } = await import('../../../shared/economy');
+  const npc = { 'economy.npcBuyPercent': 100, 'economy.npcSellPercent': 50 };
+  assert.equal(settingsConflict({ ...npc, 'forge.craftMaterials': 5, 'forge.salvageMaterials': 2 }), null);
+  assert.match(settingsConflict({ ...npc, 'forge.craftMaterials': 3, 'forge.salvageMaterials': 3 }) ?? '', /do nada/);
+});
+test('redistribuir atributos: custo fixo + ouro × nível²', async () => {
+  const { statsResetCost } = await import('../../../shared/economy');
+  assert.equal(statsResetCost(1, 500, 5), 505n); assert.equal(statsResetCost(100, 500, 5), 50_500n); assert.equal(statsResetCost(1000, 500, 5), 5_000_500n);
+  assert.equal(goldReasons.STATS_RESET, 'sink');
 });

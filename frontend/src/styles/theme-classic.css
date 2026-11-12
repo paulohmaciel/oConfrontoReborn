@@ -136,3 +136,23 @@
 @media(max-width:760px) {
   :where(:root[data-theme="light"]) .sidebar, :where(:root[data-theme="light"]) .equipment-panel { border-color: #b6804e; }
 }
+
+/* Navegação no celular (mobile.css) no tema claro. */
+:where(:root[data-theme="light"]) .mobile-bar, :where(:root[data-theme="light"]) .mobile-drawer { background: linear-gradient(135deg,#e7d3aa,#ddc89c); border-color: #b6804e; }
+:where(:root[data-theme="light"]) .mobile-bar button { color: #633113; }
+:where(:root[data-theme="light"]) .mobile-bar button.active { color: #54250d; background: #e6c576; }
+:where(:root[data-theme="light"]) .mobile-bar button.active::before { background: #8c4b1d; }
+:where(:root[data-theme="light"]) .menu-button { color: #fff0c7; border-color: #b9892f; }
+:where(:root[data-theme="light"]) .menu-dot { background: #e6c576; box-shadow: 0 0 0 2px #633113; }
+:where(:root[data-theme="light"]) .drawer-head p, :where(:root[data-theme="light"]) .drawer-legal { color: #795c2c; }
+:where(:root[data-theme="light"]) .drawer-legal a { color: #633113; }
+:where(:root[data-theme="light"]) .drawer-foot { border-color: #b6804e; }
+:where(:root[data-theme="light"]) .equipment-inline .equipment-panel { border-color: #b9892f; }
+:where(:root[data-theme="light"]) .drawer-foot .quiet { color: #633113; font-weight: 600; }
+:root[data-theme="light"] .attr-radar { --radar-surface: #f4e2bd; --radar-you: #2a78d6; --radar-typical: #eb6834; }
+:root[data-theme="light"] .xp-meter { border-color: #bfa16a; }
+:root[data-theme="light"] .xp-meter .xp b { color: #8c4b1d; }
+:root[data-theme="light"] .xp-bar, :root[data-theme="light"] .xp-bar::-webkit-progress-bar { background: #d9c08e; }
+:root[data-theme="light"] .xp-detail { color: #745927; }
+:root[data-theme="light"] .search-results { background: #f4e2bd; }
+:root[data-theme="light"] .nav-group+.nav-group { border-color: #c5a46d; } :root[data-theme="light"] .nav-title { color: #8c5b24; }

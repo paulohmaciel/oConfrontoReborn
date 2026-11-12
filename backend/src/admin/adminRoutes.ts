@@ -1,6 +1,6 @@
 import { Router, type RequestHandler } from 'express';
 import { Prisma } from '@prisma/client';
-import { asyncRoute } from '../core/http';
+import { asyncRoute, pageOf, paged } from '../core/http';
 import { prisma, transaction, lockCharacterAny, lockAccount } from '../core/db';
 import { GameError, integer } from '../core/engine';
 import { addGold } from '../economy/economy';
@@ -71,7 +71,8 @@ adminRoutes.get('/admin/accounts/:id', need('accounts.read'), asyncRoute(async (
 }));
 
 // ----- Punições -----
-const punishKinds = ['WARNING', 'MARKET_BAN', 'BAN'];
+// PVP_BLOCK: proíbe desafiar e aceitar duelos (backend/src/game/duelService.ts).
+const punishKinds = ['WARNING', 'MARKET_BAN', 'PVP_BLOCK', 'BAN'];
 adminRoutes.post('/admin/accounts/:id/punishments', need('punish.apply'), asyncRoute(async (req, res) => {
   const accountId = integer(Number(req.params.id)), reason = reasonOf(req.body), kind = String(req.body?.kind);
   if (!punishKinds.includes(kind)) throw new GameError(400, 'Tipo de punição inválido.');
@@ -87,12 +88,45 @@ adminRoutes.post('/admin/accounts/:id/punishments', need('punish.apply'), asyncR
     return p;
   }));
 }));
+// Moderação da comunidade: a equipe remove recados e depoimentos (ex.: depois de uma denúncia), com motivo e auditoria.
+adminRoutes.post('/admin/community/:kind/:id/remove', need('community.moderate'), asyncRoute(async (req, res) => {
+  const id = integer(Number(req.params.id)), reason = reasonOf(req.body), kind = req.params.kind;
+  if (!['scrap', 'testimonial', 'post', 'comment'].includes(kind)) throw new GameError(400, 'Tipo de conteúdo inválido.');
+  await transaction(async tx => {
+    if (kind === 'scrap') {
+      const s = await tx.profileScrap.findUnique({ where: { id } });
+      if (!s) throw new GameError(404, 'Recado não encontrado.');
+      if (!s.deletedAt) await tx.profileScrap.update({ where: { id }, data: { deletedAt: new Date(), deletedById: actor(res) } });
+      await audit(tx, actor(res), 'COMMUNITY_REMOVE', 'CHARACTER', s.authorId, reason, { kind, id, text: s.text });
+    } else if (kind === 'post' || kind === 'comment') {
+      const item = kind === 'post' ? await tx.forumPost.findUnique({ where: { id } }) : await tx.forumComment.findUnique({ where: { id } });
+      if (!item) throw new GameError(404, 'Conteúdo do fórum não encontrado.');
+      if (kind === 'post') await tx.forumPost.update({ where: { id }, data: { deletedAt: new Date() } });
+      else await tx.forumComment.update({ where: { id }, data: { deletedAt: new Date() } });
+      await audit(tx, actor(res), 'COMMUNITY_REMOVE', 'CHARACTER', item.authorId, reason, { kind, id, text: 'title' in item ? `${item.title}
+${item.body}` : item.body });
+    } else {
+      const t = await tx.profileTestimonial.findUnique({ where: { id } });
+      if (!t) throw new GameError(404, 'Depoimento não encontrado.');
+      await tx.profileTestimonial.update({ where: { id }, data: { status: 'REMOVED', decidedAt: new Date() } });
+      await audit(tx, actor(res), 'COMMUNITY_REMOVE', 'CHARACTER', t.authorId, reason, { kind, id, text: t.text });
+    }
+  });
+  res.json({ ok: true });
+}));
 adminRoutes.post('/admin/punishments/:id/revoke', need('punish.apply'), asyncRoute(async (req, res) => {
   const id = integer(Number(req.params.id)), reason = reasonOf(req.body);
   await transaction(async tx => {
-    const p = await tx.punishment.findUnique({ where: { id } });
+    const p = await tx.punishment.findUnique({ where: { id }, include: { account: { select: { role: true } } } });
     if (!p) throw new GameError(404, 'Punição não encontrada.');
     if (p.revokedAt) return;
+    // Mesmas regras da aplicação: só quem tem cargo acima do alvo revoga; banimento sem prazo ou punição aplicada
+    // por um cargo superior ao seu só ADMIN revoga.
+    const isAdmin = can(res.locals.role, 'settings.write');
+    if (rank[p.account.role] >= rank[res.locals.role]) throw new GameError(403, 'Você não pode revogar a punição de uma conta com cargo igual ou superior ao seu.');
+    if (p.kind === 'BAN' && p.expiresAt === null && !isAdmin) throw new GameError(403, 'Apenas administradores revogam banimento permanente.');
+    const creator = await tx.account.findUnique({ where: { id: p.createdById }, select: { role: true } });
+    if (creator && rank[creator.role] > rank[res.locals.role] && !isAdmin) throw new GameError(403, 'Esta punição foi aplicada por um cargo superior ao seu; peça a um administrador.');
     await tx.punishment.update({ where: { id }, data: { revokedAt: new Date(), revokedById: actor(res), revokeReason: reason } });
     await audit(tx, actor(res), 'PUNISH_REVOKE', 'ACCOUNT', p.accountId, reason, { punishmentId: id });
   });
@@ -138,8 +172,48 @@ adminRoutes.post('/admin/orders/:id/refund', need('orders.manage'), asyncRoute(a
   }));
 }));
 
+// ----- Avisos para todos os jogadores (manutenção, eventos) -----
+adminRoutes.get('/admin/notices', need('notices.manage'), asyncRoute(async (_req, res) => {
+  res.json(await prisma.gameNotice.findMany({ orderBy: { id: 'desc' }, take: 10 }));
+}));
+adminRoutes.post('/admin/notices', need('notices.manage'), asyncRoute(async (req, res) => {
+  const reason = reasonOf(req.body), kind = req.body?.kind === 'MAINTENANCE' ? 'MAINTENANCE' : 'INFO';
+  const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
+  if (message.length < 5 || message.length > 300) throw new GameError(400, 'O aviso deve ter de 5 a 300 caracteres.');
+  const hours = req.body?.hours === undefined || req.body?.hours === null || req.body?.hours === '' ? null : Number(req.body.hours);
+  if (hours !== null && (!Number.isInteger(hours) || hours < 1 || hours > 720)) throw new GameError(400, 'Duração inválida (1 a 720 horas, ou vazio para até encerrar).');
+  res.json(await transaction(async tx => {
+    const notice = await tx.gameNotice.create({ data: { kind, message, endsAt: hours ? new Date(Date.now() + hours * 3_600_000) : null, createdById: actor(res) } });
+    await audit(tx, actor(res), 'NOTICE_CREATE', 'NOTICE', notice.id, reason, { kind, message, hours });
+    return notice;
+  }));
+}));
+adminRoutes.post('/admin/notices/:id/end', need('notices.manage'), asyncRoute(async (req, res) => {
+  const reason = reasonOf(req.body), id = integer(Number(req.params.id));
+  res.json(await transaction(async tx => {
+    const changed = await tx.gameNotice.updateMany({ where: { id, endedAt: null }, data: { endedAt: new Date() } });
+    if (!changed.count) throw new GameError(404, 'Aviso não encontrado ou já encerrado.');
+    await audit(tx, actor(res), 'NOTICE_END', 'NOTICE', id, reason);
+    return { ok: true };
+  }));
+}));
+
 // ----- Economia -----
 adminRoutes.get('/admin/economy/reconcile', need('economy.read'), asyncRoute(async (_req, res) => { res.json({ drift: await goldDrift(prisma, 100), itemDrift: await itemDrift(prisma, 100) }); }));
+// Produto: painel de validação e leitura da telemetria. Os eventos são gravados pela rota autenticada /analytics/events.
+adminRoutes.get('/admin/analytics', need('analytics.read'), asyncRoute(async (req, res) => {
+  const days = [1, 7, 30].includes(Number(req.query.days)) ? Number(req.query.days) : 7;
+  const since = new Date(Date.now() - days * 86_400_000), { page, skip, take } = pageOf(req.query);
+  const where = { createdAt: { gte: since } };
+  const [total, events, byName, byPage, testEvents] = await Promise.all([
+    prisma.analyticsEvent.count({ where }),
+    prisma.analyticsEvent.findMany({ where, orderBy: { id: 'desc' }, skip, take, select: { id: true, name: true, page: true, contentType: true, contentId: true, isTest: true, createdAt: true, accountId: true } }),
+    prisma.analyticsEvent.groupBy({ by: ['name'], where, _count: { _all: true }, orderBy: { _count: { name: 'desc' } }, take: 10 }),
+    prisma.analyticsEvent.groupBy({ by: ['page'], where: { ...where, page: { not: null } }, _count: { _all: true }, orderBy: { _count: { page: 'desc' } }, take: 10 }),
+    prisma.analyticsEvent.count({ where: { ...where, isTest: true } }),
+  ]);
+  res.json({ days, total, testEvents, byName: byName.map(r => ({ name: r.name, count: r._count._all })), byPage: byPage.map(r => ({ page: r.page, count: r._count._all })), events: paged(events, total, page) });
+}));
 adminRoutes.get('/admin/settings', need('settings.read'), asyncRoute(async (_req, res) => {
   const values = await loadSettings(prisma);
   res.json(settingKeys.map(key => ({ key, value: values[key], ...settingDefs[key] })));
@@ -162,6 +236,8 @@ adminRoutes.put('/admin/settings', need('settings.write'), asyncRoute(async (req
     return { changed: diff };
   }));
 }));
+// Motivos de entrada e saída de ouro vêm de goldReasons: motivo novo entra no lugar certo sem mexer aqui.
+const reasonsOf = (kind: 'source' | 'sink') => Prisma.join(Object.entries(goldReasons).filter(([, k]) => k === kind).map(([r]) => r));
 adminRoutes.get('/admin/economy', need('economy.read'), asyncRoute(async (req, res) => {
   const days = [1, 7, 30].includes(Number(req.query.days)) ? Number(req.query.days) : 7, since = new Date(Date.now() - days * 86_400_000);
   const [goldFlow, itemFlow, wallets, daily, listings, volume, activePremium, revenue] = await Promise.all([
@@ -170,8 +246,8 @@ adminRoutes.get('/admin/economy', need('economy.read'), asyncRoute(async (req, r
     prisma.character.aggregate({ _sum: { goldInHand: true, goldInBank: true }, _count: { _all: true } }),
     prisma.$queryRaw<{ day: Date; kind: string; total: unknown }[]>`
       SELECT DATE(createdAt) AS day,
-             CASE WHEN reason IN ('MONSTER','TASK','JOURNEY','NPC_SELL','STARTER','ADMIN_GRANT') THEN 'in'
-                  WHEN reason IN ('NPC_BUY','UPGRADE','PROMOTION','MARKET_FEE','MARKET_LISTING_FEE','ADMIN_REMOVE') THEN 'out' ELSE 'transfer' END AS kind,
+             CASE WHEN reason IN (${reasonsOf('source')}) THEN 'in'
+                  WHEN reason IN (${reasonsOf('sink')}) THEN 'out' ELSE 'transfer' END AS kind,
              SUM(delta) AS total
       FROM GoldLedger WHERE createdAt >= ${since} GROUP BY DATE(createdAt), kind ORDER BY day`,
     prisma.marketListing.groupBy({ by: ['status'], _count: { _all: true } }),
@@ -251,6 +327,17 @@ adminRoutes.post('/admin/tickets/:id/status', need('tickets.reply'), asyncRoute(
     await audit(tx, actor(res), 'TICKET_STATUS', 'TICKET', id, `Status alterado para ${status}`);
   });
   res.json({ ok: true });
+}));
+// Duelos recentes (só leitura), para investigar contas múltiplas inflando vitórias. 10 por página.
+const duelCard = { id: true, name: true, level: true, accountId: true } as const;
+adminRoutes.get('/admin/duels', need('duels.read'), asyncRoute(async (req, res) => {
+  const { page, skip, take } = pageOf(req.query);
+  const where = { status: { not: 'INVITED' }, outcome: { notIn: ['DECLINED', 'CANCELLED', 'LAPSED'] } };
+  const [rows, total] = await Promise.all([
+    prisma.duel.findMany({ where, orderBy: { id: 'desc' }, skip, take, include: { challenger: { select: duelCard }, opponent: { select: duelCard } } }),
+    prisma.duel.count({ where }),
+  ]);
+  res.json(paged(rows.map(d => ({ id: d.id, challenger: d.challenger, opponent: d.opponent, status: d.status, outcome: d.outcome, winnerId: d.winnerId, round: d.round, createdAt: d.createdAt, finishedAt: d.finishedAt })), total, page));
 }));
 adminRoutes.get('/admin/audit', need('audit.read'), asyncRoute(async (req, res) => {
   const before = num(req.query.before, 2147483647, 0);

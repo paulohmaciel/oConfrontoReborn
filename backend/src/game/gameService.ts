@@ -4,30 +4,61 @@ import { transaction, lockCharacter } from '../core/db';
 import { GameError, integer } from '../core/engine';
 import { parseStat, upgradePrice } from './gameRules';
 import {event,awardAchievements} from './adventureService';
-import { addGold, recordItem } from '../economy/economy';
+import { addGold, assertNotFavorite, recordItem } from '../economy/economy';
+import { potions, restoreAmount } from '../../../shared/potions';
 import { loadSettings } from '../core/settings';
 import { randomInt } from 'node:crypto';
 import { makeRare, retireRare, RARE_TIER } from '../economy/rare';
-import { npcSellPrice, percentOf, resolveUpgrade, upgradeSuccessPercent, PROTECTION_STONE, type UpgradeOutcome, type UpgradeResult } from '../../../shared/economy';
+import { BASE_ATTRIBUTE } from '../../../shared/progression';
+// Cada ponto em Vitalidade dá +15 de vida máxima; em Resistência, +15 de mana máxima.
+const STAT_BONUS = 15;
+import { statsResetCost, npcSellPrice, percentOf, resolveUpgrade, upgradeSuccessPercent, PROTECTION_STONE, type UpgradeOutcome, type UpgradeResult } from '../../../shared/economy';
 
-async function requireIdle(tx: Prisma.TransactionClient, characterId: number) {
+export async function requireIdle(tx: Prisma.TransactionClient, characterId: number) {
   if (await tx.battle.findFirst({ where: { characterId, isFinished: false }, select: { id: true } }))
     throw new GameError(409, 'Encerre o combate antes desta operação.');
+  if (await tx.groupBattleFighter.findUnique({ where: { activeCharacterId: characterId }, select: { id: true } }))
+    throw new GameError(409, 'Termine a caçada em grupo antes desta operação.');
 }
 
-export async function addStat(accountId: number, characterId: number, rawStat: unknown, key: string) {
+// Distribui um ou vários pontos de uma vez no mesmo atributo.
+export async function addStat(accountId: number, characterId: number, rawStat: unknown, key: string, amount = 1) {
   const stat = parseStat(rawStat);
+  integer(amount);
   return transaction(async tx => {
     const c = await lockCharacter(tx, accountId, characterId);
-    return once(tx, characterId, key, ["stat", stat], async () => {
+    return once(tx, characterId, key, ["stat", stat, amount], async () => {
     await requireIdle(tx, characterId);
     if (c.statPoints <= 0) throw new GameError(409, 'Sem pontos disponíveis.');
-    const data: Prisma.CharacterUpdateInput = { statPoints: { decrement: 1 } };
-    data[stat] = { increment: 1 };
-    if (stat === 'vitality') { data.maxHp = { increment: 15 }; data.hp = { increment: 15 }; }
-    if (stat === 'resistance') { data.maxMana = { increment: 15 }; data.mana = { increment: 15 }; }
+    if (amount > c.statPoints) throw new GameError(409, `Você tem só ${c.statPoints} pontos disponíveis.`);
+    const data: Prisma.CharacterUpdateInput = { statPoints: { decrement: amount } };
+    data[stat] = { increment: amount };
+    if (stat === 'vitality') { data.maxHp = { increment: STAT_BONUS * amount }; data.hp = { increment: STAT_BONUS * amount }; }
+    if (stat === 'resistance') { data.maxMana = { increment: STAT_BONUS * amount }; data.mana = { increment: STAT_BONUS * amount }; }
     await tx.character.update({ where: { id: characterId }, data });
-    return { stat, value: c[stat] + 1, statPoints: c.statPoints - 1 };
+    return { stat, value: c[stat] + amount, statPoints: c.statPoints - amount, message: amount > 1 ? `+${amount.toLocaleString('pt-BR')} pontos distribuídos.` : undefined };
+    });
+  });
+}
+
+// Devolve todos os pontos distribuídos (atributos voltam à base) mediante ouro. Vida e mana máximas perdem o bônus de Vitalidade e Resistência.
+export async function resetStats(accountId: number, characterId: number, key: string) {
+  return transaction(async tx => {
+    const c = await lockCharacter(tx, accountId, characterId);
+    return once(tx, characterId, key, ['stats-reset'], async () => {
+      await requireIdle(tx, characterId);
+      const spent = { strength: Math.max(0, c.strength - BASE_ATTRIBUTE), vitality: Math.max(0, c.vitality - BASE_ATTRIBUTE), agility: Math.max(0, c.agility - BASE_ATTRIBUTE), resistance: Math.max(0, c.resistance - BASE_ATTRIBUTE) };
+      const total = spent.strength + spent.vitality + spent.agility + spent.resistance;
+      if (!total) throw new GameError(409, 'Nenhum ponto distribuído para devolver.');
+      const settings = await loadSettings(tx), cost = statsResetCost(c.level, settings['stats.resetBaseGold'], settings['stats.resetGoldPerLevelSquared']);
+      if (c.goldInHand < cost) throw new GameError(409, `Redistribuir custa ${cost.toLocaleString('pt-BR')} ouro.`);
+      await addGold(tx, characterId, -cost, 'STATS_RESET');
+      const maxHp = Math.max(1, c.maxHp - spent.vitality * STAT_BONUS), maxMana = Math.max(0, c.maxMana - spent.resistance * STAT_BONUS);
+      await tx.character.update({ where: { id: characterId }, data: { strength: c.strength - spent.strength, vitality: c.vitality - spent.vitality, agility: c.agility - spent.agility, resistance: c.resistance - spent.resistance,
+        statPoints: { increment: total }, maxHp, maxMana, hp: Math.min(c.hp, maxHp), mana: Math.min(c.mana, maxMana) } });
+      const said = `${total.toLocaleString('pt-BR')} ${total === 1 ? 'ponto devolvido' : 'pontos devolvidos'} por ${cost.toLocaleString('pt-BR')} ouro`;
+      await event(tx, characterId, 'STATS', 'Atributos redistribuídos', `${said}.`);
+      return { message: `${said}. Distribua de novo como quiser.`, statPoints: c.statPoints + total, cost: cost.toString() };
     });
   });
 }
@@ -37,7 +68,7 @@ export async function heal(accountId: number, characterId: number) {
     const c = await lockCharacter(tx, accountId, characterId);
     await requireIdle(tx, characterId);
     if (c.huntEndsAt) throw new GameError(409, 'Resolva a caça pendente.');
-    if (c.templeReadyAt && c.templeReadyAt > new Date()) throw new GameError(409, 'O templo ficará disponível novamente em breve.');
+    if (c.templeReadyAt && c.templeReadyAt > new Date()) throw new GameError(409, 'O Templo de Capriel ficará disponível novamente em breve.');
     const templeReadyAt = new Date(Date.now() + 5*60*1000);
     await tx.character.update({ where: { id: characterId }, data: { hp: c.maxHp, mana: c.maxMana, energy: c.maxEnergy, templeReadyAt } });
     return { hp: c.maxHp, mana: c.maxMana, energy: c.maxEnergy, templeReadyAt };
@@ -65,9 +96,10 @@ export async function sellNpc(accountId: number, characterId: number, itemId: nu
     if (!item) throw new GameError(404, 'Item não encontrado.');
     if (item.isEquipped || item.equippedSlot !== null || item.quantity < 1 || item.blueprint.npcPrice < 1)
       throw new GameError(409, 'Item indisponível para venda. Desequipe-o primeiro.');
+    assertNotFavorite(item, 'vender');
     // O NPC paga só o preço-base: a melhoria se perderia. Quem quer valorizar o item deve anunciá-lo no mercado.
     if (item.upgradeTier > 0 && !confirmUpgraded)
-      throw new GameError(409, `Este item está melhorado (+${item.upgradeTier}). O NPC paga só o preço-base e a melhoria se perde. Anuncie no mercado para vendê-lo por mais.`);
+      throw new GameError(409, `Este item está melhorado (+${item.upgradeTier}). O Mercador paga só o preço-base e a melhoria se perde. Ofereça no Mercado para vendê-lo por mais.`);
     const settings = await loadSettings(tx);
     const proceeds = npcSellPrice(item.blueprint.npcPrice, settings['economy.npcSellPercent']) * BigInt(item.quantity);
     await tx.inventoryItem.delete({ where: { id: itemId } });
@@ -98,6 +130,8 @@ export async function upgrade(accountId: number, characterId: number, itemId: nu
       // O ouro é gasto de qualquer jeito; o resultado (sucesso, falha ou quebra) é decidido aqui, no servidor.
       await addGold(tx, characterId, -cost, 'UPGRADE', { type: 'item', id: itemId });
       const rules = { safeUntilTier: settings['upgrade.safeUntilTier'], breakFromTier: settings['upgrade.breakFromTier'], breakOnFailPercent: settings['upgrade.breakOnFailPercent'] };
+      // Favorito só tenta melhoria que pode quebrar com Pedra de Proteção.
+      if (item.favorite && !stone && item.upgradeTier >= rules.breakFromTier && rules.breakOnFailPercent > 0) assertNotFavorite(item, 'arriscar uma melhoria que pode quebrar (ou use uma Pedra de Proteção)');
       const rolled: UpgradeOutcome = resolveUpgrade(item.upgradeTier, rules, randomInt(1, 101), randomInt(1, 101));
       // A pedra só é consumida quando realmente evitou a quebra.
       let outcome: UpgradeResult = rolled;
@@ -136,20 +170,22 @@ export async function usePotion(accountId: number, characterId: number, itemId: 
     const c = await lockCharacter(tx, accountId, characterId);
     return once(tx, characterId, key, ['potion', itemId], async () => {
       await requireIdle(tx, characterId);
-      if (c.hp <= 0) throw new GameError(409, 'Visite o templo antes de usar uma poção.');
+      if (c.hp <= 0) throw new GameError(409, 'Visite o Templo de Capriel antes de usar uma poção.');
       const item = await tx.inventoryItem.findFirst({ where: { id: itemId, characterId }, include: { blueprint: true } });
       if (!item) throw new GameError(404, 'Item não encontrado.');
       if (item.blueprint.slot !== 'CONSUMABLE' || item.quantity < 1) throw new GameError(409, 'Este item não é uma poção.');
-      const health = item.blueprint.name === 'Health Potion';
-      const mana = item.blueprint.name === 'Mana Potion';
-      if (!health && !mana) throw new GameError(409, 'Consumível sem efeito definido.');
-      const recovered = health ? Math.min(100, c.maxHp-c.hp) : Math.min(80, c.maxMana-c.mana);
-      if (recovered <= 0) throw new GameError(409, 'Seu recurso já está completo.');
+      const effect = potions[item.blueprint.name];
+      if (!effect) throw new GameError(409, 'Consumível sem efeito definido.');
+      if (c.level < effect.minLevel) throw new GameError(409, `Esta poção exige nível ${effect.minLevel}.`);
+      const hp = effect.hp ? Math.min(restoreAmount(effect.hp, c.maxHp), c.maxHp - c.hp) : 0;
+      const mana = effect.mana ? Math.min(restoreAmount(effect.mana, c.maxMana), c.maxMana - c.mana) : 0;
+      if (hp <= 0 && mana <= 0) throw new GameError(409, effect.hp && effect.mana ? 'Sua vida e sua mana já estão completas.' : effect.hp ? 'Sua vida já está completa.' : 'Sua mana já está completa.');
       await recordItem(tx, characterId, item.blueprintId, -1, 'POTION_USE');
       if (item.quantity === 1) await tx.inventoryItem.delete({ where: { id: item.id } });
       else await tx.inventoryItem.update({ where: { id: item.id }, data: { quantity: { decrement: 1 } } });
-      await tx.character.update({ where: { id: characterId }, data: health ? { hp: { increment: recovered } } : { mana: { increment: recovered } } });
-      return { recovered, resource: health ? 'hp' : 'mana' };
+      await tx.character.update({ where: { id: characterId }, data: { hp: { increment: hp }, mana: { increment: mana } } });
+      const parts = [hp && `${hp.toLocaleString('pt-BR')} de vida`, mana && `${mana.toLocaleString('pt-BR')} de mana`].filter(Boolean).join(' e ');
+      return { recovered: hp || mana, hp, mana, resource: hp && mana ? 'both' : hp ? 'hp' : 'mana', message: `${item.blueprint.name}: +${parts}.` };
     });
   });
 }
