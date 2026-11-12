@@ -73,11 +73,15 @@ premiumRoutes.post('/characters/:id/presets/:presetId/delete', asyncRoute(async 
 
 // ----- Organização da mochila e perfil -----
 premiumRoutes.post('/characters/:id/inventory/:itemId/favorite', asyncRoute(async (req, res) => {
-  const characterId = await ownedCharacter(req, res.locals.accountId);
-  await requirePremium(res.locals.accountId);
-  if (typeof req.body?.favorite !== 'boolean') throw new GameError(400, 'Valor inválido.');
-  const result = await prisma.inventoryItem.updateMany({ where: { id: integer(Number(req.params.itemId)), characterId }, data: { favorite: req.body.favorite } });
-  if (!result.count) throw new GameError(404, 'Item não encontrado.');
+  const characterId = await ownedCharacter(req, res.locals.accountId), favorite: unknown = req.body?.favorite;
+  if (typeof favorite !== 'boolean') throw new GameError(400, 'Valor inválido.');
+  // Marcar é do Premium; desmarcar é sempre livre, para o item não ficar preso se o Premium acabar.
+  if (favorite) await requirePremium(res.locals.accountId);
+  await transaction(async tx => {
+    await lockCharacter(tx, res.locals.accountId, characterId);
+    const result = await tx.inventoryItem.updateMany({ where: { id: integer(Number(req.params.itemId)), characterId }, data: { favorite } });
+    if (!result.count) throw new GameError(404, 'Item não encontrado.');
+  });
   res.json({ ok: true });
 }));
 premiumRoutes.post('/characters/:id/profile', asyncRoute(async (req, res) => {

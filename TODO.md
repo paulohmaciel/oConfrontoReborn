@@ -56,7 +56,7 @@
 - [x] **[Astra 4]** Registro de derrota explicando o motivo + revanche com dica (2026-10-31: `game/defeatAdvice.ts`, motivos também vão para o Diário; botões Ir ao Templo → Revanche)
 - [ ] **[Astra 13]** Aviso de manutenção + histórico de atualizações (changelog no jogo)
 - [ ] **[Astra 12]** Opção "reduzir movimento", não depender só de cor para raridade/perigo (ícone + texto)
-- [ ] **[Astra 2]** Bloqueio de item favorito (contra venda, anúncio e Ferreiro)
+- [x] **[Astra 2]** Bloqueio de item favorito (contra venda, anúncio, Ferreiro e melhoria que pode quebrar sem Pedra); desfavoritar não exige Premium (2026-10-31)
 - [ ] **[Astra 7]** Indicadores de ouro criado × consumido × acumulado (painel admin)
 - [ ] Aviso de mudança do Ferreiro aos jogadores (changelog)
 - [ ] Mensagem/limite contra cliques repetidos conferidos em todas as telas novas
@@ -111,7 +111,7 @@
 - [x] Páginas numeradas (Anterior 1 … 4 5 6 … N Próxima) no servidor para o que cresce com os jogadores: mercado (com busca), extrato, histórico do mercado, atendimentos, combates e memórias do diário, recados, depoimentos, amigos, visitas, fórum e mochila (2026-10-31)
 - [x] Caçada em grupo, fase 1 (/cacada-em-grupo): nível 100+, grupo de 2 a 4 amigos, convites, rodadas com prazo (quem não escolhe defende), ações por vocação (Segurar, Mirar, Curar o grupo, Quebrar selo), 1ª caçada "Fera da Serra Vermelha" com o laço, recompensas por loadSettings (group.*) com limite semanal; migração `202611010001_group_hunt`; `npm run group:simulate` (2026-10-31)
 - [x] Caçada em grupo, fase 2: Floresta Oca (encantamento: metade do dano até o Feiticeiro desfazer; bônus), Lago Cinzento (névoa com ilusões que a mira e a luz vencem + veneno que o Druida corta) e o Dragão (selos que o deixam furioso; com 25% de vida o grupo vota derrotar ou fazer dormir, gravado no Diário); conquistas "Ninguém caça sozinho" e "As Quatro Marcas" (2026-10-31)
-- [ ] Caçada em grupo com amigos a partir de um nível — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
+- [x] Caçada em grupo com amigos a partir de um nível (fases 1 e 2 prontas) — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
 
 ### Depois de validar o jogo
 - [ ] **[Astra 3]** Talentos / especializações / redistribuição com custo

@@ -5,7 +5,7 @@ import { once } from '../core/operations';
 import { prisma, transaction, lockCharacter } from '../core/db';
 import { GameError, integer } from '../core/engine';
 import { loadSettings } from '../core/settings';
-import { addGold, addItem, recordItem, takeStack } from '../economy/economy';
+import { addGold, addItem, assertNotFavorite, recordItem, takeStack } from '../economy/economy';
 import { event } from './adventureService';
 import { requireIdle } from './gameService';
 import { npcBuyPrice, percentOf, type Settings } from '../../../shared/economy';
@@ -30,6 +30,7 @@ async function ownedItem(tx: Tx, characterId: number, itemId: number) {
   if (!item) throw new GameError(404, 'Item não encontrado.');
   if (item.rareItemId) throw new GameError(409, 'Itens raros (+10) não podem ser reforjados nem desmontados: o número de série pertence a este item.');
   if (item.quantity !== 1) throw new GameError(409, 'O Ferreiro trabalha com um item por vez.');
+  assertNotFavorite(item, 'reforjar ou desmontar');
   requireForgeable(item.blueprint);
   return item;
 }
