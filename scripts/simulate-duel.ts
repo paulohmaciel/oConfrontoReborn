@@ -1,4 +1,5 @@
-// Uso: npm run duel:simulate -- [duelos=1000] [dano%=100]
+// Uso: npm run duel:simulate -- [duelos=1000] [dano%=100] [cura%=100] [defesa%=100] [Cavaleiro%=100] [Arqueiro%=100] [Feiticeiro%=100] [Druida%=100]
+// Os quatro últimos são o dano RECEBIDO por vocação (chaves pvp.taken* do painel).
 // Duelos entre heróis típicos de cada vocação no mesmo nível (mesmo modelo de levels:simulate). Não toca no banco.
 // Meta: nenhuma vocação acima de 60% contra outra do mesmo nível.
 import { items } from '../backend/prisma/catalog';
@@ -7,7 +8,9 @@ import { resolveDuelRound, type DuelFighter } from '../backend/src/game/duelEngi
 import { duelActionCosts, type DuelAction } from '../shared/pvp';
 import type { BaseVocation } from '../shared/adventure';
 
-const duels = Number(process.argv[2] ?? 1000), damage = Number(process.argv[3] ?? 100);
+const arg = (i: number, d: number) => Number(process.argv[i] ?? d);
+const duels = arg(2, 1000), damage = arg(3, 100);
+const tuning = { damagePercent: damage, healPercent: arg(4, 100), defensePercent: arg(5, 100), taken: { KNIGHT: arg(6, 100), PALADIN: arg(7, 100), SORCERER: arg(8, 100), DRUID: arg(9, 100) } };
 let seed = 4242; const rng = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
 const dice = (min: number, max: number) => min + Math.floor(rng() * (max - min + 1));
 
@@ -33,7 +36,7 @@ function duel(a: BaseVocation, b: BaseVocation, level: number) {
     let pair: [DuelFighter, DuelFighter] = n % 2 ? [fighter(1, a, level), fighter(2, b, level)] : [fighter(2, b, level), fighter(1, a, level)];
     for (let round = 1; ; round++) {
       pair = pair.map(f => ({ ...f, action: choose(f) })) as typeof pair;
-      const r = resolveDuelRound(round, pair, dice, damage);
+      const r = resolveDuelRound(round, pair, dice, tuning);
       pair = r.fighters;
       if (r.outcome !== 'ONGOING') { if (r.winnerId === 1) wins++; if (!r.winnerId) draws++; rounds += round; break; }
     }

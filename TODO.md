@@ -45,7 +45,10 @@
 - [ ] **Antes de publicar:** remover `DEV_QUICK_LOGIN` do `.env`, apagar a conta `mestre@localhost.dev` e conferir que nenhuma conta de teste ficou no banco de produção
 - [x] Segurança (2026-11-12): 11 trocar senha logado e sair dos outros aparelhos; 12 posse antes da trava no Mercado; 7 nível mínimo no Mercado (`market.minLevel`) e opção de e-mail confirmado (`market.verifiedEmail`); 6 avisos de proxy; contas de desenvolvimento não entram em produção; produção recusa subir com e-mail só no terminal
 - [ ] Segurança ainda pendente (`SEGURANCA.md`): `TRUST_PROXY` e `HOST` no deploy, ligar `market.verifiedEmail` depois do Resend, 13 senha do MySQL
-- [x] Pendências do jogo registradas no Trello, quadro The Final Confrontation, cartões com prefixo [Site] (2026-11-12)
+- [x] Duelos no perfil (/perfil/Nome): vitórias, derrotas, sequência, honra e os cinco últimos; respeita `fameHidden` (2026-11-12)
+- [x] Duelo: ajustes de equilíbrio no painel, padrão neutro (`pvp.healPercent`, `pvp.defensePercent`, `pvp.taken*`); `npm run duel:simulate` aceita os mesmos valores. Medição de 2026-11-12 (400 duelos por par): hoje pior par 69% e 1,8 rodada; com dano 60, cura 40, Cavaleiro 115 e Arqueiro 85 fica 68% e 2,9 rodadas, mas o Cavaleiro de nível 20 cai para 32% contra o Feiticeiro. Decisão do dono.
+- [x] Desempenho (2026-11-12): abas menos usadas carregam sob demanda (arquivo principal de 530 para 381 KB), leitura da Jornada sem travar o personagem, limite da API em 600 pedidos por minuto (`API_RATE_LIMIT`)
+- [x] Pendências do jogo registradas no Trello, quadro O Confronto Reborn (https://trello.com/b/dFBF6cYn/o-confronto-reborn), cartões com prefixo [Site] (2026-11-12)
 - [x] Tela: capa e descrição ao compartilhar o link (og:image), "ouro" no lugar de "gp", denúncias sem window.prompt (`ui/AskReason.tsx`), Ferreiro enxerga a mochila inteira, Caçar abre na região liberada mais alta (2026-11-12)
 - [ ] **Antes de publicar:** apagar a conta de teste `vendedor-teste@example.invalid` (Mercador de Testes) e os anúncios dela, criados por `npm run dev:market-demo`
 

@@ -7,7 +7,9 @@ import {achievementDefinitions} from '../../../shared/adventure';
 export const adventureRoutes=Router();
 adventureRoutes.get('/characters/:id/journey',asyncRoute(async(req,res)=>{
   const id=integer(Number(req.params.id));
-  res.json(await transaction(async tx=>{await lockCharacter(tx,res.locals.accountId,id);return journeyState(tx,id);}));
+  // Só leitura: confere o dono e lê sem travar a linha do personagem (a trava fica para quem muda algo).
+  if(!await prisma.character.findFirst({where:{id,accountId:res.locals.accountId},select:{id:true}}))throw new GameError(404,'Personagem não encontrado.');
+  res.json(await journeyState(prisma,id));
 }));
 adventureRoutes.post('/characters/:id/vocation',asyncRoute(async(req,res)=>{res.json(await chooseVocation(res.locals.accountId,integer(Number(req.params.id)),req.body?.vocation));}));
 adventureRoutes.post('/characters/:id/journey/claim',asyncRoute(async(req,res)=>{res.json(await claimJourney(res.locals.accountId,integer(Number(req.params.id)),integer(req.body?.expectedStep,0)));}));

@@ -122,3 +122,13 @@ test('espólio: nunca equipado, favorito, raro, melhorado demais ou empilhável'
   assert.equal(lootEligible({ ...base, slot: 'CONSUMABLE', quantity: 5 }, 7), false);
   assert.equal(lootEligible({ ...base, slot: 'LOOT' }, 7), false);
 });
+test('ajustes do duelo: cura menor, defesa que conta menos e dano recebido por vocação', () => {
+  const base = { damagePercent: 100, healPercent: 100, defensePercent: 100 };
+  const heal = (t: object) => resolveDuelRound(1, [hero(1, { agility: 50, hp: 100, action: 'HEAL' }), hero(2, { action: 'DEFEND_SHIELD' })], mid, { ...base, ...t }).record.moves[0].healed;
+  assert.equal(heal({ healPercent: 50 }), Math.floor(heal({}) / 2));
+  const hit = (t: object, vocation = 'KNIGHT') => resolveDuelRound(1, [hero(1, { agility: 50 }), hero(2, { vocation, action: 'DEFEND_SHIELD' })], mid, { ...base, ...t }).record.moves[0].dealt;
+  assert(hit({ defensePercent: 0 }) > hit({}));
+  // O ajuste vale para a vocação base: a classe promovida herda.
+  assert.equal(hit({ taken: { PALADIN: 50 } }, 'ROYAL_PALADIN'), Math.max(1, Math.floor(hit({}, 'ROYAL_PALADIN') / 2)));
+  assert.equal(hit({ taken: { PALADIN: 50 } }, 'KNIGHT'), hit({}, 'KNIGHT'));
+});

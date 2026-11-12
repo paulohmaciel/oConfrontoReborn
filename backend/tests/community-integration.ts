@@ -38,6 +38,21 @@ test('MySQL: perfil de comunidade, recados, depoimentos, amizades, visitas e den
     await decideTestimonial(A.id, a.id, own.testimonials[0].id, 'approve');
     assert.equal((await publicProfile(C.id, a.name, null)).testimonials[0].status, 'APPROVED');
   });
+  await t.test('duelos no perfil: registro, sequência e últimos duelos; quem escondeu o nome só vê o próprio', async () => {
+    await prisma.character.update({ where: { id: a.id }, data: { pvpWins: 2, pvpLosses: 1, honorPoints: 1040 } });
+    const done = { status: 'FINISHED', inviteExpiresAt: new Date(), finishedAt: new Date() };
+    await prisma.duel.create({ data: { ...done, challengerId: a.id, opponentId: b.id, outcome: 'VICTORY', winnerId: b.id } });
+    await prisma.duel.create({ data: { ...done, challengerId: b.id, opponentId: a.id, outcome: 'VICTORY', winnerId: a.id } });
+    await prisma.duel.create({ data: { ...done, challengerId: a.id, opponentId: b.id, outcome: 'FORFEIT', winnerId: a.id, mode: 'GOLD' } });
+    await prisma.duel.create({ data: { status: 'FINISHED', inviteExpiresAt: new Date(), challengerId: a.id, opponentId: b.id, outcome: 'DECLINED' } });
+    const d = (await publicProfile(C.id, a.name, null)).duels;
+    assert(d); assert.equal(d.wins, 2); assert.equal(d.losses, 1); assert.equal(d.honor, 1040); assert.equal(d.streak, 2);
+    assert.deepEqual(d.recent.map(r => [r.result, r.foe, r.mode]), [['WIN', b.name, 'GOLD'], ['WIN', b.name, 'HONOR'], ['LOSS', b.name, 'HONOR']]);
+    await prisma.character.update({ where: { id: a.id }, data: { fameHidden: true } });
+    assert.equal((await publicProfile(C.id, a.name, null)).duels, null);
+    assert.equal((await publicProfile(A.id, a.name, a.id)).duels?.wins, 2);
+    await prisma.character.update({ where: { id: a.id }, data: { fameHidden: false } });
+  });
   await t.test('amizade: pedido, aceite e pedido de volta que aceita na hora', async () => {
     await requestFriend(B.id, b.id, a.name);
     const mine = await myCommunity(A.id, a.id);

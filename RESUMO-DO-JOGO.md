@@ -142,12 +142,12 @@ Cargos de Suporte, Moderador e Administrador, cada um com suas permissões. Toda
 
 Resolvido em 2026-11-12: os 32 PRs que estavam abertos, um apoiado no outro, foram juntados no `main` (do #2 ao #32 em ordem, e o #1, da Jornada do Premium, por último, com os conflitos resolvidos). Testes completos passaram no resultado.
 
-1. **Equilíbrio do duelo:** no simulador, o Cavaleiro vence o Druida em cerca de 65% dos duelos do mesmo nível (meta: até 60%), e os duelos acabam em 1,5 a 3 rodadas. O Arqueiro também perde vida demais no simulador de caçada.
+1. **Equilíbrio do duelo** (em 2026-11-12 os ajustes passaram a ser configuráveis no painel, `pvp.healPercent`, `pvp.defensePercent` e `pvp.taken*`, ainda com padrão neutro)**:** no simulador, o Cavaleiro vence o Druida em cerca de 65% dos duelos do mesmo nível (meta: até 60%), e os duelos acabam em 1,5 a 3 rodadas. O Arqueiro também perde vida demais no simulador de caçada.
 2. **E-mail real:** recuperação de senha e verificação ainda só aparecem no terminal; não há envio de verdade.
 3. **Início guiado (~30 min):** a Jornada existe, mas o roteiro de primeira arma melhorada, primeiro chefe e primeira venda (Astra 6) ainda não.
 4. **Combate solo sem efeitos de status** (veneno, queimadura, lentidão) e sem chefes com fases (Astra 4 e 5).
 5. **Guildas e reino:** as tabelas `Guild`, `KingdomState`, `QuestBlueprint` e `CharacterQuest` existem no banco, mas nenhum código usa. Ou viram recurso, ou ficam documentadas como herança da versão antiga.
-6. **Perfil sem os duelos:** vitórias, derrotas e sequência aparecem só na aba Duelo.
+6. ~~Perfil sem os duelos~~: resolvido em 2026-11-12, o perfil mostra o registro e os cinco últimos duelos.
 7. **Pedra de Proteção sem sprite** e **anúncio público de +10** ainda por fazer.
 
 ### Riscos antes de abrir ao público

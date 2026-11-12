@@ -21,9 +21,18 @@ function message(value: unknown, max: number, what: string) {
   return text;
 }
 
+const duelOutcomes = ['VICTORY', 'FORFEIT', 'EXPIRED', 'DRAW'];
+async function duelRecord(characterId: number, totals: { wins: number; losses: number; honor: number }) {
+  const rows = await prisma.duel.findMany({ where: { status: 'FINISHED', outcome: { in: duelOutcomes }, OR: [{ challengerId: characterId }, { opponentId: characterId }] }, orderBy: { id: 'desc' }, take: 50,
+    select: { id: true, winnerId: true, outcome: true, mode: true, finishedAt: true, challengerId: true, challenger: { select: { name: true } }, opponent: { select: { name: true } } } });
+  let streak = 0; for (const d of rows) { if (d.winnerId !== characterId) break; streak++; }
+  return { ...totals, streak, recent: rows.slice(0, 5).map(d => ({ id: d.id, mode: d.mode, outcome: d.outcome, finishedAt: d.finishedAt,
+    result: d.winnerId === null ? 'DRAW' : d.winnerId === characterId ? 'WIN' : 'LOSS', foe: d.challengerId === characterId ? d.opponent.name : d.challenger.name })) };
+}
+
 // Perfil público pelo nome. `viewerId` (opcional) é o personagem de quem está olhando: registra a visita e diz a relação.
 export async function publicProfile(accountId: number, name: string, viewerId: number | null) {
-  const p = await prisma.character.findUnique({ where: { name }, select: { ...card, profileTitle: true, profileFrame: true, profileAbout: true, profileBio: true, accountId: true } });
+  const p = await prisma.character.findUnique({ where: { name }, select: { ...card, profileTitle: true, profileFrame: true, profileAbout: true, profileBio: true, accountId: true, pvpWins: true, pvpLosses: true, honorPoints: true, fameHidden: true } });
   if (!p) throw new GameError(404, 'Personagem não encontrado.');
   const viewer = viewerId ? await prisma.character.findFirst({ where: { id: viewerId, accountId }, select: { id: true, profileHideVisits: true } }) : null;
   const owner = !!viewer && viewer.id === p.id;
@@ -41,8 +50,10 @@ export async function publicProfile(accountId: number, name: string, viewerId: n
     prisma.profileScrap.count({ where: { profileId: p.id, deletedAt: null } }),
     prisma.profileTestimonial.count({ where: { profileId: p.id, status: 'APPROVED' } }),
   ]);
-  const { accountId: profileAccount, ...profile } = p;
-  return { profile, owner, sameAccount: profileAccount === accountId,
+  const { accountId: profileAccount, pvpWins, pvpLosses, honorPoints, fameHidden, ...profile } = p;
+  // Duelos: registro e os cinco últimos. Quem escondeu o nome dos registros públicos só vê o próprio.
+  const duels = !fameHidden || owner ? await duelRecord(p.id, { wins: pvpWins, losses: pvpLosses, honor: honorPoints }) : null;
+  return { profile, duels, owner, sameAccount: profileAccount === accountId,
     friends: friendRows.map(f => f.requesterId === p.id ? f.addressee : f.requester), friendCount, scrapCount, testimonialCount,
     scraps: scraps.map(s => ({ id: s.id, text: s.text, createdAt: s.createdAt, author: s.author })),
     testimonials: testimonials.map(t => ({ id: t.id, text: t.text, status: t.status, createdAt: t.createdAt, author: t.author })),
