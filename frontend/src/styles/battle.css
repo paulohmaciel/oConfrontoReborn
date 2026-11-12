@@ -89,3 +89,4 @@
 .status-warning{margin:6px 0 0;font-size:12px;opacity:.85}
 :root[data-theme="light"] .status-effects li.poison{color:#2f6b23}:root[data-theme="light"] .status-effects li.burn{color:#8f3d12}:root[data-theme="light"] .status-effects li.slow{color:#1f5a85}
 .boss-phase{margin:10px 0 6px;font-size:13px;text-align:center;opacity:.85}.boss-phase.rage{opacity:1;font-weight:600;color:#f0a67c}:root[data-theme="light"] .boss-phase.rage{color:#8f3d12}
+.boss-line{margin:0 0 10px;text-align:center;font-style:italic;font-size:13px;opacity:.85}

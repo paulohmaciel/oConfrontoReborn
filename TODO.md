@@ -50,6 +50,8 @@
 - [x] Desempenho (2026-11-12): abas menos usadas carregam sob demanda (arquivo principal de 530 para 381 KB), leitura da Jornada sem travar o personagem, limite da API em 600 pedidos por minuto (`API_RATE_LIMIT`)
 - [x] Pendências do jogo registradas no Trello, quadro O Confronto Reborn (https://trello.com/b/dFBF6cYn/o-confronto-reborn), cartões com prefixo [Site] (2026-11-12)
 - [x] Tela: capa e descrição ao compartilhar o link (og:image), "ouro" no lugar de "gp", denúncias sem window.prompt (`ui/AskReason.tsx`), Ferreiro enxerga a mochila inteira, Caçar abre na região liberada mais alta (2026-11-12)
+- [x] `npm run dev:accounts` lista as contas de desenvolvimento do banco; com `-- --bloquear` tranca cada uma (senha aleatória, sem cargo, acessos encerrados, anúncios cancelados), sem apagar nada (2026-11-12)
+- [x] Chefes com fala própria (`shared/bosses.ts`) e batalha com limite de 60 turnos (`BATTLE_MAX_TURNS`) (2026-11-12)
 - [ ] **Antes de publicar:** apagar a conta de teste `vendedor-teste@example.invalid` (Mercador de Testes) e os anúncios dela, criados por `npm run dev:market-demo`
 
 - [x] Tema ESCURO como padrão; home em uma única moldura (capa + menu colado + boas-vindas + conteúdo) (2026-10-28)
@@ -94,7 +96,7 @@
 - [x] Testes: unitário (anonimato) + integração (sequência, mercado, NPC, privacidade)
 - [ ] **Você:** `npx prisma migrate deploy` e `npx prisma generate` (schema mudou) antes de rodar os testes
 - [x] Tela pública de coleção de raros (2026-11-12): aba Itens raros (/itens-raros) com totais, busca, filtros, páginas de 10 e a história de cada item; `GET /rare-items` paginado e `/rare-items/totals`
-- [ ] Anúncio no mundo de +10 / primeiro do tipo (respeitando anonimato)
+- [x] Anúncio no mundo de +10 / primeiro do tipo (2026-11-12): faixa no topo por 48 h (`GET /rare-items/latest`), com anonimato respeitado
 - [ ] Itens raros obtidos por outras rotas (chefes/fabricação) — Astra sugeriu; hoje raro = +10
 - [x] Efeito visual do +10: moldura de fogo animada criada pelo dono (GIF `fx/fire-frame.gif`, 16 quadros) em volta do ícone da mochila, equipamento e Forja; parada (1º quadro) com "reduzir movimento" (2026-10-28)
 - [x] Brilho discreto no +7 e mais forte no +9 (proposta Astra 1)

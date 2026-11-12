@@ -343,6 +343,8 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       const only = async (status: string) => (await (await call(viewer.cookie, `/rare-items?blueprintId=${blueprint.id}&status=${status}`)).json()) as { total: number; items: { destroyed: boolean; firstOfKind: boolean }[] };
       assert.equal((await only('circulating')).total, 2); assert.equal((await only('destroyed')).items[0].destroyed, true); assert.equal((await only('first')).total, 1);
       assert.equal((await (await call(viewer.cookie, `/rare-items?q=${encodeURIComponent('item-que-nao-existe-' + tag)}`)).json()).total, 0);
+      const latest = await (await call(viewer.cookie, '/rare-items/latest')).json() as { name: string; creator: string | null }[];
+      assert(latest.length >= 1 && latest.length <= 3); assert(!JSON.stringify(latest).includes(smith.name));
       const totals = await (await call(viewer.cookie, '/rare-items/totals')).json() as { circulating: number; destroyed: number; firsts: number };
       assert(totals.circulating >= 2); assert(totals.destroyed >= 1); assert(totals.firsts >= 1);
       assert(!JSON.stringify(await (await call(viewer.cookie, `/rare-items?blueprintId=${blueprint.id}`)).json()).includes(smith.name));

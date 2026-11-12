@@ -28,7 +28,7 @@ Já implementado no código:
 
 A fazer antes de abrir ao público (depende de você, não do código):
 - [ ] E-mail de verdade: `MAIL_DRIVER=resend`, `RESEND_API_KEY` e `MAIL_FROM`. Em produção o servidor recusa subir com e-mail só no terminal (para um beta fechado sem e-mail, `ALLOW_CONSOLE_MAIL=1`). Depois, ligue `market.verifiedEmail` no painel da Equipe.
-- [ ] Contas de desenvolvimento (`mestre@`, `rival@`, `mestre1@localhost.dev`, `vendedor-teste@example.invalid`): em produção elas não conseguem entrar e o servidor avisa na subida se existirem; apague-as do banco de produção.
+- [ ] Contas de desenvolvimento (`mestre@`, `rival@`, `mestre1@localhost.dev`, `vendedor-teste@example.invalid`): em produção elas não conseguem entrar e o servidor avisa na subida se existirem. `npm run dev:accounts` lista as que estão no banco e `npm run dev:accounts -- --bloquear` tranca cada uma sem apagar nada.
 - [ ] HTTPS atrás de proxy reverso, com `TRUST_PROXY=1` (somente com proxy na frente e `HOST=127.0.0.1`) e `npm run start:prod`; `.env` fora do repositório, sem `DEV_QUICK_LOGIN`.
 - [ ] Usuário MySQL exclusivo, sem acesso de rede externa.
 - [ ] Rodar `npm audit` e manter dependências atualizadas.

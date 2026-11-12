@@ -9,6 +9,7 @@
     "seed": "tsx backend/prisma/seed.ts",
     "master:create": "tsx backend/prisma/create-master.ts",
     "admin:role": "tsx backend/prisma/grant-role.ts",
+    "dev:accounts": "tsx backend/prisma/dev-accounts.ts",
     "check": "tsc --noEmit",
     "build": "vite build --config frontend/vite.config.ts",
     "test": "tsx --test backend/src/core/engine.test.ts backend/src/core/password.test.ts backend/src/game/adventure.test.ts backend/src/game/defeatAdvice.test.ts backend/src/economy/economy.test.ts backend/src/premium/premium.test.ts backend/src/core/monitor.test.ts backend/src/game/groupEngine.test.ts backend/src/game/duelEngine.test.ts backend/src/confrontation/syncRules.test.ts backend/tests/startup.test.ts",

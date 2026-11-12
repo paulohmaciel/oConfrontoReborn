@@ -1,4 +1,5 @@
 import { skillCosts, vocations, baseVocation } from '../../../shared/adventure';
+import { GENERIC_RAGE_LINE } from '../../../shared/bosses';
 import { statusEffects, STATUS_CHANCE, STATUS_BOSS_CHANCE, SLOW_ATTACK_PERCENT, bossPhase, bossRage, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
 import { expForLevel } from '../../../shared/progression';
 export const actions = ['ATTACK', 'TRIPLE_HIT', 'FIFTH_HIT', 'HEAL', 'DEFEND_SHIELD', 'INTERRUPT', 'FLEE'] as const;
@@ -92,7 +93,7 @@ export function resolveTurn(player: Fighter, monster: Enemy, action: Action, dic
   if (monsterHp === 0) return { hp, mana, monsterHp, dealt, received, healed, crit, dodged, foe: 'NONE' as FoeMove, effects: [] as ActiveEffect[], effectDamage, inflicted, phase: 1 as 1 | 2, status: 'VICTORY' as const, log };
   // Fase do chefe depois do seu golpe: abaixo de metade da vida ele entra em fúria (avisa uma vez, na virada).
   const phase = bossPhase({ isBoss: monster.isBoss, hp: monsterHp, maxHp: monster.maxHp });
-  if (phase === 2 && bossPhase(monster) === 1) log.push('Ferido, o chefe entra em fúria! Os golpes dele ficam mais fortes.');
+  if (phase === 2 && bossPhase(monster) === 1) log.push(GENERIC_RAGE_LINE);
   const intent=monsterIntent(monster);
   if(intent.kind==='CHARGE'||(intent.kind==='HEAVY'&&action==='INTERRUPT')) {
     log.push(intent.kind==='CHARGE'?'O chefe concentra forças para um golpe pesado!':'Você interrompe o golpe pesado do chefe!');

@@ -102,6 +102,18 @@ test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
       const fled=await BattleService.turn(a.id,c.id,b.id,snap.turnVersion,'FLEE');assert.equal(fled.status,'FLED');
       assert.deepEqual((await BattleService.snapshot(a.id,c.id,b.id)).effects,[]);
     });
+    await t.test('limite de duração: no último turno sem vencedor a batalha termina como retirada, sem recompensa',async()=>{
+      const wall=await prisma.monster.create({data:{name:`Muralha de Teste ${tag}`,level:1,regionKey:'outskirts',hp:1_000_000,attack:1,defense:0,experience:999,goldMin:999,goldMax:999,spriteUrl:''}});
+      const b=await BattleService.start(a.id,c.id,wall.id);
+      await prisma.battle.update({where:{id:b.id},data:{turnVersion:58}});
+      assert.equal((await BattleService.turn(a.id,c.id,b.id,58,'ATTACK')).status,'ONGOING');
+      const before=await prisma.character.findUniqueOrThrow({where:{id:c.id}});
+      const last=await BattleService.turn(a.id,c.id,b.id,59,'ATTACK');
+      assert.equal(last.status,'FLED');assert.match(last.log.join(' '),/60 turnos/);assert.equal(last.rewards.gold,'0');
+      const after=await prisma.character.findUniqueOrThrow({where:{id:c.id}});
+      assert.equal(after.goldInHand,before.goldInHand);assert.equal(after.experience,before.experience);
+      assert.equal((await prisma.battle.findUniqueOrThrow({where:{id:b.id}})).isFinished,true);
+    });
     await t.test('diário retorna conquistas, bestiário e histórico real',async()=>{
       const response=await request(`/characters/${c.id}/journal`);assert.equal(response.status,200);const j=await response.json();
       const ev=await (await request(`/characters/${c.id}/journal/events`)).json();assert(ev.items.length>0&&ev.total>=ev.items.length);assert(j.achievements.find((a:any)=>a.key==='boss-slayer')?.unlockedAt);

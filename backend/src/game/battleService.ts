@@ -14,7 +14,8 @@ import { vocationAllowed, skillCosts } from '../../../shared/adventure';
 import { defeatAdvice, type DefeatAdvice } from './defeatAdvice';
 import { inGroupBattle } from './groupHuntService';
 import { healthPotionNames } from '../../../shared/potions';
-import { bossPhase, monsterStatus, statusEffects, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
+import { BATTLE_MAX_TURNS, bossPhase, monsterStatus, statusEffects, type ActiveEffect, type StatusKind } from '../../../shared/statusEffects';
+import { bossLines, GENERIC_RAGE_LINE } from '../../../shared/bosses';
 const dice = (min: number, max: number) => randomInt(min, max + 1);
 // Histórico do combate, turno a turno, guardado no próprio lastLog (JSON). Formato antigo: só a lista de frases do último turno.
 // `effectDamage` e `inflicted` só aparecem nos turnos em que houve efeito de status.
@@ -77,9 +78,13 @@ export class BattleService {
         if (!vocationAllowed(item.blueprint.vocations, c.vocation)) throw new GameError(409, 'Vocação incompatível.');
       }
       const stats=combatStats(c,equipment), stored = readLog(b.lastLog);
-      const result = resolveTurn({ hp: c.hp, maxHp: c.maxHp, mana: c.mana,
+      const fought = resolveTurn({ hp: c.hp, maxHp: c.maxHp, mana: c.mana,
         ...stats,agility:c.agility,vocation:c.vocation,effects:stored.effects },
         { hp: b.monsterHp, attack: b.monster.attack, defense: b.monster.defense,isBoss:b.monster.isBoss,turn:b.turnVersion,element:b.monster.element,status:monsterStatus(b.monster),maxHp:b.monster.hp }, action, dice);
+      // Fala própria do chefe na virada de fase, e limite de duração: no último turno, sem vencedor, a luta termina como retirada.
+      const line = bossLines[b.monster.name]?.rage, spoken = line ? fought.log.map(l => l === GENERIC_RAGE_LINE ? line : l) : fought.log;
+      const exhausted = fought.status === 'ONGOING' && b.turnVersion + 1 >= BATTLE_MAX_TURNS;
+      const result = exhausted ? { ...fought, status: 'FLED' as const, effects: [] as ActiveEffect[], log: [...spoken, `Depois de ${BATTLE_MAX_TURNS} turnos, os dois lados recuam exaustos. Ninguém leva nada.`] } : { ...fought, log: spoken };
       let gold = 0, xpGain = 0;
       const droppedItems: { blueprintId: number; quantity: number; name: string }[] = [];
       if (result.status === 'VICTORY') {
