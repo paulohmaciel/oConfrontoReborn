@@ -11,7 +11,7 @@ export const taskRoutes=Router();
 taskRoutes.get('/characters/:id/tasks',asyncRoute(async(req,res)=>{
   const id=integer(Number(req.params.id));
   if(!await prisma.character.findFirst({where:{id,accountId:res.locals.accountId}}))throw new GameError(404,'Personagem não encontrado.');
-  const tasks=await prisma.taskBlueprint.findMany({include:{monster:true,playerTasks:{where:{characterId:id}}},take:100,orderBy:{minLevel:'asc'}});
+  const tasks=await prisma.taskBlueprint.findMany({include:{monster:true,playerTasks:{where:{characterId:id}}},take:300,orderBy:{minLevel:'asc'}});
   res.json(tasks);
 }));
 taskRoutes.post('/characters/:id/tasks/:taskId/:action',asyncRoute(async(req,res)=>{

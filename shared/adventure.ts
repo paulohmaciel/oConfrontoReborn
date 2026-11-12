@@ -46,8 +46,14 @@ export const regions = [
   { key: 'swamp', name: 'Pântano Sombrio', icon: 'Giant Spider', minLevel: 80, journeyStep: 5, description: 'Águas paradas, crocodilos e bruxas. No fundo da teia, a Aranha Gigante espera.' },
   { key: 'crypt', name: 'Cripta Esquecida', icon: 'Necromancer', minLevel: 100, journeyStep: 5, description: 'Corredores sob a terra onde necromantes erguem os mortos. O Bruxo guarda o último salão.' },
   { key: 'citadel', name: 'Cidadela dos Renegados', icon: 'Assassin', minLevel: 125, journeyStep: 5, description: 'Assassinos, elfos exilados e monges sem ordem. O Herói caído comanda a muralha.' },
-  // A região final é sempre a mais perigosa do jogo e leva o nome de Capriel.
-  { key: 'capriel', name: 'Vale da Perdição de Capriel', icon: 'Infernatil', minLevel: 160, journeyStep: 5, description: 'O lugar mais temido do mundo. Elementais antigos, dragões anciões e, no fim do vale, Infernatil. Poucos voltam.' },
+  { key: 'sanctuary', name: 'Santuário Elemental', icon: 'Infernatil', minLevel: 160, journeyStep: 5, description: 'Elementais antigos e dragões anciões guardam o santuário. No altar, Infernatil.' },
+  // Eras (250–1000): as regiões antigas voltam muito mais fortes, cada Era com um chefe próprio.
+  { key: 'era1', name: 'Ruínas da 1ª Era', icon: 'Demon', minLevel: 250, journeyStep: 5, description: 'As ruínas acordaram com os monstros de antes, agora séculos mais fortes. O Demônio da 1ª Era guarda o fim.' },
+  { key: 'era2', name: 'Geleiras da 2ª Era', icon: 'Verminor', minLevel: 400, journeyStep: 5, description: 'O gelo eterno guarda feras e mortos-vivos de outra era. Verminor reina sobre a nevasca.' },
+  { key: 'era3', name: 'Cidadela da 3ª Era', icon: 'Hero', minLevel: 550, journeyStep: 5, description: 'Heróis caídos e magos esquecidos defendem uma cidadela que não existe mais.' },
+  { key: 'era4', name: 'Abismo da 4ª Era', icon: 'Dragon Lord', minLevel: 700, journeyStep: 5, description: 'O abismo mais fundo, onde dragões e demônios antigos esperam por quem chegou tão longe.' },
+  // A região final é sempre a mais perigosa do jogo: o Vale da Perdição, terra de Capriel.
+  { key: 'capriel', name: 'Vale da Perdição', icon: 'Apocalypse', minLevel: 850, journeyStep: 5, description: 'O lugar mais temido do mundo. Tudo o que já existiu luta aqui na sua forma final, e no fim do vale espera Apocalypse. Poucos voltam.' },
 ] as const;
 export const journey = [
   { key: 'vocation', title: 'Encontre sua vocação', description: 'Escolha como você quer lutar. Sua escolha será permanente nesta etapa.', icon: 'Sword', target: 1, gold: 25, xp: 0, action: 'vocation' },

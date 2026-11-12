@@ -3,7 +3,7 @@
 import type { ItemSlot } from '@prisma/client';
 
 export interface CatalogItem { name: string; slot: ItemSlot; attack: number; defense: number; armor: number; npcPrice: number; minLevel: number;
-  vocations?: string; magicAttack?: number; criticalChance?: number; fireResistance?: number; speed?: number }
+  vocations?: string; magicAttack?: number; criticalChance?: number; fireResistance?: number; speed?: number; sprite?: string }
 const item = (name: string, slot: ItemSlot, minLevel: number, attack: number, defense: number, armor: number, npcPrice: number, extra: Partial<CatalogItem> = {}): CatalogItem =>
   ({ name, slot, attack, defense, armor, npcPrice, minLevel, ...extra });
 // Preço de loja dos equipamentos novos: cresce com o quadrado do nível (≈ 20–90 lutas da própria faixa).
@@ -71,7 +71,32 @@ export const items: CatalogItem[] = [
   item('Dark Helmet', 'HELMET', 200, 0, 0, 24, price(200)), item('Viking Helmet', 'HELMET', 225, 0, 0, 26, price(225), { criticalChance: 2 }),
   item('Worn Firewalker Boots', 'BOOTS', 140, 0, 0, 8, price(140), { fireResistance: 15 }), item('Worn Soft Boots', 'BOOTS', 190, 0, 0, 9, price(190), { speed: 6 }),
   item('Golden Amulet', 'AMULET', 150, 0, 0, 4, price(150), { criticalChance: 5 }),
+  ...[250, 400, 550, 700, 850].flatMap(eraGear),
 ];
+
+// Fase 3 (Eras, 250–1000): um conjunto completo por Era, reaproveitando sprites clássicos com nome da Era.
+// Atributos seguem a curva das fases anteriores (ex.: arma de Cavaleiro ≈ 0,85 × nível).
+function eraGear(level: number, index: number): CatalogItem[] {
+  const suffix = index < 4 ? ` da ${index + 1}ª Era` : ' de Capriel', pick = (bases: string[]) => bases[index % bases.length];
+  const era = (base: string, slot: ItemSlot, attack: number, defense: number, armor: number, extra: Partial<CatalogItem> = {}) =>
+    item(base + suffix, slot, level, attack, defense, armor, price(level), { sprite: base, ...extra });
+  const r = (x: number) => Math.round(x);
+  return [
+    era(pick(['Magic Longsword', 'Warlord Sword', 'Fiery Barbarian Axe', 'Guardian Halberd', 'Fire Sword']), 'WEAPON', r(.85 * level + 10), r(.15 * level), 0, { ...KNIGHT, criticalChance: 5 }),
+    era(pick(['Crossbow', 'Throwing Star']), 'WEAPON', r(.55 * level), 0, 0, { ...PALADIN, criticalChance: 6, speed: 3 }),
+    era(pick(['Power Bolt', 'Burst Arrow']), 'AMMO', r(.32 * level), 0, 0, { ...PALADIN, criticalChance: 6 }),
+    era(pick(['Skull Staff', 'Wand of Vortex', 'Snakebite Rod']), 'WEAPON', 0, r(.04 * level), 0, { ...MAGE, magicAttack: r(.3 * level) }),
+    era(pick(['Sudden Death Rune', 'Soulfire Rune']), 'AMMO', 0, 0, 0, { ...MAGE, magicAttack: r(.27 * level) }),
+    era(pick(['Royal Scale Robe', 'Red Robe']), 'ARMOR', 0, 0, r(.1 * level), { ...MAGE, magicAttack: r(.2 * level) }),
+    era(pick(['Magic Plate Armor', 'Royal Draken Mail', 'Dragon Scale Mail', 'Golden Armor', 'Crown Armor']), 'ARMOR', 0, 0, r(.16 * level + 12), { fireResistance: 15 }),
+    era(pick(['Demon Helmet', 'Royal Helmet', 'Golden Helmet', 'Crown Helmet', 'Winged Helmet']), 'HELMET', 0, 0, r(.1 * level + 4)),
+    era(pick(['Golden Legs', 'Dragon Scale Legs', 'Crown Legs', 'Knight Legs', 'Plate Legs']), 'LEGS', 0, 0, r(.09 * level + 5)),
+    era(pick(['Boots of Haste', 'Golden Boots', 'Steel Boots', 'Worn Soft Boots']), 'BOOTS', 0, 0, r(.04 * level + 2), { speed: 6 }),
+    era(pick(['Mastermind Shield', 'Guardian Shield', 'Great Shield', 'Tower Shield', 'Dragon Shield']), 'SHIELD', 0, r(.5 * level + 10), 0),
+    era(pick(['Platinum Amulet', 'Golden Amulet', 'Crystal Necklace', 'Dragon Necklace', 'Stone Skin Amulet']), 'AMULET', 0, 0, r(.02 * level + 2), { criticalChance: 6, fireResistance: 10 }),
+    era(pick(['Ring of the Sky', 'Crystal Ring']), 'RING', 0, 0, 0, { criticalChance: 12, speed: 3 }),
+  ];
+}
 
 export interface CatalogMonster { name: string; level: number; regionKey: string; isBoss?: boolean; element?: 'FIRE' | 'PHYSICAL'; sprite?: string;
   hp: number; attack: number; defense: number; experience: number; goldMin: number; goldMax: number }
@@ -130,13 +155,68 @@ export const monsters: CatalogMonster[] = [
   { name: 'Elf Arcanist', level: 141, regionKey: 'citadel', hp: 11958, attack: 251, defense: 271, experience: 31810, goldMin: 2908, goldMax: 5816 },
   { name: 'Monk', level: 149, regionKey: 'citadel', hp: 12597, attack: 259, defense: 285, experience: 35522, goldMin: 3222, goldMax: 6444 },
   { name: 'Hero', level: 158, regionKey: 'citadel', isBoss: true, hp: 20032, attack: 467, defense: 299, experience: 79884, goldMin: 3595, goldMax: 7190 },
-  { name: 'Water Elemental', level: 162, regionKey: 'capriel', hp: 13537, attack: 282, defense: 306, experience: 41990, goldMin: 3767, goldMax: 7534 },
-  { name: 'Young Sea Serpent', level: 172, regionKey: 'capriel', hp: 14402, attack: 291, defense: 326, experience: 47334, goldMin: 4214, goldMax: 8428 },
-  { name: 'Elemental de Fogo Ancestral', level: 185, regionKey: 'capriel', element: 'FIRE', sprite: 'Fire Elemental', hp: 15320, attack: 397, defense: 348, experience: 54760, goldMin: 4833, goldMax: 9666 },
-  { name: 'Golem Ancestral', level: 198, regionKey: 'capriel', sprite: 'Stone Golem', hp: 16227, attack: 322, defense: 369, experience: 62726, goldMin: 5495, goldMax: 10990 },
-  { name: 'Gosma Primordial', level: 210, regionKey: 'capriel', sprite: 'Slime', hp: 17275, attack: 335, defense: 392, experience: 70560, goldMin: 6143, goldMax: 12286 },
-  { name: 'Serpente Abissal', level: 222, regionKey: 'capriel', sprite: 'Young Sea Serpent', hp: 18097, attack: 352, defense: 411, experience: 78854, goldMin: 6827, goldMax: 13654 },
-  { name: 'Dragão Ancião', level: 236, regionKey: 'capriel', element: 'FIRE', sprite: 'Dragon Lord', hp: 19273, attack: 500, defense: 436, experience: 89114, goldMin: 7670, goldMax: 15340 },
-  { name: 'Infernatil', level: 250, regionKey: 'capriel', isBoss: true, element: 'FIRE', hp: 31674, attack: 1005, defense: 459, experience: 200000, goldMin: 8563, goldMax: 17126 },
+  { name: 'Water Elemental', level: 162, regionKey: 'sanctuary', hp: 13537, attack: 282, defense: 306, experience: 41990, goldMin: 3767, goldMax: 7534 },
+  { name: 'Young Sea Serpent', level: 172, regionKey: 'sanctuary', hp: 14402, attack: 291, defense: 326, experience: 47334, goldMin: 4214, goldMax: 8428 },
+  { name: 'Elemental de Fogo Ancestral', level: 185, regionKey: 'sanctuary', element: 'FIRE', sprite: 'Fire Elemental', hp: 15320, attack: 397, defense: 348, experience: 54760, goldMin: 4833, goldMax: 9666 },
+  { name: 'Golem Ancestral', level: 198, regionKey: 'sanctuary', sprite: 'Stone Golem', hp: 16227, attack: 322, defense: 369, experience: 62726, goldMin: 5495, goldMax: 10990 },
+  { name: 'Gosma Primordial', level: 210, regionKey: 'sanctuary', sprite: 'Slime', hp: 17275, attack: 335, defense: 392, experience: 70560, goldMin: 6143, goldMax: 12286 },
+  { name: 'Serpente Abissal', level: 222, regionKey: 'sanctuary', sprite: 'Young Sea Serpent', hp: 18097, attack: 352, defense: 411, experience: 78854, goldMin: 6827, goldMax: 13654 },
+  { name: 'Dragão Ancião', level: 236, regionKey: 'sanctuary', element: 'FIRE', sprite: 'Dragon Lord', hp: 19273, attack: 500, defense: 436, experience: 89114, goldMin: 7670, goldMax: 15340 },
+  { name: 'Infernatil', level: 250, regionKey: 'sanctuary', isBoss: true, element: 'FIRE', hp: 33390, attack: 817, defense: 474, experience: 200000, goldMin: 8563, goldMax: 17126 },
+  { name: 'Cyclops da 1ª Era', level: 255, regionKey: 'era1', sprite: 'Cyclops', hp: 21974, attack: 429, defense: 481, experience: 104040, goldMin: 8893, goldMax: 17786 },
+  { name: 'Orc Berserker da 1ª Era', level: 269, regionKey: 'era1', sprite: 'Orc Berserker', hp: 22995, attack: 443, defense: 504, experience: 115778, goldMin: 9852, goldMax: 19704 },
+  { name: 'Valkyrie da 1ª Era', level: 283, regionKey: 'era1', sprite: 'Valkyrie', hp: 24002, attack: 456, defense: 526, experience: 128142, goldMin: 10860, goldMax: 21720 },
+  { name: 'Minotaur Guard da 1ª Era', level: 297, regionKey: 'era1', sprite: 'Minotaur Guard', hp: 25045, attack: 470, defense: 548, experience: 141134, goldMin: 11917, goldMax: 23834 },
+  { name: 'Stone Golem da 1ª Era', level: 311, regionKey: 'era1', sprite: 'Stone Golem', hp: 26066, attack: 483, defense: 570, experience: 154754, goldMin: 13023, goldMax: 26046 },
+  { name: 'Bonelord da 1ª Era', level: 325, regionKey: 'era1', sprite: 'Bonelord', hp: 27052, attack: 497, defense: 593, experience: 169000, goldMin: 14178, goldMax: 28356 },
+  { name: 'Mummy da 1ª Era', level: 339, regionKey: 'era1', sprite: 'Mummy', hp: 28054, attack: 511, defense: 615, experience: 183874, goldMin: 15382, goldMax: 30764 },
+  { name: 'Demon Skeleton da 1ª Era', level: 353, regionKey: 'era1', sprite: 'Demon Skeleton', hp: 29042, attack: 524, defense: 637, experience: 199374, goldMin: 16635, goldMax: 33270 },
+  { name: 'Fire Devil da 1ª Era', level: 367, regionKey: 'era1', element: 'FIRE', sprite: 'Fire Devil', hp: 30029, attack: 598, defense: 659, experience: 215502, goldMin: 17937, goldMax: 35874 },
+  { name: 'Dragon da 1ª Era', level: 381, regionKey: 'era1', element: 'FIRE', sprite: 'Dragon', hp: 31030, attack: 614, defense: 681, experience: 232258, goldMin: 19288, goldMax: 38576 },
+  { name: 'Demon da 1ª Era', level: 400, regionKey: 'era1', isBoss: true, element: 'FIRE', sprite: 'Demon', hp: 53439, attack: 1273, defense: 759, experience: 512000, goldMin: 21200, goldMax: 42400 },
+  { name: 'Frost Troll da 2ª Era', level: 405, regionKey: 'era2', sprite: 'Frost Troll', hp: 34925, attack: 654, defense: 767, experience: 262440, goldMin: 21718, goldMax: 43436 },
+  { name: 'Winter Wolf da 2ª Era', level: 419, regionKey: 'era2', sprite: 'Winter Wolf', hp: 35927, attack: 667, defense: 789, experience: 280898, goldMin: 23202, goldMax: 46404 },
+  { name: 'Polar Bear da 2ª Era', level: 433, regionKey: 'era2', sprite: 'Polar Bear', hp: 36914, attack: 681, defense: 811, experience: 299982, goldMin: 24735, goldMax: 49470 },
+  { name: 'Mammoth da 2ª Era', level: 447, regionKey: 'era2', sprite: 'Mammoth', hp: 37914, attack: 693, defense: 833, experience: 319694, goldMin: 26317, goldMax: 52634 },
+  { name: 'Swamp Troll da 2ª Era', level: 461, regionKey: 'era2', sprite: 'Swamp Troll', hp: 38930, attack: 706, defense: 855, experience: 340034, goldMin: 27948, goldMax: 55896 },
+  { name: 'Killer Caiman da 2ª Era', level: 475, regionKey: 'era2', sprite: 'Killer Caiman', hp: 39987, attack: 720, defense: 878, experience: 361000, goldMin: 29628, goldMax: 59256 },
+  { name: 'Witch da 2ª Era', level: 489, regionKey: 'era2', sprite: 'Witch', hp: 41002, attack: 733, defense: 900, experience: 382594, goldMin: 31357, goldMax: 62714 },
+  { name: 'Wailing Widow da 2ª Era', level: 503, regionKey: 'era2', sprite: 'Wailing Widow', hp: 42017, attack: 746, defense: 922, experience: 404814, goldMin: 33135, goldMax: 66270 },
+  { name: 'Necromancer da 2ª Era', level: 517, regionKey: 'era2', sprite: 'Necromancer', hp: 43033, attack: 761, defense: 945, experience: 427662, goldMin: 34962, goldMax: 69924 },
+  { name: 'Black Knight da 2ª Era', level: 531, regionKey: 'era2', sprite: 'Black Knight', hp: 44047, attack: 774, defense: 967, experience: 451138, goldMin: 36838, goldMax: 73676 },
+  { name: 'Verminor', level: 550, regionKey: 'era2', isBoss: true, hp: 71569, attack: 1567, defense: 1041, experience: 968000, goldMin: 39463, goldMax: 78926 },
+  { name: 'Assassin da 3ª Era', level: 555, regionKey: 'era3', sprite: 'Assassin', hp: 47794, attack: 886, defense: 1049, experience: 492840, goldMin: 40168, goldMax: 80336 },
+  { name: 'Elf Scout da 3ª Era', level: 569, regionKey: 'era3', sprite: 'Elf Scout', hp: 48781, attack: 899, defense: 1071, experience: 518018, goldMin: 42177, goldMax: 84354 },
+  { name: 'Elf Arcanist da 3ª Era', level: 583, regionKey: 'era3', sprite: 'Elf Arcanist', hp: 49769, attack: 912, defense: 1093, experience: 543822, goldMin: 44235, goldMax: 88470 },
+  { name: 'Monk da 3ª Era', level: 597, regionKey: 'era3', sprite: 'Monk', hp: 50756, attack: 926, defense: 1115, experience: 570254, goldMin: 46342, goldMax: 92684 },
+  { name: 'Minotaur Mage da 3ª Era', level: 611, regionKey: 'era3', sprite: 'Minotaur Mage', hp: 51744, attack: 939, defense: 1137, experience: 597314, goldMin: 48498, goldMax: 96996 },
+  { name: 'Hero da 3ª Era', level: 625, regionKey: 'era3', sprite: 'Hero', hp: 52769, attack: 952, defense: 1160, experience: 625000, goldMin: 50703, goldMax: 101406 },
+  { name: 'Warlock da 3ª Era', level: 639, regionKey: 'era3', sprite: 'Warlock', hp: 53787, attack: 966, defense: 1182, experience: 653314, goldMin: 52957, goldMax: 105914 },
+  { name: 'Water Elemental da 3ª Era', level: 653, regionKey: 'era3', sprite: 'Water Elemental', hp: 54804, attack: 980, defense: 1204, experience: 682254, goldMin: 55260, goldMax: 110520 },
+  { name: 'Young Sea Serpent da 3ª Era', level: 667, regionKey: 'era3', sprite: 'Young Sea Serpent', hp: 55815, attack: 993, defense: 1227, experience: 711822, goldMin: 57612, goldMax: 115224 },
+  { name: 'Fire Elemental da 3ª Era', level: 681, regionKey: 'era3', element: 'FIRE', sprite: 'Fire Elemental', hp: 56833, attack: 1113, defense: 1249, experience: 742018, goldMin: 60013, goldMax: 120026 },
+  { name: 'Infernatil da 3ª Era', level: 700, regionKey: 'era3', isBoss: true, element: 'FIRE', sprite: 'Infernatil', hp: 93116, attack: 2198, defense: 1323, experience: 1568000, goldMin: 63350, goldMax: 126700 },
+  { name: 'Orc Shaman da 4ª Era', level: 705, regionKey: 'era4', sprite: 'Orc Shaman', hp: 60634, attack: 1117, defense: 1330, experience: 795240, goldMin: 64243, goldMax: 128486 },
+  { name: 'Amazon da 4ª Era', level: 719, regionKey: 'era4', sprite: 'Amazon', hp: 61623, attack: 1130, defense: 1352, experience: 827138, goldMin: 66777, goldMax: 133554 },
+  { name: 'Minotaur Archer da 4ª Era', level: 733, regionKey: 'era4', sprite: 'Minotaur Archer', hp: 62604, attack: 1143, defense: 1375, experience: 859662, goldMin: 69360, goldMax: 138720 },
+  { name: 'Stone Golem da 4ª Era', level: 747, regionKey: 'era4', sprite: 'Stone Golem', hp: 63591, attack: 1157, defense: 1397, experience: 892814, goldMin: 71992, goldMax: 143984 },
+  { name: 'Necromancer da 4ª Era', level: 761, regionKey: 'era4', sprite: 'Necromancer', hp: 64580, attack: 1171, defense: 1419, experience: 926594, goldMin: 74673, goldMax: 149346 },
+  { name: 'Black Knight da 4ª Era', level: 775, regionKey: 'era4', sprite: 'Black Knight', hp: 65581, attack: 1184, defense: 1442, experience: 961000, goldMin: 77403, goldMax: 154806 },
+  { name: 'Giant Spider da 4ª Era', level: 789, regionKey: 'era4', sprite: 'Giant Spider', hp: 66569, attack: 1198, defense: 1464, experience: 996034, goldMin: 80182, goldMax: 160364 },
+  { name: 'Fire Elemental da 4ª Era', level: 803, regionKey: 'era4', element: 'FIRE', sprite: 'Fire Elemental', hp: 67571, attack: 1336, defense: 1486, experience: 1031694, goldMin: 83010, goldMax: 166020 },
+  { name: 'Demon da 4ª Era', level: 817, regionKey: 'era4', element: 'FIRE', sprite: 'Demon', hp: 68598, attack: 1352, defense: 1508, experience: 1067982, goldMin: 85887, goldMax: 171774 },
+  { name: 'Dragon Lord da 4ª Era', level: 831, regionKey: 'era4', element: 'FIRE', sprite: 'Dragon Lord', hp: 69618, attack: 1367, defense: 1530, experience: 1104898, goldMin: 88813, goldMax: 177626 },
+  { name: 'Senhor dos Dragões da 4ª Era', level: 850, regionKey: 'era4', isBoss: true, element: 'FIRE', sprite: 'Dragon Lord', hp: 112991, attack: 2663, defense: 1605, experience: 2312000, goldMin: 92863, goldMax: 185726 },
+  { name: 'Elf Arcanist de Capriel', level: 855, regionKey: 'capriel', sprite: 'Elf Arcanist', hp: 73483, attack: 1349, defense: 1612, experience: 1169640, goldMin: 93943, goldMax: 187886 },
+  { name: 'Young Sea Serpent de Capriel', level: 869, regionKey: 'capriel', sprite: 'Young Sea Serpent', hp: 74471, attack: 1362, defense: 1634, experience: 1208258, goldMin: 97002, goldMax: 194004 },
+  { name: 'Wailing Widow de Capriel', level: 883, regionKey: 'capriel', sprite: 'Wailing Widow', hp: 75460, attack: 1375, defense: 1656, experience: 1247502, goldMin: 100110, goldMax: 200220 },
+  { name: 'Black Knight de Capriel', level: 897, regionKey: 'capriel', sprite: 'Black Knight', hp: 76461, attack: 1389, defense: 1679, experience: 1287374, goldMin: 103267, goldMax: 206534 },
+  { name: 'Hero de Capriel', level: 911, regionKey: 'capriel', sprite: 'Hero', hp: 77434, attack: 1403, defense: 1701, experience: 1327874, goldMin: 106473, goldMax: 212946 },
+  { name: 'Warlock de Capriel', level: 925, regionKey: 'capriel', sprite: 'Warlock', hp: 78433, attack: 1416, defense: 1724, experience: 1369000, goldMin: 109728, goldMax: 219456 },
+  { name: 'Fire Devil de Capriel', level: 939, regionKey: 'capriel', element: 'FIRE', sprite: 'Fire Devil', hp: 79422, attack: 1578, defense: 1746, experience: 1410754, goldMin: 113032, goldMax: 226064 },
+  { name: 'Giant Spider de Capriel', level: 953, regionKey: 'capriel', sprite: 'Giant Spider', hp: 80409, attack: 1443, defense: 1768, experience: 1453134, goldMin: 116385, goldMax: 232770 },
+  { name: 'Dragon Lord de Capriel', level: 967, regionKey: 'capriel', element: 'FIRE', sprite: 'Dragon Lord', hp: 81415, attack: 1609, defense: 1790, experience: 1496142, goldMin: 119787, goldMax: 239574 },
+  { name: 'Demon de Capriel', level: 981, regionKey: 'capriel', element: 'FIRE', sprite: 'Demon', hp: 82400, attack: 1623, defense: 1812, experience: 1539778, goldMin: 123238, goldMax: 246476 },
+  { name: 'Apocalypse', level: 1000, regionKey: 'capriel', isBoss: true, element: 'FIRE', hp: 128945, attack: 3021, defense: 1843, experience: 3200000, goldMin: 128000, goldMax: 256000 },
 ];
 // </monstros>
