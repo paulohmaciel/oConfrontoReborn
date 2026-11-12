@@ -4,7 +4,8 @@
 
 ## Arquivos
 - `communityService.ts` – regras de perfil, recados, depoimentos, amizades, visitas e denúncias
-- `communityRoutes.ts` – rotas `/community/*` e `/characters/:id/community/*`
+- `communityRoutes.ts` – rotas `/community/*`, `/forum*` e `/characters/:id/{community,forum}/*`
+- `forumService.ts` – fórum: tópicos, comentários (um nível de resposta), votos, resolvido, apagar o próprio
 
 ## Rotas
 `GET /community/profiles/:nome?as=<id>`, `GET /community/search?q=`, `GET /characters/:id/community`, `POST /characters/:id/community/{profile,scraps,testimonials,friends,report}` e ações por id.

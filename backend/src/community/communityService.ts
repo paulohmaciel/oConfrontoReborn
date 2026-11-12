@@ -173,11 +173,17 @@ export async function reportContent(accountId: number, characterId: number, kind
   const why = message(reason, 500, 'o motivo da denúncia'), contentId = integer(Number(id));
   return transaction(async tx => {
     await lockCharacter(tx, accountId, characterId);
-    const item = kind === 'scrap' ? await tx.profileScrap.findUnique({ where: { id: contentId }, include: { author: { select: { id: true, name: true, accountId: true } } } })
-      : kind === 'testimonial' ? await tx.profileTestimonial.findUnique({ where: { id: contentId }, include: { author: { select: { id: true, name: true, accountId: true } } } }) : null;
+    const who = { include: { author: { select: { id: true, name: true, accountId: true } } } } as const;
+    const found = kind === 'scrap' ? await tx.profileScrap.findUnique({ where: { id: contentId }, ...who })
+      : kind === 'testimonial' ? await tx.profileTestimonial.findUnique({ where: { id: contentId }, ...who })
+      : kind === 'post' ? await tx.forumPost.findUnique({ where: { id: contentId }, ...who }).then(p => p && { ...p, text: `${p.title}
+
+${p.body}` })
+      : kind === 'comment' ? await tx.forumComment.findUnique({ where: { id: contentId }, ...who }).then(c => c && { ...c, text: c.body }) : null;
+    const item = found;
     if (!item) throw new GameError(404, 'Conteúdo não encontrado.');
     if (item.author.accountId === accountId) throw new GameError(400, 'Você não pode denunciar o próprio texto.');
-    const label = kind === 'scrap' ? 'recado' : 'depoimento';
+    const label = ({ scrap: 'recado', testimonial: 'depoimento', post: 'tópico do fórum', comment: 'comentário do fórum' } as Record<string, string>)[String(kind)];
     const ticket = await tx.supportTicket.create({ data: { accountId, kind: 'REPORT', subject: `Denúncia de ${label} #${contentId} (${item.author.name})`.slice(0, 120), reportedCharacterId: item.author.id } });
     await tx.supportMessage.create({ data: { ticketId: ticket.id, authorAccountId: accountId, body: `Motivo: ${why}\n\nTexto denunciado (${label} #${contentId}, de ${item.author.name}):\n${item.text}` } });
     return { message: 'Denúncia enviada para a equipe. Obrigado.' };

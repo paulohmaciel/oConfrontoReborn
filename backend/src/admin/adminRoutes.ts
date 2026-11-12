@@ -90,13 +90,20 @@ adminRoutes.post('/admin/accounts/:id/punishments', need('punish.apply'), asyncR
 // Moderação da comunidade: a equipe remove recados e depoimentos (ex.: depois de uma denúncia), com motivo e auditoria.
 adminRoutes.post('/admin/community/:kind/:id/remove', need('community.moderate'), asyncRoute(async (req, res) => {
   const id = integer(Number(req.params.id)), reason = reasonOf(req.body), kind = req.params.kind;
-  if (kind !== 'scrap' && kind !== 'testimonial') throw new GameError(400, 'Tipo de conteúdo inválido.');
+  if (!['scrap', 'testimonial', 'post', 'comment'].includes(kind)) throw new GameError(400, 'Tipo de conteúdo inválido.');
   await transaction(async tx => {
     if (kind === 'scrap') {
       const s = await tx.profileScrap.findUnique({ where: { id } });
       if (!s) throw new GameError(404, 'Recado não encontrado.');
       if (!s.deletedAt) await tx.profileScrap.update({ where: { id }, data: { deletedAt: new Date(), deletedById: actor(res) } });
       await audit(tx, actor(res), 'COMMUNITY_REMOVE', 'CHARACTER', s.authorId, reason, { kind, id, text: s.text });
+    } else if (kind === 'post' || kind === 'comment') {
+      const item = kind === 'post' ? await tx.forumPost.findUnique({ where: { id } }) : await tx.forumComment.findUnique({ where: { id } });
+      if (!item) throw new GameError(404, 'Conteúdo do fórum não encontrado.');
+      if (kind === 'post') await tx.forumPost.update({ where: { id }, data: { deletedAt: new Date() } });
+      else await tx.forumComment.update({ where: { id }, data: { deletedAt: new Date() } });
+      await audit(tx, actor(res), 'COMMUNITY_REMOVE', 'CHARACTER', item.authorId, reason, { kind, id, text: 'title' in item ? `${item.title}
+${item.body}` : item.body });
     } else {
       const t = await tx.profileTestimonial.findUnique({ where: { id } });
       if (!t) throw new GameError(404, 'Depoimento não encontrado.');
