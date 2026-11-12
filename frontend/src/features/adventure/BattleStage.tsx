@@ -27,5 +27,5 @@ export default function BattleStage({battle,heroName,vocation}:{battle:Battle;he
   const fx=(battle.effects??[]).map(e=>`fx-${e.kind.toLowerCase()}`).join(' ');
   return <Stage scene={battle.battleId} turn={last?.turn??0} steps={last?script(last,vocation):[]}
     left={[{id:'hero',name:heroName,src:heroSpriteOf(vocation),sheet:heroSheetOf(vocation),down:battle.status==='DEFEAT',gone:battle.status==='FLED',fx}]}
-    right={[{id:'foe',name:battle.monsterName,src:spriteOf(battle.monsterName,battle.monsterSprite),sheet:monsterSheetOf(battle.monsterName),size:battle.isBoss?160:128,boss:battle.isBoss,rage:battle.phase===2,down:battle.monsterHp<=0}]}/>;
+    right={[{id:'foe',name:battle.monsterName,src:spriteOf(battle.monsterName,battle.monsterSprite),sheet:monsterSheetOf(battle.monsterName,battle.monsterSprite),size:battle.isBoss?160:128,boss:battle.isBoss,rage:battle.phase===2,down:battle.monsterHp<=0}]}/>;
 }

@@ -10,4 +10,4 @@ Arte original do jogo, criada pelo dono com geração de imagens do ChatGPT em 2
 ## Formato das folhas
 - 1024 × 1536 px, fundo transparente, 4 colunas × 6 linhas, quadros de 256 × 256 px, personagem virado para a direita.
 - Linhas: 1 parado, 2 avançar, 3 atacar, 4 defender, 5 curar, 6 apanhar (2 quadros) e cair (2 quadros).
-- Para ligar uma folha nova: registre o caminho em `heroSheets` ou `monsterSheets`, em `frontend/src/ui/BattleStage.tsx`.
+- Os comandos de todas as artes estão em `ART.md`, na raiz do projeto. Para ligar uma folha nova, salve o PNG aqui com o nome indicado lá e rode `npm run build`.

@@ -2,6 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import Icon from './GameIcon';
 import manifest from '../../public/assets/tibia/manifest.json';
 import {applyMotion} from '../lib/theme';
+import sheets from '../lib/spriteSheets.json';
 
 // Arena animada, usada na caçada, no Duelo e na Caçada em grupo: lutadores à esquerda e à direita encenam a rodada que o servidor
 // já resolveu (avanço, projétil, tranco, números que sobem, cura, guarda, esquiva, queda). Nenhuma regra de combate mora aqui.
@@ -22,10 +23,13 @@ export const heroSpriteOf=(baseVocation:string)=>spriteOf(heroSprites[baseVocati
 export const shotOf=(baseVocation:string)=>shots[baseVocation];
 // Arte própria do jogo (frontend/public/assets/sprites, ver CREDITOS.md lá). Linhas da folha: 1 parado, 2 avançar, 3 atacar,
 // 4 defender, 5 curar, 6 apanhar (2 quadros) e cair (2 quadros). Quem não tem folha continua com o sprite do TibiaWiki.
-const heroSheets:Record<string,string>={KNIGHT:'/assets/sprites/cavaleiro.png'};
-const monsterSheets:Record<string,string>={Wolf:'/assets/sprites/lobo-das-cinzas.png'};
-export const heroSheetOf=(baseVocation:string)=>heroSheets[baseVocation];
-export const monsterSheetOf=(name:string)=>monsterSheets[name];
+// A lista do que existe vem de lib/spriteSheets.json, escrito por `npm run art` (o build roda antes): salvar o PNG com o nome do ART.md basta.
+const heroSheets:Record<string,string>=sheets.heroes,monsterSheets:Record<string,string>=sheets.monsters;
+const nameOfPath=new Map(manifest.entries.map(e=>[e.path,e.name]));
+const sheetUrl=(file?:string)=>file?`/assets/sprites/${file}.png`:undefined;
+export const heroSheetOf=(baseVocation:string)=>sheetUrl(heroSheets[baseVocation]);
+// As criaturas das Eras e de Capriel usam o sprite da original; por isso a folha é achada pelo sprite, e só depois pelo nome.
+export const monsterSheetOf=(name:string,spritePath?:string)=>sheetUrl(monsterSheets[nameOfPath.get(spritePath??'')??'']??monsterSheets[name]);
 // O desenho ocupa cerca de 70% do quadro da folha, então o quadro é mostrado maior que um sprite comum.
 export const SHEET_SCALE=1.5;
 export const stageNumber=(v:number)=>v.toLocaleString('pt-BR');
