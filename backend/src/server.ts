@@ -22,6 +22,7 @@ import { communityRoutes } from './community/communityRoutes';
 import { expireListings } from './economy/marketService';
 import { expireDuels } from './game/duelService';
 import { requestId } from './core/monitor';
+import { appRouter } from './confrontation/appRoutes';
 
 export function createApp() {
   const app = express();
@@ -31,6 +32,8 @@ export function createApp() {
   app.use(requestId());
   app.use(helmet({ contentSecurityPolicy: { directives: { 'img-src': ["'self'", 'data:'], 'upgrade-insecure-requests': process.env.NODE_ENV === 'production' ? [] : null } } }));
   app.set('json replacer', (_key: string, value: unknown) => typeof value === 'bigint' ? value.toString() : value);
+  // App Confrontation (Godot): token Bearer, sem cookie nem Origin. O save pede corpo maior (até 512 KB), por isso vem antes do limite geral.
+  app.use('/api/app', appRouter());
   app.use(express.json({ limit: '16kb' }));
   // Para monitor externo de disponibilidade: 200 quando o banco responde, 503 quando não. Sem dados internos.
   app.get('/api/health', async (_req,res) => { const t0 = Date.now(); try { await prisma.$queryRaw`SELECT 1`; res.json({ ok: true, dbMs: Date.now() - t0 }); } catch { res.status(503).json({ ok: false }); } });

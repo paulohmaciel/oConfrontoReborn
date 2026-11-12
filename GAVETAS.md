@@ -11,13 +11,14 @@ O projeto é dividido em gavetas: cada pasta tem uma função, regras próprias 
 | Premium e pagamentos | `backend/src/premium` | `features/premium` |
 | perfil, recados, depoimentos, amigos, fórum | `backend/src/community` | `features/profile` |
 | cadastro, login, senha, e-mail, banimento | `backend/src/account` | `features/auth` |
+| app Confrontation (Godot): token, save na nuvem, tetos do idle, rankings | `backend/src/confrontation` | — (a tela é o app) |
 | painel da equipe, punições, suporte | `backend/src/admin` | `features/admin`, `support` |
 | banco, erros, e-mail, monitoramento | `backend/src/core` | — |
 | regras usadas pelos dois lados | `shared/` | — |
 | tabelas do banco | `backend/prisma/` (migração aditiva) | — |
 
 ## Ordem das dependências (verificada por `npm run check:drawers`)
-Servidor, de baixo para cima: `core` → `economy` → `premium` → `game` → `community` → `account` → `admin` → `server.ts`. Uma gaveta só importa as de baixo. Tela: `lib` → `ui` → `features/*` → `App.tsx`.
+Servidor, de baixo para cima: `core` → `economy` → `premium` → `game` → `community` → `account` → `confrontation` → `admin` → `server.ts`. Uma gaveta só importa as de baixo. Tela: `lib` → `ui` → `features/*` → `App.tsx`.
 
 ## Como pedir uma manutenção (modelo geral)
 ```
