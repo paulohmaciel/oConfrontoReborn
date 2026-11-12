@@ -48,3 +48,15 @@ test('assinatura do Mercado Pago: rejeita segredo, id, request-id, ts ou formato
   assert.equal(verifySignature({ xSignature: 'ts=1,v1=zz', xRequestId: 'req-1', dataId: '555', secret }), false);
   assert.equal(verifySignature({ xSignature: '', xRequestId: '', dataId: '', secret }), false);
 });
+test('assinatura do Mercado Pago: com tolerância, recusa ts antigo ou futuro (em segundos ou milissegundos)', () => {
+  const now = 1_700_000_000_000; // ms
+  const ok = (ts: string) => verifySignature({ xSignature: sign('555', 'req-1', ts), xRequestId: 'req-1', dataId: '555', secret, maxAgeSeconds: 300, now });
+  assert.equal(ok('1700000000'), true);            // segundos, exato
+  assert.equal(ok('1700000000000'), true);         // milissegundos, exato
+  assert.equal(ok('1700000200'), true);            // 200 s à frente
+  assert.equal(ok('1699999600'), false);           // 400 s atrás
+  assert.equal(ok('1700000400000'), false);        // 400 s à frente, em ms
+  assert.equal(ok('abc'), false);
+  // Sem tolerância pedida, o comportamento antigo continua (só a assinatura).
+  assert.equal(verifySignature({ xSignature: sign('555', 'req-1', '1'), xRequestId: 'req-1', dataId: '555', secret }), true);
+});

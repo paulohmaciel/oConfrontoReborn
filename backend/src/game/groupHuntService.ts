@@ -11,15 +11,18 @@ import { gainExperience } from './gameRules';
 import { combatStats } from './combatStats';
 import { event, awardAchievements } from './adventureService';
 import { materialForLevel } from '../../../shared/forge';
-import { GROUP_MIN_LEVEL, PARTY_MAX, PARTY_MIN, actionsFor, groupActions, groupHunts, groupIntent, huntByKey, type GroupAction } from '../../../shared/groupHunt';
-import { resolveGroupRound, type GroupFighter } from './groupEngine';
+import { GROUP_MIN_LEVEL, PARTY_MAX, PARTY_MIN, actionsFor, groupActions, groupHunts, groupIntent, huntByKey, type GroupAction, type GroupHunt, type GroupPhase } from '../../../shared/groupHunt';
+import { resolveGroupRound, type GroupBoss, type GroupFighter } from './groupEngine';
 type Tx = Prisma.TransactionClient;
 const dice = (min: number, max: number) => randomInt(min, max + 1);
 const card = { id: true, name: true, level: true, vocation: true, classTier: true, profileAvatar: true, profileEmblem: true } as const;
 const WEEK = 7 * 24 * 3600 * 1000;
 // Força de cada participante, gravada ao começar (equipamento trocado no meio não muda a luta).
 type FighterStats = { name: string; attack: number; defense: number; criticalChance: number; dodgeChance: number };
-type BattleState = { attack: number; defense: number; chains: number; freed: boolean; stats: Record<string, FighterStats> };
+// `counters` = correntes, encantamento, ilusões ou selos (ver shared/groupHunt). `chains` é o nome antigo (batalhas da fase 1).
+type BattleState = { attack: number; defense: number; counters?: number; chains?: number; freed: boolean; phase?: GroupPhase; choice?: 'SLAY' | 'SLEEP' | null; stats: Record<string, FighterStats> };
+const bossOf = (s: BattleState, hunt: GroupHunt, hp: number, maxHp: number): GroupBoss => ({ hp, maxHp, attack: s.attack, defense: s.defense, mechanic: hunt.mechanic,
+  counters: s.counters ?? s.chains ?? 0, maxCounters: hunt.counters, freed: s.freed, phase: s.phase ?? 'FIGHT', choice: s.choice ?? null });
 
 async function lockParty(tx: Tx, partyId: number) {
   await tx.$queryRaw`SELECT id FROM \`HuntParty\` WHERE id = ${partyId} FOR UPDATE`;
@@ -64,7 +67,9 @@ export async function groupState(accountId: number, characterId: number, rawQuer
       .filter(f => !inParty.has(f.id) && f.level >= minLevel(hunt.level) && (!q || f.name.toLowerCase().includes(q.toLowerCase())))
       .sort((a, b) => b.level - a.level).slice(0, 10);
   }
-  const fighter = await prisma.groupBattleFighter.findFirst({ where: { characterId: c.id, battle: { createdAt: { gte: new Date(Date.now() - 30 * 60 * 1000) } } }, orderBy: { id: 'desc' } });
+  // A batalha em andamento; se não houver, a última dos últimos 30 minutos (para mostrar o resultado).
+  const fighter = await prisma.groupBattleFighter.findUnique({ where: { activeCharacterId: c.id } })
+    ?? await prisma.groupBattleFighter.findFirst({ where: { characterId: c.id, battle: { createdAt: { gte: new Date(Date.now() - 30 * 60 * 1000) } } }, orderBy: { battleId: 'desc' } });
   const battle = fighter ? await battleView(fighter.battleId, c.id) : null;
   const hunts = await Promise.all(groupHunts.map(async h => ({ ...h, minLevel: minLevel(h.level), rewardsThisWeek: h.available ? await weeklyRewards(prisma, c.id, h.key) : 0 })));
   return { now: new Date(), minLevel: GROUP_MIN_LEVEL, level: c.level, hunts, invites: invites.map(i => ({ id: i.id, huntKey: i.party.huntKey, leader: i.party.leader })),
@@ -76,12 +81,13 @@ export async function groupState(accountId: number, characterId: number, rawQuer
 async function battleView(battleId: number, viewerId: number) {
   const b = await prisma.groupBattle.findUnique({ where: { id: battleId }, include: { fighters: { orderBy: { id: 'asc' }, include: { character: { select: card } } } } });
   if (!b) return null;
-  const s = b.state as unknown as BattleState, hunt = huntByKey(b.huntKey)!;
+  const s = b.state as unknown as BattleState, hunt = huntByKey(b.huntKey)!, boss = bossOf(s, hunt, b.bossHp, b.bossMaxHp);
   return { id: b.id, huntKey: b.huntKey, name: hunt.title, sprite: hunt.sprite, round: b.round, deadlineAt: b.deadlineAt, outcome: b.outcome, isFinished: b.isFinished,
-    bossHp: b.bossHp, bossMaxHp: b.bossMaxHp, chains: s.chains, maxChains: hunt.chains ?? 0, freed: s.freed, intent: groupIntent(b.round), log: (b.log ?? []) as string[],
+    bossHp: b.bossHp, bossMaxHp: b.bossMaxHp, mechanic: hunt.mechanic, counters: boss.counters, maxCounters: hunt.counters, freed: boss.freed, phase: boss.phase, choice: boss.choice,
+    bonusText: hunt.bonusText ?? null, intent: groupIntent(b.round, hunt), log: (b.log ?? []) as string[],
     // Os outros só veem SE o companheiro já escolheu, não o QUÊ.
     fighters: b.fighters.map(f => ({ characterId: f.characterId, character: f.character, vocation: f.vocation, hp: f.hp, maxHp: f.maxHp, mana: f.mana, maxMana: f.maxMana,
-      ready: f.action !== null, action: f.characterId === viewerId ? f.action : null, actions: f.characterId === viewerId ? actionsFor(f.vocation) : [],
+      ready: f.action !== null, action: f.characterId === viewerId ? f.action : null, actions: f.characterId === viewerId ? actionsFor(f.vocation, boss.phase) : [],
       rewardGold: f.rewardGold.toString(), rewardExperience: f.rewardExperience, rewarded: f.rewarded })) };
 }
 
@@ -179,7 +185,7 @@ export async function startGroupHunt(accountId: number, characterId: number) {
     const hunt = playableHunt(party.huntKey), settings = await loadSettings(tx), cost = settings['group.energyCost'];
     const joined = party.members.filter(x => x.status === 'JOINED').sort((a, b) => a.characterId - b.characterId);
     if (joined.length < PARTY_MIN) throw new GameError(409, `São precisos pelo menos ${PARTY_MIN} aventureiros no grupo (convites aceitos).`);
-    const state: BattleState = { attack: hunt.attack, defense: hunt.defense, chains: hunt.chains ?? 0, freed: false, stats: {} };
+    const state: BattleState = { attack: hunt.attack, defense: hunt.defense, counters: hunt.counters, freed: false, phase: 'FIGHT', choice: null, stats: {} };
     const fighters: Prisma.GroupBattleFighterCreateManyBattleInput[] = [];
     for (const j of joined) {
       const h = await lockCharacterAny(tx, j.characterId);
@@ -220,7 +226,8 @@ export async function chooseGroupAction(accountId: number, characterId: number, 
     const b = await lockForRound(tx, accountId, characterId, battleId, expectedRound);
     const me = b.fighters.find(f => f.characterId === characterId)!;
     if (me.hp <= 0) throw new GameError(409, 'Você caiu nesta caçada; seus companheiros continuam.');
-    if (!actionsFor(me.vocation).includes(action)) throw new GameError(400, 'Essa ação não é da sua vocação.');
+    const phase = bossOf(b.state as unknown as BattleState, huntByKey(b.huntKey)!, b.bossHp, b.bossMaxHp).phase;
+    if (!actionsFor(me.vocation, phase).includes(action)) throw new GameError(400, phase === 'CHOICE' ? 'Agora o grupo vota: derrotar ou fazer o dragão dormir.' : 'Essa ação não é da sua vocação.');
     if (me.mana < groupActions[action].mana) throw new GameError(409, 'Mana insuficiente.');
     await tx.groupBattleFighter.update({ where: { id: me.id }, data: { action } });
     me.action = action;
@@ -240,24 +247,26 @@ export async function advanceGroupRound(accountId: number, characterId: number, 
 
 type LockedBattle = Awaited<ReturnType<typeof lockBattle>>;
 async function resolveRound(tx: Tx, b: LockedBattle) {
-  const s = b.state as unknown as BattleState, settings = await loadSettings(tx);
+  const s = b.state as unknown as BattleState, settings = await loadSettings(tx), hunt = huntByKey(b.huntKey)!;
   const fighters: GroupFighter[] = b.fighters.map(f => ({ characterId: f.characterId, name: s.stats[f.characterId].name, vocation: f.vocation, hp: f.hp, maxHp: f.maxHp,
     mana: f.mana, maxMana: f.maxMana, attack: s.stats[f.characterId].attack, defense: s.stats[f.characterId].defense,
     criticalChance: s.stats[f.characterId].criticalChance, dodgeChance: s.stats[f.characterId].dodgeChance, action: f.action as GroupAction | null }));
-  const r = resolveGroupRound(b.round, { hp: b.bossHp, maxHp: b.bossMaxHp, attack: s.attack, defense: s.defense, chains: s.chains, freed: s.freed }, fighters, dice);
+  const r = resolveGroupRound(b.round, bossOf(s, hunt, b.bossHp, b.bossMaxHp), fighters, dice, hunt);
   const done = r.outcome !== 'ONGOING';
   for (const f of r.fighters) {
     const row = b.fighters.find(x => x.characterId === f.characterId)!;
     await tx.groupBattleFighter.update({ where: { id: row.id }, data: { hp: f.hp, mana: f.mana, action: null, ...(done ? { activeCharacterId: null } : {}) } });
   }
-  await tx.groupBattle.update({ where: { id: b.id }, data: { bossHp: r.boss.hp, state: { ...s, chains: r.boss.chains, freed: r.boss.freed } as unknown as Prisma.InputJsonValue,
+  await tx.groupBattle.update({ where: { id: b.id }, data: { bossHp: r.boss.hp, state: { ...s, counters: r.boss.counters, freed: r.boss.freed, phase: r.boss.phase, choice: r.boss.choice } as unknown as Prisma.InputJsonValue,
     round: done ? b.round : b.round + 1, deadlineAt: new Date(Date.now() + settings['group.roundSeconds'] * 1000), log: [`Rodada ${b.round}`, ...r.log],
     isFinished: done, outcome: r.outcome } });
-  if (done) await finish(tx, b, r.fighters, r.outcome, r.boss.freed, settings);
+  if (done) await finish(tx, b, r.fighters, r.outcome, r.boss, settings);
 }
 
-async function finish(tx: Tx, b: LockedBattle, fighters: GroupFighter[], outcome: string, freed: boolean, settings: Awaited<ReturnType<typeof loadSettings>>) {
-  const hunt = huntByKey(b.huntKey)!, ref = { type: 'groupBattle', id: b.id };
+async function finish(tx: Tx, b: LockedBattle, fighters: GroupFighter[], outcome: string, boss: GroupBoss, settings: Awaited<ReturnType<typeof loadSettings>>) {
+  const hunt = huntByKey(b.huntKey)!, ref = { type: 'groupBattle', id: b.id }, freed = boss.freed;
+  // A escolha do dragão fica no Diário de cada participante, ganhando recompensa ou não.
+  const fate = boss.choice === 'SLAY' ? ' O grupo escolheu derrotar o dragão: uma vitória militar.' : boss.choice === 'SLEEP' ? ' O grupo escolheu fazer o dragão voltar a dormir: começa uma aliança entre os povos e as criaturas.' : '';
   // O grupo continua formado para caçar de novo.
   await tx.huntParty.update({ where: { id: b.partyId }, data: { status: 'FORMING' } });
   const material = await tx.itemBlueprint.findUnique({ where: { name: materialForLevel(hunt.level).name } });
@@ -266,12 +275,13 @@ async function finish(tx: Tx, b: LockedBattle, fighters: GroupFighter[], outcome
     const c = await tx.character.findUniqueOrThrow({ where: { id: f.characterId } });
     if (outcome !== 'VICTORY') {
       await tx.character.update({ where: { id: c.id }, data: { hp: Math.min(f.hp, c.maxHp), mana: Math.min(f.mana, c.maxMana) } });
-      await event(tx, c.id, 'GROUP', `${outcome === 'DEFEAT' ? 'Derrota' : 'A fera escapou'}: ${hunt.title}`, outcome === 'DEFEAT' ? 'Todo o grupo caiu. Cure-se no templo e tentem de novo, cada um no seu papel.' : 'A caçada passou de 30 rodadas e a fera fugiu.');
+      await event(tx, c.id, 'GROUP', `${outcome === 'DEFEAT' ? 'Derrota' : 'A fera escapou'}: ${hunt.title}`, outcome === 'DEFEAT' ? 'Todo o grupo caiu. Cure-se no templo e tentem de novo, cada um no seu papel.' : `A caçada passou de 30 rodadas e ${hunt.creature} fugiu.`);
       continue;
     }
     if (await weeklyRewards(tx, c.id, hunt.key) >= settings['group.weeklyRewards']) {
       await tx.character.update({ where: { id: c.id }, data: { hp: Math.min(f.hp, c.maxHp), mana: Math.min(f.mana, c.maxMana) } });
-      await event(tx, c.id, 'GROUP', `Vitória: ${hunt.title}`, `Você ajudou o grupo, mas já recebeu as ${settings['group.weeklyRewards']} recompensas desta caçada nos últimos 7 dias.`);
+      await event(tx, c.id, 'GROUP', `Vitória: ${hunt.title}`, `Você ajudou o grupo, mas já recebeu as ${settings['group.weeklyRewards']} recompensas desta caçada nos últimos 7 dias.${fate}`);
+      await awardAchievements(tx, c.id);
       continue;
     }
     const bonus = freed ? settings['group.freedBonusPercent'] : 0;
@@ -284,7 +294,7 @@ async function finish(tx: Tx, b: LockedBattle, fighters: GroupFighter[], outcome
     if (material && materials > 0) await addItem(tx, c.id, material.id, materials, 'GROUP_HUNT', ref);
     await tx.groupBattleFighter.update({ where: { id: row.id }, data: { rewarded: true, rewardGold: BigInt(gold), rewardExperience: xp } });
     await event(tx, c.id, 'GROUP', `Vitória em grupo: ${hunt.title}`,
-      `${freed ? 'O grupo libertou a fera do laço. ' : ''}+${xp.toLocaleString('pt-BR')} XP, +${gold.toLocaleString('pt-BR')} ouro${material && materials ? ` e ${materials}× ${material.name}` : ''}.`);
+      `${freed && hunt.bonusText ? `O grupo conseguiu ${hunt.bonusText} (bônus). ` : ''}+${xp.toLocaleString('pt-BR')} XP, +${gold.toLocaleString('pt-BR')} ouro${material && materials ? ` e ${materials}× ${material.name}` : ''}.${fate}`);
     await awardAchievements(tx, c.id);
   }
 }

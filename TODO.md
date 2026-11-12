@@ -1,7 +1,7 @@
 # TODO / DONE — O Confronto
 
 > Arquivo vivo. Cada item concluído vira `[x]` na hora, com a data. Itens que dependem da SUA máquina (eu não consigo rodar MySQL/npm real aqui) ficam em "Só você pode fazer".
-> **Segurança:** pendências levantadas em 2026-10-31 estão em `SEGURANCA.md` (13 itens, nada corrigido ainda — o jogo está em teste). Ler antes de publicar.
+> **Segurança:** pendências levantadas em 2026-10-31 estão em `SEGURANCA.md` (13 itens; 1, 2, 3, 4, 8, 9 e 10 corrigidos em 2026-10-31). Ler antes de publicar.
 > Avaliação das propostas do GPT Astra: ver `ASTRA-AVALIACAO.md` (cada seção aceita/adaptada/adiada tem itens aqui, marcados com **[Astra N]**).
 > Regra: ao terminar algo, marque aqui, ajuste o `GAVETA.md` da gaveta tocada e rode `npm run check:drawers`.
 
@@ -41,8 +41,9 @@
 
 - [x] Entrada "Mestre" para desenvolvimento (botão na home só no seu computador; `DEV_QUICK_LOGIN=1`) (2026-10-28)
 - [x] `npm run master:create` cria/redefine o login master (e-mail `mestre@localhost.dev`, senha temporária `Mestre-Temp-2026!`; `-- --aleatoria` gera outra; `-- --senha "..."` escolhe)
-- [ ] **CORRIGIR ANTES DE PUBLICAR (segurança):** a conta `mestre@localhost.dev` usa a senha TEMPORÁRIA `Mestre-Temp-2026!` (definida em `backend/prisma/create-master.ts`). Apagar a conta, remover a constante `TEMP_PASSWORD` e conferir que nenhuma conta de teste ficou no banco de produção
-- [ ] **Antes de publicar:** remover `DEV_QUICK_LOGIN` do `.env` e apagar a conta `mestre@localhost.dev`
+- [x] Senha fixa da conta master removida; `master:create` gera senha aleatória sem exibir; `dev-login` não promove mais conta existente e exige `HOST` loopback + `NODE_ENV=development`; servidor aborta com `DEV_QUICK_LOGIN=1` em host público; `npm run start:prod` (2026-10-31, `SEGURANCA.md` 1–4, 8–10)
+- [ ] **Antes de publicar:** remover `DEV_QUICK_LOGIN` do `.env`, apagar a conta `mestre@localhost.dev` e conferir que nenhuma conta de teste ficou no banco de produção
+- [ ] Segurança ainda pendente (`SEGURANCA.md`): 6 `TRUST_PROXY` no deploy, 7 contas descartáveis, 11 trocar senha/sair de todos, 12 trava do mercado, 13 senha do MySQL
 - [ ] **Antes de publicar:** apagar a conta de teste `vendedor-teste@example.invalid` (Mercador de Testes) e os anúncios dela, criados por `npm run dev:market-demo`
 
 - [x] Tema ESCURO como padrão; home em uma única moldura (capa + menu colado + boas-vindas + conteúdo) (2026-10-28)
@@ -109,7 +110,7 @@
 - [x] Regra do site: nenhuma lista com mais de 10 itens de uma vez ("Ver mais" e/ou busca) — `ui/ShowMore.tsx` (Limited, LimitedRows) em todas as telas; Missões em 10 faixas de nível com drill-down e busca; Mercador com busca; regiões ordenadas (liberadas mais altas primeiro); mochila com 10 por página (2026-10-31)
 - [x] Páginas numeradas (Anterior 1 … 4 5 6 … N Próxima) no servidor para o que cresce com os jogadores: mercado (com busca), extrato, histórico do mercado, atendimentos, combates e memórias do diário, recados, depoimentos, amigos, visitas, fórum e mochila (2026-10-31)
 - [x] Caçada em grupo, fase 1 (/cacada-em-grupo): nível 100+, grupo de 2 a 4 amigos, convites, rodadas com prazo (quem não escolhe defende), ações por vocação (Segurar, Mirar, Curar o grupo, Quebrar selo), 1ª caçada "Fera da Serra Vermelha" com o laço, recompensas por loadSettings (group.*) com limite semanal; migração `202611010001_group_hunt`; `npm run group:simulate` (2026-10-31)
-- [ ] Caçada em grupo, fase 2: Floresta Oca, Lago Cinzento e o Dragão (com a escolha final gravada no Diário)
+- [x] Caçada em grupo, fase 2: Floresta Oca (encantamento: metade do dano até o Feiticeiro desfazer; bônus), Lago Cinzento (névoa com ilusões que a mira e a luz vencem + veneno que o Druida corta) e o Dragão (selos que o deixam furioso; com 25% de vida o grupo vota derrotar ou fazer dormir, gravado no Diário); conquistas "Ninguém caça sozinho" e "As Quatro Marcas" (2026-10-31)
 - [ ] Caçada em grupo com amigos a partir de um nível — campanha em `CAMPANHA-QUATRO-MARCAS.md` (Paladino = ataque à distância, decidido em 2026-10-31)
 
 ### Depois de validar o jogo

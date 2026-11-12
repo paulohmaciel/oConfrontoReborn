@@ -1,6 +1,6 @@
 # Segurança — pendências para corrigir antes de publicar
 
-> Levantamento de 2026-10-31. O jogo ainda está em teste local; **nada aqui foi corrigido ainda**, por decisão do dono. Corrigir antes de abrir para jogadores.
+> Levantamento de 2026-10-31. Em 2026-10-31 (mesmo dia) foram corrigidos os itens **1, 2, 3, 4, 8, 9 e 10** e parte do 5 (ver cada seção). Continuam pendentes: 5 (apagar a conta), 6, 7, 11, 12 e 13.
 > Ao corrigir um item, marque `[x]` com a data e registre também no `TODO.md`.
 
 **Escopo:** `backend/src`, `backend/prisma` (scripts), `shared/`, `frontend/src`, `scripts/`, `iniciar.bat`, `.env.example` e histórico do git. Só leitura de código + `npm audit`.
@@ -30,7 +30,7 @@
 ## Detalhes e correção sugerida
 
 ### 1. `dev-login` pode dar ADMIN a qualquer pessoa — Alta (condicional)
-- [ ] Corrigir
+- [x] Corrigido em 2026-10-31: a rota exige `NODE_ENV=development` explícito, `HOST` em loopback e nenhum cabeçalho de proxy (`X-Forwarded-For`/`X-Real-IP`); **nunca mais promove conta existente** (responde 403 e manda usar `npm run admin:role`); o servidor **se recusa a iniciar** com `DEV_QUICK_LOGIN=1` e `HOST` público (`startupSafetyErrors` em `server.ts`).
 - **Hoje:** a rota é liberada com `DEV_QUICK_LOGIN==='1'`, `NODE_ENV!=='production'` e pedido vindo de 127.0.0.1 sem `X-Forwarded-For`. Ela cria a conta ADMIN com 1.000.000 de ouro, ou **promove a ADMIN** uma conta já existente com esse e-mail. O `iniciar.bat` acrescenta `DEV_QUICK_LOGIN=1` ao `.env` sozinho, o `.env.example` vem com `development`, e `npm start` é igual ao `dev`.
 - **Ataque:** a VPS tem nginx na mesma máquina (`proxy_pass http://127.0.0.1:3333`). O nginx não envia `X-Forwarded-For` por padrão, então o Node vê 127.0.0.1. Qualquer pessoa faz `POST /api/auth/dev-login` com `Origin` e `X-Game-Client` forjados e recebe uma sessão ADMIN. O mesmo vale para `vite --host` na rede local.
 - **Correção:**
@@ -40,24 +40,25 @@
   - Criar um script de produção que defina `NODE_ENV=production`.
 
 ### 2. Senha fixa da conta master — Alta (já estava no TODO)
-- [ ] Corrigir
+- [x] Corrigido em 2026-10-31: `TEMP_PASSWORD` removida; `npm run master:create` gera senha aleatória e **não a exibe** (só `-- --aleatoria` mostra uma vez, só `-- --senha` define uma). Falta: apagar a conta do banco antes de publicar.
 - **Hoje:** `TEMP_PASSWORD = 'Mestre-Temp-2026!'` é a senha padrão do `npm run master:create`. O `iniciar.bat` executa o script sempre e imprime a senha. A conta entra pelo login normal, sem restrição de loopback.
 - **Correção:** apagar a constante, usar `--aleatoria` como padrão, não imprimir a senha e apagar a conta do banco antes de publicar.
 
 ### 3. Produção depende só de `NODE_ENV` — Média
-- [ ] Corrigir
+- [x] Corrigido em 2026-10-31: `npm run start:prod` (`scripts/start-prod.mjs`) força `NODE_ENV=production`; o servidor **aborta** se `APP_ORIGIN` começar com `https://` sem `NODE_ENV=production`.
 - **Correção:**
   - Criar `npm run start:prod` com `NODE_ENV=production`.
   - Na inicialização, se `APP_ORIGIN` começar com `https://` e `NODE_ENV` não for `production`, abortar ou avisar alto.
   - Ou derivar o `Secure` do cookie de `APP_ORIGIN` ser HTTPS.
 
 ### 4. MODERATOR revoga qualquer punição — Média
-- [ ] Corrigir
+- [x] Corrigido em 2026-10-31: a revogação exige cargo acima do alvo; banimento sem prazo ou punição aplicada por cargo superior só ADMIN revoga (`adminRoutes.ts`, rota `/admin/punishments/:id/revoke`).
 - **Hoje:** `POST /admin/punishments/:id/revoke` só exige `punish.apply`. Na aplicação existem duas checagens: só ADMIN aplica banimento permanente, e ninguém pune cargo igual ou superior. Na revogação, nenhuma das duas existe.
 - **Correção:** na revogação, aplicar as mesmas regras. O cargo do alvo precisa ser menor que o de quem revoga. Banimento permanente, ou punição criada por cargo superior, só pode ser revogado por ADMIN.
 
 ### 5. Domínio público no e-mail da conta master — Média
-- [ ] Corrigir
+- [x] Parcial em 2026-10-31: "Esqueci a senha" ignora `mestre@localhost.dev` (`MASTER_EMAIL` em `auth.ts`), então ninguém redefine essa senha por e-mail.
+- [ ] Apagar a conta antes de publicar (continua no `TODO.md`).
 - **Correção:** usar um domínio reservado (`mestre@oconfronto.test`) e bloquear redefinição de senha para domínios reservados. Na prática, resolve-se junto com o item 2 (apagar a conta).
 
 ### 6. `TRUST_PROXY` e limites de uso — Média (depende da hospedagem)
@@ -72,16 +73,16 @@
   - Criar um alerta de fluxo concentrado na conciliação (`economy:reconcile`).
 
 ### 8. Cadastro revela e-mail existente — Baixa
-- [ ] Corrigir
+- [x] Corrigido em 2026-10-31: e-mail repetido responde 202 "pendente" igual a um cadastro normal e o dono do endereço recebe um aviso por e-mail; nome de personagem repetido continua 409 (é público). A tela mostra o aviso sem entrar (`App.tsx`, `authenticate`).
 - **Correção:** separar as mensagens de nome e de e-mail. Para e-mail repetido, responder como sucesso genérico e enviar um aviso ao dono da conta.
 
 ### 9. Webhook do Mercado Pago — Baixa
-- [ ] Corrigir
+- [x] Corrigido em 2026-10-31: `verifySignature` aceita `maxAgeSeconds` (o webhook usa 300 s; `ts` em segundos ou milissegundos) e o `data.id` do corpo é ignorado, só o da query conta. Teste unitário novo em `premium.test.ts`.
 - **Impacto limitado:** o servidor sempre reconsulta o pagamento na API, confere valor e moeda, e registra o evento com chave única. Não dá para obter Premium sem pagar.
 - **Correção:** recusar se `|agora − ts|` passar de alguns minutos, exigir `data.id` na query e ignorar o id do corpo.
 
 ### 10. "Esqueci a senha" sem intervalo por conta — Baixa
-- [ ] Corrigir
+- [x] Corrigido em 2026-10-31: um pedido por minuto por conta; dentro do intervalo a resposta é a mesma, mas nenhum e-mail novo é enviado (o link anterior continua valendo).
 - **Correção:** intervalo por conta (ex.: 1 pedido por minuto e N por dia), igual ao que já existe em `/resend-verification`.
 
 ### 11. Sessões — Baixa

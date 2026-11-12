@@ -89,4 +89,6 @@ export const achievementDefinitions = [
   { key: 'blacksmith', name: 'Aço aperfeiçoado', description: 'Melhore um equipamento para +1.', icon: 'Magic Longsword' },
   { key: 'explorer', name: 'Além dos portões', description: 'Desbloqueie a pedreira pela jornada.', icon: 'Backpack' },
   { key: 'boss-slayer', name: 'Quebra-gigantes', description: 'Derrote um chefe.', icon: 'Cyclops' },
+  { key: 'group-hunter', name: 'Ninguém caça sozinho', description: 'Vença uma caçada em grupo com amigos.', icon: 'Mammoth' },
+  { key: 'four-marks', name: 'As Quatro Marcas', description: 'Vença as quatro caçadas em grupo da campanha.', icon: 'Dragon Lord' },
 ] as const;
