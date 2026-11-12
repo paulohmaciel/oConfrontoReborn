@@ -103,7 +103,7 @@ export default function App(){
  {tab==='forge'&&<ForgePanel hero={hero} inventory={inventory} config={config} busy={busy} fighting={fighting} perform={perform}/>}
  {tab==='temple'&&<TemplePanel hero={hero} busy={busy} fighting={fighting} command={command}/>}
  {tab==='tasks'&&<TasksPanel hero={hero} tasks={tasks} config={config} busy={busy} fighting={fighting} command={command}/>}
- {tab==='stats'&&<StatsPanel hero={hero} busy={busy} fighting={fighting} command={command}/>}
+ {tab==='stats'&&<StatsPanel hero={hero} config={config} busy={busy} fighting={fighting} command={command} perform={perform}/>}
  {tab==='atlas'&&<AtlasPanel/>}
  </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command}/></div></div>;
 }

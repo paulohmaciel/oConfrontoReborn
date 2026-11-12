@@ -9,7 +9,9 @@
 }
 
 @media(max-width:760px){
-  .topbar{position:sticky;top:0;z-index:30;height:60px}
+  .topbar{position:sticky;top:0;z-index:30;height:60px;flex-wrap:nowrap;gap:8px}
+  .topbar .wordmark{font-size:15px;letter-spacing:2px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .top-meta{flex-wrap:nowrap;flex-shrink:0}
   .topbar .wordmark span{display:none}
   .top-meta .theme-toggle,.top-meta .logout{display:none}
   .top-meta{font-size:0;gap:8px}

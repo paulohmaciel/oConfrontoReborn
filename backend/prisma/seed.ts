@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import manifest from '../../frontend/public/assets/tibia/manifest.json';
 import { items, monsters } from './catalog';
+import { materialForLevel } from '../../shared/forge';
 const prisma = new PrismaClient();
 const sprite = (name: string) => manifest.entries.find(e => e.name === name)?.path ?? '';
 // Monstros que já existiam antes da fase 1 de níveis: mantêm a regra de loot original.
@@ -13,9 +14,9 @@ async function main() {
     const data = { magicAttack: 0, criticalChance: 0, fireResistance: 0, speed: 0, vocations: 'ALL', ...i, spriteUrl: sprite(spriteName ?? i.name) };
     await prisma.itemBlueprint.upsert({ where: { name: i.name }, update: data, create: data });
   }
-  const loot = async (monsterId: number, name: string, dropChance: number) => {
+  const loot = async (monsterId: number, name: string, dropChance: number, maxAmount = 1) => {
     const bp = await prisma.itemBlueprint.findUniqueOrThrow({ where: { name } });
-    await prisma.monsterLoot.upsert({ where: { monsterId_blueprintId: { monsterId, blueprintId: bp.id } }, update: { dropChance, maxAmount: 1 }, create: { monsterId, blueprintId: bp.id, dropChance, maxAmount: 1 } });
+    await prisma.monsterLoot.upsert({ where: { monsterId_blueprintId: { monsterId, blueprintId: bp.id } }, update: { dropChance, maxAmount }, create: { monsterId, blueprintId: bp.id, dropChance, maxAmount } });
   };
   const gear = items.filter(i => i.npcPrice > 0 && !['CONSUMABLE', 'LOOT', 'BACKPACK'].includes(i.slot)).sort((a, b) => a.minLevel - b.minLevel);
   for (const [index, m] of monsters.entries()) {
@@ -30,6 +31,8 @@ async function main() {
       const band = gear.filter(i => i.minLevel <= m.level && i.minLevel > m.level - 25);
       if (band.length) await loot(monster.id, band[index % band.length].name, m.isBoss ? .08 : .02);
     }
+    // Material do Ferreiro da faixa do monstro: 30% de chance (1 a 2); chefes sempre deixam (1 a 6).
+    await loot(monster.id, materialForLevel(m.level).name, m.isBoss ? 1 : .3, m.isBoss ? 6 : 2);
     // Pedra de Proteção: queda muito rara (0,3%; chefes 1%) só em monstros de nível 5+. Nunca é vendida por dinheiro real.
     if (m.level >= 5) await loot(monster.id, 'Pedra de Proteção', m.isBoss ? .01 : .003);
     const title = `Caçada: ${m.name}`;

@@ -9,6 +9,7 @@
 - `gameService.ts`, `inventoryService.ts` – atributos, templo, forja com risco, loja NPC, equipar
 - `characterService.ts`, `characterRoutes.ts` – criar/trocar personagens e promover classe
 - `adventureService.ts`, `adventureRoutes.ts`, `taskRoutes.ts` – jornada, conquistas, diário, tarefas
+- `forgeService.ts` – Ferreiro além da melhoria: fabricar com materiais, reforjar para item de nível maior (guarda metade da melhoria), desmontar em materiais; `GET /characters/:id/forge` monta a tela
 
 ## Rotas
 `/characters/*`, `/monsters`, `/shop`, `/market`, `/characters/:id/{battles,equip,shop,sell,upgrade,use,temple,stats,journey,tasks}`.
@@ -18,6 +19,7 @@ Depende de `core`, `economy` e `premium` (só `isPremium`).
 
 ## Regras que não podem quebrar
 Subida de nível só por `gainExperience` (`gameRules.ts`), que usa `shared/progression.ts` (teto `MAX_LEVEL`, ganhos por nível). Conteúdo novo de nível passa antes por `npm run levels:simulate`.
+Ferreiro: regras em `shared/forge.ts` (material por faixa), preços e quantidades em `forge.*` e `shop.maxEquipmentLevel` (`loadSettings`). Raros (+10) não são reforjados nem desmontados. Teste: `backend/tests/forge-integration.ts`.
 Itens e monstros ficam em `backend/prisma/catalog.ts` (o seed só grava). Monstro novo: entra no catálogo com XP/ouro da curva e `npm run levels:calibrate -- --write` define vida, ataque e defesa.
 Fórmulas de atributos só em `combatStats.ts`. Vocações/regiões em `shared/adventure.ts`. Melhoria: sorteio no servidor, chance e quebra configuráveis, resultado repetível pela chave.
 

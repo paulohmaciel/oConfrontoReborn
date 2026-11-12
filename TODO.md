@@ -67,7 +67,8 @@
 - [x] **[Astra 1]** Pedra de Proteção **só obtida jogando** (2026-10-28): cai de monstros nível 5+ (0,3%; chefes 1%), item de loot; marcada na Forja, só é gasta quando evita uma quebra, registrada no extrato (`PROTECTION_USE`). Nunca vendida por dinheiro real. Teste de integração incluso.
 - [ ] Sprite próprio da Pedra de Proteção (hoje sem imagem; só usar TibiaWiki após decidir a licença) e, se quiser, ajustar a chance de queda
 - [ ] Rodar `npm run seed` (cria a pedra e as quedas; é upsert, não apaga nada)
-- [ ] **[Astra 1]** Materiais por categoria + desmontagem de equipamento (também é sumidouro de ouro/itens)
+- [x] **[Astra 1]** Materiais por faixa + Ferreiro fabrica, reforja e desmonta (2026-10-31): 8 materiais com sprite do TibiaWiki, Mercador só vende equipamento até o nível 100 (`shop.maxEquipmentLevel`), custos em `forge.*`, extrato com motivos `FORGE_*`, teste de integração
+- [ ] **Você:** `npm run seed` no seu banco para os materiais caírem dos monstros (sem isso o Ferreiro avisa que faltam materiais)
 - [ ] **[Astra 7]** Sumidouros de ouro além da quebra (taxas, serviços, anúncios) e alerta de duplicação por conciliação agendada
 - [ ] **[Astra 8]** Mercado: busca por nome/classe/nível/aprimoramento, comparar com o equipado, histórico pessoal
 - [ ] **[Astra 5]** Chefes individuais com fases
