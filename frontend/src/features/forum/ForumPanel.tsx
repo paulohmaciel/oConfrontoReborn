@@ -3,6 +3,7 @@ import {api} from '../../lib/api';
 import type {Hero,Perform} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
 import {useShowMore,ShowMore} from '../../ui/ShowMore';
+import {Pager} from '../../ui/Pager';
 import {forumCategories,forumLimits} from '../../../../shared/forum';
 type Author={id:number;name:string;level:number;profileAvatar:string|null;profileEmblem:string|null};
 type Row={id:number;category:string;title:string;score:number;commentCount:number;solvedCommentId:number|null;pinned:boolean;locked:boolean;createdAt:string;author:Author;myVote:number};
@@ -24,7 +25,7 @@ function Who({a,openProfile}:{a:Author;openProfile:(n:string)=>void}){
 }
 function ListView({hero,openPost,openProfile,perform}:{hero:Hero;openPost:(id:string)=>void;openProfile:(n:string)=>void;perform:Perform}){
   const [category,setCategory]=useState(''),[sort,setSort]=useState<Sort>('hot'),[q,setQ]=useState(''),[rows,setRows]=useState<Row[]>([]),[total,setTotal]=useState(0),[page,setPage]=useState(1),[writing,setWriting]=useState(false);
-  const load=async(p=1)=>{const r=await api<{posts:Row[];total:number}>(`/forum?as=${hero.id}&sort=${sort}&page=${p}${category?`&category=${category}`:''}${q.trim().length>=2?`&q=${encodeURIComponent(q.trim())}`:''}`);setRows(old=>p===1?r.posts:[...old,...r.posts]);setTotal(r.total);setPage(p);};
+  const load=async(p=1)=>{const r=await api<{posts:Row[];total:number}>(`/forum?as=${hero.id}&sort=${sort}&page=${p}${category?`&category=${category}`:''}${q.trim().length>=2?`&q=${encodeURIComponent(q.trim())}`:''}`);setRows(r.posts);setTotal(r.total);setPage(p);};
   useEffect(()=>{const t=setTimeout(()=>void load(1),q?250:0);return()=>clearTimeout(t);},[category,sort,q]);
   const vote=(r:Row,value:number)=>perform(async()=>{await api(`/characters/${hero.id}/forum/vote`,{postId:r.id,value});await load(1);},'');
   return <div className="forum">
@@ -38,7 +39,7 @@ function ListView({hero,openPost,openProfile,perform}:{hero:Hero;openPost:(id:st
       <div className="thread-body"><button className="thread-title" onClick={()=>openPost(String(r.id))}>{r.pinned&&<span className="tag">FIXADO</span>} {r.title}</button>
         <p className="thread-meta"><span className="pill">{cat(r.category)?.name??r.category}</span>{r.solvedCommentId&&<span className="pill solved">✓ Resolvida</span>}{r.locked&&<span className="pill">Trancado</span>} <Who a={r.author} openProfile={openProfile}/> · {ago(r.createdAt)} · <button className="link-button" onClick={()=>openPost(String(r.id))}>{r.commentCount} {r.commentCount===1?'comentário':'comentários'}</button></p></div></article>)}
       {!rows.length&&<p className="empty">{q?'Nenhum tópico com esse título.':'Nenhum tópico aqui ainda. Que tal começar um?'}</p>}
-      <ShowMore rest={total-rows.length} onMore={()=>void load(page+1)}/></section>
+      <Pager page={page} pages={Math.max(1,Math.ceil(total/10))} onPage={p=>{void load(p);window.scrollTo({top:0,behavior:'smooth'});}}/></section>
   </div>;
 }
 function NewPost({hero,perform,done}:{hero:Hero;perform:Perform;done:(id:number)=>void}){

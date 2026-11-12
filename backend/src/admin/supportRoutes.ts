@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { asyncRoute } from '../core/http';
+import { asyncRoute, pageOf, paged } from '../core/http';
 import { prisma, transaction } from '../core/db';
 import { GameError, integer } from '../core/engine';
 
@@ -10,8 +10,10 @@ function text(value: unknown, field: string, min: number, max: number) {
   if (v.length < min || v.length > max) throw new GameError(400, `${field} deve ter de ${min} a ${max} caracteres.`);
   return v;
 }
-supportRoutes.get('/support/tickets', asyncRoute(async (_req, res) => {
-  res.json(await prisma.supportTicket.findMany({ where: { accountId: res.locals.accountId }, orderBy: { id: 'desc' }, take: 30, select: { id: true, kind: true, subject: true, status: true, createdAt: true, updatedAt: true } }));
+supportRoutes.get('/support/tickets', asyncRoute(async (req, res) => {
+  const { page, skip, take } = pageOf(req.query), where = { accountId: res.locals.accountId as number };
+  const [items, total] = await Promise.all([prisma.supportTicket.findMany({ where, orderBy: { id: 'desc' }, skip, take, select: { id: true, kind: true, subject: true, status: true, createdAt: true, updatedAt: true } }), prisma.supportTicket.count({ where })]);
+  res.json(paged(items, total, page));
 }));
 supportRoutes.post('/support/tickets', asyncRoute(async (req, res) => {
   const accountId = res.locals.accountId;

@@ -1,7 +1,7 @@
 import { PROTECTION_STONE } from '../../../shared/economy';
 import { Router } from 'express';
 import type { Prisma, ItemSlot } from '@prisma/client';
-import { asyncRoute } from '../core/http';
+import { asyncRoute, pageOf, paged } from '../core/http';
 import { prisma, transaction, lockCharacter } from '../core/db';
 import { GameError, integer, getExpForLevel } from '../core/engine';
 import { buyListing, cancelListing, listItem, expireListings } from '../economy/marketService';
@@ -38,8 +38,8 @@ readRoutes.get('/characters/:id/inventory', asyncRoute(async (req, res) => {
   if ((q || onlyFavorites) && !await isPremium(prisma, res.locals.accountId)) throw new GameError(402, 'Busca e favoritos fazem parte do Premium.');
   const blueprint: Prisma.ItemBlueprintWhereInput = { ...(slot ? { slot: slot as ItemSlot } : {}), ...(q ? { name: { contains: q } } : {}) };
   const where: Prisma.InventoryItemWhereInput = { characterId: id, isEquipped: false, ...(Object.keys(blueprint).length ? { blueprint } : {}), ...(onlyFavorites ? { favorite: true } : {}) };
-  const [items,total] = await Promise.all([prisma.inventoryItem.findMany({ where, include: { blueprint: true, rareItem: { select: { id: true, serial: true, status: true } } }, orderBy: { id: 'asc' }, take: 20, skip: (page-1)*20 }),prisma.inventoryItem.count({ where })]);
-  res.json({ items, total, page });
+  const [items,total] = await Promise.all([prisma.inventoryItem.findMany({ where, include: { blueprint: true, rareItem: { select: { id: true, serial: true, status: true } } }, orderBy: { id: 'asc' }, take: 10, skip: (page-1)*10 }),prisma.inventoryItem.count({ where })]);
+  res.json(paged(items, total, page));
 }));
 readRoutes.get('/monsters', asyncRoute(async (_req,res) => { res.json(await prisma.monster.findMany({ orderBy: { level: 'asc' }, take: 200 })); }));
 readRoutes.get('/shop', asyncRoute(async (_req,res) => {
@@ -49,9 +49,12 @@ readRoutes.get('/shop', asyncRoute(async (_req,res) => {
   res.json(items.map(i => ({ ...i, price: Number(npcBuyPrice(i.npcPrice, settings['economy.npcBuyPercent'])) })));
 }));
 readRoutes.get('/market', asyncRoute(async (req,res) => {
-  const after = integer(Number(req.query.after ?? 0), 0);
+  const { page, skip, take } = pageOf(req.query), q = String(req.query.q ?? '').trim().slice(0, 40);
   await expireListings(20);
-  res.json(await prisma.marketListing.findMany({ where: { status: 'OPEN', id: { gt: after }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }, include: { blueprint: true, seller: { select: { name: true } } }, orderBy: { id: 'asc' }, take: 50 }));
+  // Mais recentes primeiro; a busca filtra pelo nome do item.
+  const where: Prisma.MarketListingWhereInput = { status: 'OPEN', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }], ...(q ? { blueprint: { name: { contains: q } } } : {}) };
+  const [items, total] = await Promise.all([prisma.marketListing.findMany({ where, include: { blueprint: true, seller: { select: { name: true } } }, orderBy: { id: 'desc' }, skip, take }), prisma.marketListing.count({ where })]);
+  res.json(paged(items, total, page));
 }));
 readRoutes.post('/characters/:id/market', asyncRoute(async (req,res) => { res.json(await listItem(res.locals.accountId, integer(Number(req.params.id)), integer(req.body?.itemId), req.body?.price, req.get('idempotency-key') ?? '')); }));
 readRoutes.post('/characters/:id/market/:listing/buy', asyncRoute(async (req,res) => { res.json(await buyListing(res.locals.accountId, integer(Number(req.params.id)), integer(Number(req.params.listing)))); }));

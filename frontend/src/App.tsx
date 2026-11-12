@@ -3,6 +3,7 @@ import {api,ApiError} from './lib/api';
 import {fmt} from './lib/format';
 import ThemeToggle from './ui/ThemeToggle';
 import Icon from './ui/GameIcon';
+import {emptyPage,type Page} from './ui/Pager';
 import {tabs,adminTab,pathForTab,tabFromPath,paramFromPath,type Tab} from './lib/tabs';
 import ProfilePanel from './features/profile/ProfilePanel';
 import ForumPanel from './features/forum/ForumPanel';
@@ -18,7 +19,7 @@ import StatsPanel from './features/hero/StatsPanel';
 import BagPanel from './features/inventory/BagPanel';
 import EquipmentPanel from './features/inventory/EquipmentPanel';
 import ShopPanel from './features/shop/ShopPanel';
-import MarketPanel from './features/market/MarketPanel';
+import MarketPanel,{type MarketPage} from './features/market/MarketPanel';
 import ForgePanel from './features/forge/ForgePanel';
 import TasksPanel from './features/tasks/TasksPanel';
 import AtlasPanel from './features/atlas/AtlasPanel';
@@ -32,7 +33,7 @@ export default function App(){
  const [signed,setSigned]=useState(false),[checking,setChecking]=useState(true),[register,setRegister]=useState(false);
  const [hero,setHero]=useState<Hero|null>(null),[tab,setTab]=useState<Tab>(()=>tabFromPath(location.pathname)??'journey'),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState('');
  const [monsters,setMonsters]=useState<Monster[]>([]),[shop,setShop]=useState<Blueprint[]>([]),[inventory,setInventory]=useState<{items:Item[];total:number;page:number}>({items:[],total:0,page:1});
- const [market,setMarket]=useState<Listing[]>([]),[tasks,setTasks]=useState<Task[]>([]),[battle,setBattle]=useState<Battle|null>(null),[selected,setSelected]=useState<Item|null>(null),[price,setPrice]=useState('100'),[search,setSearch]=useState('');
+ const [market,setMarket]=useState<MarketPage>(emptyPage<Listing>()),[tasks,setTasks]=useState<Task[]>([]),[battle,setBattle]=useState<Battle|null>(null),[selected,setSelected]=useState<Item|null>(null),[price,setPrice]=useState('100'),[search,setSearch]=useState('');
  const [atlasSearch,setAtlasSearch]=useState('');
  const [journeyState,setJourneyState]=useState<JourneyState|null>(null),[signupVocation,setSignupVocation]=useState<BaseVocation>('KNIGHT');
  const [config,setConfig]=useState<GameConfig|null>(null),[staff,setStaff]=useState(false),[premiumActive,setPremiumActive]=useState(false),[roster,setRoster]=useState<{id:number;name:string;level:number;vocation:string}[]>([]);
@@ -74,11 +75,11 @@ export default function App(){
   enter().catch(e=>{if(!(e instanceof ApiError&&e.status===401))notifyError(e);}).finally(()=>setChecking(false));
  },[]);
  useEffect(()=>{if(!signed||!heroId.current)return;const id=heroId.current;
-   if(tab==='market')api<Listing[]>('/market').then(setMarket).catch(notifyError);
+   if(tab==='market')api<Page<Listing>>('/market').then(setMarket).catch(notifyError);
    if(tab==='tasks')api<Task[]>(`/characters/${id}/tasks`).then(setTasks).catch(notifyError);
  },[tab,signed]);
  async function perform(work:()=>Promise<unknown>,message='Ação concluída.'){if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{const result=await work();const serverMessage=result&&typeof result==='object'&&'message' in result&&typeof result.message==='string'?result.message:'';setNotice(typeof result==='string'&&result?result:serverMessage||message);setSelected(null);if(heroId.current)await refresh(heroId.current,bagPage.current);
-  if(tab==='market')setMarket(await api<Listing[]>('/market'));if(tab==='tasks'&&heroId.current)setTasks(await api<Task[]>(`/characters/${heroId.current}/tasks`));
+  if(tab==='market')setMarket(await api<Page<Listing>>(`/market?page=${market.page}${market.q?`&q=${encodeURIComponent(market.q)}`:''}`));if(tab==='tasks'&&heroId.current)setTasks(await api<Task[]>(`/characters/${heroId.current}/tasks`));
  }catch(e){notifyError(e);if(heroId.current)await refresh(heroId.current,bagPage.current).catch(()=>{});}finally{lock.current=false;setBusy(false);}}
  const command=(action:string,body:unknown={})=>perform(()=>api(`/characters/${heroId.current}/${action}`,body,crypto.randomUUID()));
  async function authenticateDev(){await perform(async()=>{await api('/auth/dev-login',{});await enter();},'Bem-vindo, Mestre.');}

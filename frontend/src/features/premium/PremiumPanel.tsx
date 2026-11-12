@@ -4,6 +4,7 @@ import {fmt,brl,when,msg} from '../../lib/format';
 import type {Hero} from '../../lib/types';
 import {useAction,Feedback} from '../../ui/Feedback';
 import Icon from '../../ui/GameIcon';
+import {Limited} from '../../ui/ShowMore';
 import {premiumBenefits,frames,profileTitles,emblems} from '../../../../shared/premium';
 type Overview={enabled:boolean;priceCents:number;days:number;active:boolean;until:string|null;emailVerified:boolean;orders:{id:number;status:string;amountCents:number;days:number;createdAt:string;paidAt:string|null}[]};
 type Preset={id:number;name:string};
@@ -59,7 +60,7 @@ function StatsSection({hero}:{hero:Hero}) {
     {err&&<p className="error" role="alert">{err}</p>}{s&&<>
       <div className="stat-tiles"><div><b>{s.totals.battles}</b><span>combates</span></div><div><b>{s.totals.winRate}%</b><span>vitórias</span></div><div><b>{fmt(s.totals.gold)}</b><span>ouro</span></div><div><b>{fmt(s.totals.experience)}</b><span>XP</span></div></div>
       {s.byDay.length>0&&<div className="day-bars" role="img" aria-label="Combates por dia">{s.byDay.map(d=><div key={d.day} title={`${d.day}: ${d.battles} combates, ${d.victories} vitórias`}><i style={{height:`${Math.max(6,d.battles/peak*100)}%`}}/><small>{d.day.slice(8)}/{d.day.slice(5,7)}</small></div>)}</div>}
-      {s.byMonster.map(m=><div className="ledger-row" key={m.name}><span>{m.name}</span><span>{m.victories}/{m.battles} vitórias</span><b>{fmt(m.gold)} ouro · {fmt(m.experience)} XP</b></div>)}
+      <Limited items={s.byMonster} label="Ver mais criaturas" render={m=><div className="ledger-row" key={m.name}><span>{m.name}</span><span>{m.victories}/{m.battles} vitórias</span><b>{fmt(m.gold)} ouro · {fmt(m.experience)} XP</b></div>}/>
       {!s.byMonster.length&&<p className="empty">Sem combates neste período.</p>}</>}</section>;
 }
 

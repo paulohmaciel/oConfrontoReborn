@@ -105,7 +105,7 @@
 @media(max-width:900px){.profile-grid{grid-template-columns:1fr}}
 
 /* "Ver mais" (regra do site: no máximo 10 itens por vez). */
-.show-more{display:block;width:100%;margin-top:12px;border-style:dashed}
+.show-more{display:block;width:100%;margin-top:12px;border-style:dashed;grid-column:1/-1}
 
 /* Fórum estilo Reddit. */
 .forum{display:grid;gap:16px}.forum-head .section-title{margin-bottom:12px}
@@ -122,3 +122,11 @@
 .comment.reply{margin-left:8px;padding-left:10px;border-left:2px solid color-mix(in srgb,currentColor 18%,transparent);border-bottom:0}
 .comment.solved>.comment-body{border-left:3px solid #2f8f4e;padding-left:10px}.comment-body{min-width:0}
 .forum-new,.forum-comment-form{max-width:none}.forum-new textarea,.forum-comment-form textarea{width:100%}
+.mission-search{width:100%;max-width:360px;margin:4px 0 10px}
+.mission-band{border:1px solid color-mix(in srgb,currentColor 16%,transparent);border-radius:10px;margin-top:10px;padding:0 12px}
+.band-head{width:100%;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;align-items:center;background:transparent;border:0;padding:12px 0;text-align:left;font-weight:600}.band-head small{font-weight:400;opacity:.75;font-size:11px}
+/* "Ver mais" dentro de grades de botões (regiões): linha inteira, sem herdar a grade do cartão. */
+.region-grid .show-more{display:block;min-height:0;padding:10px;text-align:center}
+/* Páginas numeradas (ui/Pager.tsx): Anterior 1 … 4 5 6 … 20 Próxima. */
+.pager.pages{justify-content:center;flex-wrap:wrap;align-items:center;gap:6px}.pager.pages button{min-width:38px;padding:6px 10px}.pager.pages .current{font-weight:700;outline:2px solid currentColor;outline-offset:-2px}.pager.pages .gap{opacity:.7;padding:0 2px}.pager.pages small{flex-basis:100%;text-align:center;opacity:.75}
+.mission-search-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.mission-search-row .mission-search{flex:1;min-width:180px;margin:0}
