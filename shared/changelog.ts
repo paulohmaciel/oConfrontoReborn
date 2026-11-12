@@ -1,6 +1,11 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-vozes-dos-chefes', date: '2026-11-12', title: 'Os chefes ganharam voz', items: [
+    'Cada um dos 13 chefes tem agora uma fala ao começar a luta e outra ao entrar em fúria.',
+    'Quando alguém leva um equipamento ao +10, o mundo fica sabendo: um anúncio aparece no topo da tela por 48 horas, com atalho para os Itens raros.',
+    'Uma batalha dura no máximo 60 turnos. Sem vencedor até lá, os dois lados recuam e ninguém leva nada; a tela avisa quando faltam 10.',
+  ] },
   { id: '2026-11-12-chefes-em-furia', date: '2026-11-12', title: 'Chefes em fúria', items: [
     'Todo chefe agora tem duas fases. Ao cair para metade da vida, ele entra em fúria e os golpes ficam 10% mais fortes até o fim da luta.',
     'A batalha mostra a fase do chefe o tempo todo. Guarde mana para defender ou interromper o golpe pesado na segunda metade.',

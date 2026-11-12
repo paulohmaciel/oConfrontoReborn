@@ -49,6 +49,11 @@ economyRoutes.get('/rare-items', asyncRoute(async (req, res) => {
     prisma.rareItem.count({ where: { status: { not: 'CIRCULATING' }, ...(blueprintId ? { blueprintId } : {}) } })]);
   res.json({ circulating, destroyed, ...paged(rows.map(publicRare), total, page) });
 }));
+// Feitos recentes: quem levou um equipamento ao +10 nas últimas 48 horas (a faixa de avisos mostra para todos). Anonimato respeitado.
+economyRoutes.get('/rare-items/latest', asyncRoute(async (_req, res) => {
+  const rows = await prisma.rareItem.findMany({ where: { createdAt: { gt: new Date(Date.now() - 48 * 3_600_000) } }, include: rareInclude, orderBy: { id: 'desc' }, take: 3 });
+  res.json(rows.map(publicRare));
+}));
 // Totais do mundo (vem antes de /rare-items/:id para "totals" não ser lido como id).
 economyRoutes.get('/rare-items/totals', asyncRoute(async (_req, res) => {
   const [circulating, destroyed, firsts] = await Promise.all([prisma.rareItem.count({ where: { status: 'CIRCULATING' } }),
