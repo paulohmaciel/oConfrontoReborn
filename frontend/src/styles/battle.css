@@ -201,3 +201,38 @@
 .battle-stage .fighter.sheeted.down .body{transform:none;opacity:1;filter:drop-shadow(0 10px 6px #000a) saturate(.7)}
 .battle-stage:has(.sheeted){height:290px}
 @media(max-width:760px){.battle-stage:has(.sheeted){height:230px}.battle-stage .fighter .sheet-sprite{width:150px!important;height:150px!important}.battle-stage .fighter.many .sheet-sprite{width:104px!important;height:104px!important}}
+
+/* ----- Habilidades da batalha: rótulo do grupo em etiqueta na borda, botão com medalhão, custo em etiqueta e tecla de atalho ----- */
+.arena-title{margin-bottom:22px}
+.skill-groups{gap:16px}
+.skill-group{position:relative;border-radius:10px;padding:22px 12px 12px;--chip:#141b19}
+.skill-head{position:absolute;top:-12px;left:14px;padding:0;gap:0}
+.skill-head:after{display:none}
+.skill-head span{display:block;padding:3px 12px;border-radius:999px;border:1px solid currentColor;background:var(--chip);font-size:12px;letter-spacing:2.5px;line-height:1.4}
+.skill{position:relative;gap:6px;min-height:104px;padding:12px 6px 10px;border-radius:8px;background:linear-gradient(#24312c,#18211e);box-shadow:inset 0 1px 0 #ffffff12,0 2px 0 #0007;transition:transform .12s,box-shadow .12s,border-color .12s,background .12s}
+.skill:hover:not(:disabled){transform:translateY(-2px);background:linear-gradient(#2c3b35,#1d2824);box-shadow:inset 0 1px 0 #ffffff1c,0 5px 12px #0008}
+.skill:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 2px 4px #0008}
+.skill:disabled{opacity:.5}
+.skill-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:radial-gradient(#0000,#0007);border:1px solid #ffffff22}
+.skill-icon .sprite{image-rendering:pixelated}
+.skill b{font-size:16px;line-height:1.15;text-align:center}
+.skill small.cost{font-size:12px;font-weight:700;letter-spacing:.3px;padding:1px 9px;border-radius:999px;background:#1c3350;color:#a9d0ff;border:1px solid #2f5380}
+.skill small.cost.free{background:#22402b;color:#a8e0b0;border-color:#3b6b47}
+.skill.no-mana small.cost{background:#4a1f1f;color:#ffb3a8;border-color:#7d3a34}
+.skill kbd{position:absolute;top:6px;right:7px;min-width:18px;padding:0 4px;border-radius:4px;border:1px solid #ffffff33;background:#0005;font:600 12px/16px ui-monospace,Consolas,monospace;color:#c9d3cc;text-align:center}
+.skill-group.attack .skill:hover:not(:disabled){border-color:#d98a72}.skill-group.support .skill:hover:not(:disabled){border-color:#9ccc86}.skill-group.escape .skill:hover:not(:disabled){border-color:#e0c078}
+:root[data-theme="light"] .skill-group{--chip:#fbf0d6}
+:root[data-theme="light"] .skill{background:linear-gradient(#fdf3d9,#f3e0b4);box-shadow:inset 0 1px 0 #fff8,0 2px 0 #63311326}
+:root[data-theme="light"] .skill:hover:not(:disabled){background:linear-gradient(#fff7e2,#f5dfa8);box-shadow:inset 0 1px 0 #fffa,0 5px 12px #63311333}
+:root[data-theme="light"] .skill-icon{background:radial-gradient(#fff6,#b9892f33);border-color:#b9892f88}
+:root[data-theme="light"] .skill small.cost{background:#dfe9f6;color:#1f4a7a;border-color:#9db9d8}
+:root[data-theme="light"] .skill small.cost.free{background:#e0efd6;color:#2f5f2a;border-color:#a6c796}
+:root[data-theme="light"] .skill.no-mana small.cost{background:#f6dcd6;color:#8a2a1c;border-color:#d8a096}
+:root[data-theme="light"] .skill kbd{background:#fff7;border-color:#63311355;color:#633113}
+:root[data-theme="light"] .skill-group.attack .skill:hover:not(:disabled){border-color:#9a3a1c}:root[data-theme="light"] .skill-group.support .skill:hover:not(:disabled){border-color:#4c5a22}:root[data-theme="light"] .skill-group.escape .skill:hover:not(:disabled){border-color:#7a4a12}
+@media(hover:none){.skill kbd{display:none}}
+@media(max-width:760px){.skill-groups{gap:18px 10px}.skill-group{padding:18px 8px 8px}.skill{min-height:92px;padding:10px 4px 8px}.skill-icon{width:40px;height:40px}.skill b{font-size:14px}.skill-head span{font-size:12px;letter-spacing:1.5px;padding:2px 9px}.skill kbd{display:none}}
+
+.battle-stage-wrap .stage-motion{position:absolute;top:8px;right:12px;z-index:6;margin:0;padding:2px 10px;border-radius:999px;background:#0b1114cc;border:1px solid #ffffff22;color:#cfd8d2;opacity:.55;text-decoration:none}
+.battle-stage-wrap .stage-motion:hover,.battle-stage-wrap .stage-motion:focus-visible{opacity:1}
+:root[data-theme="light"] .battle-stage-wrap .stage-motion{background:#fbf0d6dd;border-color:#63311344;color:#633113}

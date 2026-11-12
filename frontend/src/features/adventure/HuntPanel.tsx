@@ -16,6 +16,15 @@ const skillGroups=[
   {key:'support',label:'Suporte',icon:'Guardian Shield',actions:['HEAL','DEFEND_SHIELD']},
   {key:'escape',label:'Fuga',icon:'Haste Icon',actions:['FLEE']},
 ] as const;
+// Teclas de atalho das habilidades (Fugir fica sem tecla, para ninguém fugir por engano).
+const hotkeys:Record<string,string>={ATTACK:'1',TRIPLE_HIT:'2',FIFTH_HIT:'3',INTERRUPT:'4',HEAL:'5',DEFEND_SHIELD:'6'};
+// Cada golpe tem o seu ícone, conforme a vocação; o que não estiver aqui usa skillIcon ou o ícone da vocação.
+const strikeIcons:Record<string,Record<string,string>>={
+  KNIGHT:{ATTACK:'Sword',TRIPLE_HIT:'Giant Sword',FIFTH_HIT:'Warlord Sword'},
+  PALADIN:{ATTACK:'Bow',TRIPLE_HIT:'Burst Arrow',FIFTH_HIT:'Power Bolt'},
+  SORCERER:{ATTACK:'Wand of Vortex',TRIPLE_HIT:'Great Fireball Rune',FIFTH_HIT:'Sudden Death Rune'},
+  DRUID:{ATTACK:'Snakebite Rod',TRIPLE_HIT:'Heavy Magic Missile Rune',FIFTH_HIT:'Poison Bomb Rune'},
+};
 const skillIcon:Record<string,string>={HEAL:'Health Potion',DEFEND_SHIELD:'Mastermind Shield',FLEE:'Boots of Haste',INTERRUPT:'Fire Sword'};
 export default function HuntPanel({hero,state,monsters,battle,busy,start,turn,dismiss,goTemple}:{hero:Hero;state:JourneyState|null;monsters:Monster[];battle:Battle|null;busy:boolean;goTemple:()=>void;start:(m:Monster)=>Promise<void>;turn:(a:string)=>Promise<void>;dismiss:()=>void}) {
   const [region,setRegion]=useState('outskirts'),[search,setSearch]=useState('');
@@ -25,6 +34,14 @@ export default function HuntPanel({hero,state,monsters,battle,busy,start,turn,di
     if(state.step===4&&open('quarry')){setRegion('quarry');return;}
     const top=regions.filter(r=>open(r.key)).sort((a,b)=>b.minLevel-a.minLevel)[0];if(top)setRegion(top.key);},[state]);
   const profile=vocations[baseVocation(hero.vocation)],costs=skillCosts(hero.vocation),labels=skillLabels(hero.vocation);
+  // Atalhos 1 a 6 durante a batalha; ignorados enquanto a pessoa digita em algum campo ou segura Ctrl/Alt.
+  const live=useRef({battle,busy,turn,costs});live.current={battle,busy,turn,costs};
+  useEffect(()=>{const onKey=(e:KeyboardEvent)=>{
+    const {battle:b,busy:wait,turn:act,costs:c}=live.current;if(!b||b.status!=='ONGOING'||wait||e.ctrlKey||e.altKey||e.metaKey||e.repeat)return;
+    const el=e.target as HTMLElement|null;if(el&&(['INPUT','TEXTAREA','SELECT'].includes(el.tagName)||el.isContentEditable))return;
+    const action=Object.keys(hotkeys).find(a=>hotkeys[a]===e.key);if(!action||b.mana<c[action as keyof typeof c])return;
+    e.preventDefault();void act(action);};
+    window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[]);
   const rematch=battle?monsters.find(m=>m.name===battle.monsterName)??null:null;
   if(battle){const ongoing=battle.status==='ONGOING';return <section className="arena">
     <div className="arena-head"><span className="eyebrow">{ongoing?(battle.isBoss?'Duelo contra um chefe':''):'Fim da batalha'}</span><b>Turno {ongoing?battle.turnVersion+1:battle.turnVersion}{ongoing?` de ${BATTLE_MAX_TURNS} · Sua vez`:''}</b></div>
@@ -34,8 +51,8 @@ export default function HuntPanel({hero,state,monsters,battle,busy,start,turn,di
       <div><h3>{battle.monsterName}</h3><Life label="Vida do monstro" hp={battle.monsterHp} max={battle.monsterMaxHp}/>{ongoing&&battle.monsterStatus&&<p className="status-warning" title={`${statusEffects[battle.monsterStatus].help} Defender no turno impede.`}>{statusWarning[battle.monsterStatus]}</p>}</div></div>
     {ongoing?<>{battle.isBoss&&<div className={`boss-phase ${battle.phase===2?'rage':''}`} role="status">{battle.phase===2?`Fase 2 · Em fúria: os golpes dele estão ${bossRage.attackPercent-100}% mais fortes`:`Fase 1 · Abaixo de ${bossRage.atPercent}% de vida ele entra em fúria`}</div>}{battle.isBoss&&battle.phase!==2&&bossLines[battle.monsterName]&&<p className="boss-line">{bossLines[battle.monsterName].intro}</p>}{ongoing&&battle.turnVersion+1>BATTLE_MAX_TURNS-10&&<p className="notice" role="status">Restam {BATTLE_MAX_TURNS-battle.turnVersion} turnos. Sem vencedor até lá, os dois recuam e ninguém leva nada.</p>}{battle.isBoss&&<div className={`boss-intent ${battle.intent?.warning?'warning':''}`} role="status">{battle.intent?.label}</div>}
       <h2 className="arena-title">Habilidades</h2>
-      <div className="skill-groups">{skillGroups.map(g=><div key={g.key} role="group" aria-label={g.label} className={`skill-group ${g.key}`}><div className="skill-head"><Icon name={g.icon} size={26}/><span>{g.label}</span></div>
-        <div className="skill-grid">{g.actions.map(a=><button key={a} type="button" className="skill" disabled={busy||battle.mana<costs[a]} onClick={()=>void turn(a)} title={a==='INTERRUPT'?'Cancela um golpe pesado anunciado pelo chefe.':'Age neste turno.'}><Icon name={skillIcon[a]??profile.icon} size={34}/><b>{labels[a]}</b><small>{costs[a]?`${costs[a]} MP`:'Livre'}</small></button>)}</div></div>)}</div></>
+      <div className="skill-groups">{skillGroups.map(g=><div key={g.key} role="group" aria-label={g.label} className={`skill-group ${g.key}`}><div className="skill-head"><span>{g.label}</span></div>
+        <div className="skill-grid">{g.actions.map(a=><button key={a} type="button" className={`skill ${battle.mana<costs[a]?'no-mana':''}`} disabled={busy||battle.mana<costs[a]} onClick={()=>void turn(a)} title={battle.mana<costs[a]?`Mana insuficiente: precisa de ${costs[a]}.`:a==='INTERRUPT'?'Cancela um golpe pesado anunciado pelo chefe.':'Age neste turno.'}>{hotkeys[a]&&<kbd aria-hidden="true">{hotkeys[a]}</kbd>}<span className="skill-icon"><Icon name={`${strikeIcons[baseVocation(hero.vocation)]?.[a]??skillIcon[a]??profile.icon}|${profile.icon}`} size={32}/></span><b>{labels[a]}</b><small className={costs[a]?'cost':'cost free'}>{costs[a]?`${costs[a]} MP`:'Livre'}</small></button>)}</div></div>)}</div></>
     :<div className="battle-result"><h2>{{VICTORY:'Vitória!',DEFEAT:'Você tombou em batalha.',FLED:'Você bateu em retirada.'}[battle.status]??'A batalha terminou'}</h2>{battle.rewards&&battle.status==='VICTORY'&&<div className="battle-rewards"><p>{battle.rewards.xpGained!==undefined&&<>+{battle.rewards.xpGained} XP · </>}+{battle.rewards.gold} ouro</p>{battle.rewards.leveledUp&&<p className="success">Você subiu para o nível {battle.rewards.level}! Distribua seus pontos em Atributos.</p>}{battle.rewards.droppedItems.length>0&&<p>Encontrou: {battle.rewards.droppedItems.map(d=>`${d.quantity}× ${d.name??'item'}`).join(', ')}</p>}</div>}{battle.status==='DEFEAT'&&battle.defeat&&<div className="defeat-advice"><h3>Como a batalha foi perdida</h3><ul>{battle.defeat.reasons.map(r=><li key={r}>{r}</li>)}</ul><h3>Conselhos para a revanche</h3><ul>{battle.defeat.tips.map(t=><li key={t}>{t}</li>)}</ul></div>}<div className="inline-actions battle-result-actions">{battle.status==='DEFEAT'&&(hero.hp<=0?<button className="primary" onClick={goTemple}>Buscar cura no Templo de Capriel</button>:rematch&&<button className="primary" disabled={busy} onClick={()=>{const m=rematch;dismiss();void start(m);}}>Revanche contra {rematch.name}</button>)}<button className={battle.status==='DEFEAT'?'':'primary'} onClick={dismiss}>Partir para nova caçada</button></div></div>}
     <TurnLog turns={battle.turns??[]} log={battle.log} turnVersion={battle.turnVersion} heroName={hero.name} heroIcon={profile.icon} monsterName={battle.monsterName} monsterSprite={battle.monsterSprite} labels={labels}/></section>;}
   const selected=regions.find(r=>r.key===region)??regions[0];

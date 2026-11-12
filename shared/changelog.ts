@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-habilidades-novas', date: '2026-11-12', title: 'Habilidades de cara nova', items: [
+    'Os botões de habilidade da batalha foram redesenhados: cada golpe tem o seu ícone, o custo de mana aparece numa etiqueta (verde quando é livre, vermelha quando falta mana) e o grupo vem numa etiqueta na borda.',
+    'No computador, as teclas 1 a 6 usam as habilidades. Fugir continua só no clique, para ninguém fugir por engano.',
+  ] },
   { id: '2026-11-12-sprites-proprios', date: '2026-11-12', title: 'Primeiros personagens com arte própria', items: [
     'O Cavaleiro ganhou um boneco próprio na arena, animado quadro a quadro: respira parado, corre, golpeia, ergue o escudo, se cura e cai.',
     'O Wolf virou o Lobo das Cinzas na arena, com as brasas no dorso, mordida, uivo e queda desenhados.',
