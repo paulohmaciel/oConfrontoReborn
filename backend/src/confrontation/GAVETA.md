@@ -14,6 +14,8 @@
 | `POST /auth/login` `{email,password}` | Token (64 hex), validade e nome. Mesmas contas e senhas do site. |
 | `POST /auth/register` `{email,password,name}` | Cria conta e primeiro personagem como o site (201 + token). E-mail já usado: 202 sem token (não revela a conta). |
 | `POST /auth/logout` | Apaga o token. |
+| `POST /auth/forgot-password` `{email}` | Mesmo pedido do site (`requestPasswordReset`): resposta igual exista a conta ou não; o link do e-mail abre a página de nova senha do site. |
+| `POST /account/delete` `{password}` | Apaga a conta (`account/accountDeletion.ts`). Pede a senha de novo. |
 | `GET /me` | Nome e resumo do save na nuvem (versão, data, números verificados). |
 | `GET /save` / `PUT /save` `{baseVersion,data,summary:{power},force?}` | Baixa / envia o save. Versão diferente da nuvem = 409 (outro aparelho), a menos que `force`. |
 | `GET /rankings?metric=vigil\|power\|stage&period=all\|week&page=N` | 10 por página, com a posição de quem pediu (token opcional). |

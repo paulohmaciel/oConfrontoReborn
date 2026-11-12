@@ -24,6 +24,8 @@ model Account {
   role            AccountRole     @default(PLAYER)
   emailVerifiedAt DateTime?
   createdAt       DateTime        @default(now())
+  // Conta apagada a pedido do dono (account/accountDeletion.ts): sem e-mail real, sem senha que alguém conheça.
+  deletedAt       DateTime?
   characters      Character[]
   sessions        Session[]
   tokens          AccountToken[]

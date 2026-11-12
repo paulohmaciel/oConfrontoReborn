@@ -19,7 +19,7 @@ const saveOf = (p: { gold?: number; goldTotal?: number; xp?: number; items?: num
 test('MySQL: app Confrontation — token, save na nuvem, tetos e rankings', async t => {
   assert.match(process.env.DATABASE_URL ?? '', /\/[^/?]*_test(?:\?|$)/, 'Use uma base dedicada terminada em _test.');
   const tag = randomUUID().slice(0, 8), password = 'Confront-test-2026!', hash = await hashPassword(password);
-  const existing = await prisma.account.create({ data: { email: `app-${tag}-a@example.invalid`, password: hash, characters: { create: { name: `App A ${tag}` } } } });
+  const existing = await prisma.account.create({ data: { email: `app-${tag}-a@example.invalid`, password: hash, characters: { create: { name: `App A ${tag}` } } }, include: { characters: true } });
   const server = createApp().listen(0, '127.0.0.1'); await once(server, 'listening');
   const address = server.address(); assert(address && typeof address !== 'string');
   const base = `http://127.0.0.1:${address.port}/api/app`;
@@ -136,6 +136,63 @@ test('MySQL: app Confrontation — token, save na nuvem, tetos e rankings', asyn
       await prisma.punishment.update({ where: { id: ban.id }, data: { revokedAt: new Date() } });
       assert.equal((await call('POST', '/auth/logout', {}, tokenA)).status, 200);
       assert.equal((await call('GET', '/me', undefined, tokenA)).status, 401);
+    });
+    await t.test('esqueci a senha pelo app: mesma resposta com ou sem conta, e o link é criado só para quem tem', async () => {
+      const known = await call('POST', '/auth/forgot-password', { email: `app-${tag}-b@example.invalid` });
+      const unknown = await call('POST', '/auth/forgot-password', { email: `app-${tag}-ninguem@example.invalid` });
+      assert.equal(known.status, 200); assert.equal(unknown.status, 200);
+      assert.deepEqual(await known.json(), await unknown.json());
+      const B = await prisma.account.findUniqueOrThrow({ where: { email: `app-${tag}-b@example.invalid` } });
+      // O envio não segura a resposta: o link aparece logo depois.
+      let links = 0;
+      for (let i = 0; i < 40 && links === 0; i++) { links = await prisma.accountToken.count({ where: { accountId: B.id, kind: 'RESET', usedAt: null } }); if (!links) await new Promise(r => setTimeout(r, 50)); }
+      assert.equal(links, 1);
+      assert.equal((await call('POST', '/auth/forgot-password', { email: 'sem-arroba' })).status, 400);
+    });
+    await t.test('apagar a conta: pede a senha, tira os dados pessoais e do app, guarda o extrato sem nome', async () => {
+      const email = `app-${tag}-del@example.invalid`;
+      const made = await call('POST', '/auth/register', { email, password, name: `App Del ${tag}` });
+      assert.equal(made.status, 201);
+      const token = (await made.json() as { token: string }).token;
+      const account = await prisma.account.findUniqueOrThrow({ where: { email }, include: { characters: true } });
+      const hero = account.characters[0];
+      assert.equal((await call('PUT', '/save', { baseVersion: 0, data: saveOf({ gold: 900, xp: 500, items: 4, furthest: 2 }), summary: { power: 2_000 } }, token)).status, 200);
+      await prisma.friendship.create({ data: { requesterId: hero.id, addresseeId: existing.characters[0].id, status: 'ACCEPTED', respondedAt: new Date() } });
+      await prisma.character.update({ where: { id: hero.id }, data: { profileBio: 'meu nome de verdade', profileAbout: 'texto pessoal' } });
+      const ledgerBefore = await prisma.goldLedger.count({ where: { characterId: hero.id } });
+      assert(ledgerBefore >= 1, 'o ouro inicial está no extrato');
+
+      // Sem token, com senha errada ou conta da equipe: nada é apagado.
+      assert.equal((await call('POST', '/account/delete', { password })).status, 401);
+      assert.equal((await call('POST', '/account/delete', { password: 'senha-errada-123' }, token)).status, 403);
+      assert.equal((await call('GET', '/me', undefined, token)).status, 200);
+      const staff = await prisma.account.create({ data: { email: `app-${tag}-staff@example.invalid`, password: hash, role: 'ADMIN', characters: { create: { name: `App Staff ${tag}` } } } });
+      const staffToken = (await (await call('POST', '/auth/login', { email: staff.email, password })).json() as { token: string }).token;
+      assert.equal((await call('POST', '/account/delete', { password }, staffToken)).status, 403);
+      assert.equal((await prisma.account.findUniqueOrThrow({ where: { id: staff.id } })).deletedAt, null);
+
+      const gone = await call('POST', '/account/delete', { password }, token);
+      assert.equal(gone.status, 200);
+      // A conta não abre mais: nem com o token, nem com e-mail e senha.
+      assert.equal((await call('GET', '/me', undefined, token)).status, 401);
+      assert.equal((await call('POST', '/auth/login', { email, password })).status, 401);
+      const after = await prisma.account.findUniqueOrThrow({ where: { id: account.id } });
+      assert.equal(after.email, `apagada-${account.id}@conta-apagada.invalid`); assert(after.deletedAt); assert.equal(after.emailVerifiedAt, null);
+      assert.notEqual(after.password, account.password);
+      const heroAfter = await prisma.character.findUniqueOrThrow({ where: { id: hero.id } });
+      assert.equal(heroAfter.name, `Apagado #${hero.id}`); assert.equal(heroAfter.profileBio, null); assert.equal(heroAfter.profileAbout, null);
+      // Dados do app e vínculos pessoais saíram.
+      assert.equal(await prisma.confrontationSave.findUnique({ where: { accountId: account.id } }), null);
+      assert.equal(await prisma.confrontationRank.count({ where: { accountId: account.id } }), 0);
+      assert.equal(await prisma.confrontationSync.count({ where: { accountId: account.id } }), 0);
+      assert.equal(await prisma.session.count({ where: { accountId: account.id } }), 0);
+      assert.equal(await prisma.friendship.count({ where: { OR: [{ requesterId: hero.id }, { addresseeId: hero.id }] } }), 0);
+      // O extrato fica: apagar essas linhas quebraria a conciliação do ouro.
+      assert.equal(await prisma.goldLedger.count({ where: { characterId: hero.id } }), ledgerBefore);
+      // Apagar de novo não encontra a conta; o e-mail e o nome ficam livres para uma conta nova.
+      assert.equal((await call('POST', '/account/delete', { password }, token)).status, 401);
+      const again = await call('POST', '/auth/register', { email, password, name: `App Del ${tag}` });
+      assert.equal(again.status, 201);
     });
     await t.test('rotas do site continuam exigindo Origin (o app não abre brecha nelas)', async () => {
       const r = await fetch(`http://127.0.0.1:${address.port}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: existing.email, password }) });

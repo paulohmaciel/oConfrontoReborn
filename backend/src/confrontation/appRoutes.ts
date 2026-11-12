@@ -7,6 +7,8 @@ import { GameError } from '../core/engine';
 import { appAuthenticate, appLogin, appLogout, appOptionalAuth, appRegister, displayName } from './appAuth';
 import { loadSave, putSave, rankings, saveInfo } from './cloudService';
 import { parseRankMetric } from './syncRules';
+import { requestPasswordReset } from '../account/emailRoutes';
+import { deleteAccount } from '../account/accountDeletion';
 
 const limited = (windowMs: number, limit: number, error: string) =>
   rateLimit({ windowMs, limit, standardHeaders: 'draft-8', legacyHeaders: false, message: { error } });
@@ -22,6 +24,14 @@ export function appRouter() {
     const result = await appRegister(req.body);
     if (result.status === 201) res.status(201).json(result.session);
     else res.status(202).json({ pending: true, message: result.message });
+  }));
+  // Mesma regra do site: resposta igual exista a conta ou não; o link do e-mail abre a página de nova senha do site.
+  const strict = limited(15 * 60_000, 8, 'Muitas solicitações. Aguarde antes de tentar novamente.');
+  r.post('/auth/forgot-password', strict, asyncRoute(async (req, res) => { res.json(await requestPasswordReset(req.body?.email)); }));
+  // Apagar a conta pede a senha de novo. O que sai e o que fica: account/accountDeletion.ts e /legal/apagar-conta.html.
+  r.post('/account/delete', appAuthenticate, strict, asyncRoute(async (req, res) => {
+    await deleteAccount(res.locals.accountId, req.body?.password);
+    res.json({ ok: true, message: 'Conta apagada.' });
   }));
   r.post('/auth/logout', appAuthenticate, asyncRoute(async (_req, res) => { await appLogout(res.locals.tokenHash); res.json({ ok: true }); }));
 

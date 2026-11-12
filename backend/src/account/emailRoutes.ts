@@ -14,8 +14,10 @@ const strict = rateLimit({ windowMs: 15 * 60_000, limit: 8, standardHeaders: 'dr
 const RESET_RESPONSE = { ok: true, message: 'Se o e-mail estiver cadastrado, enviaremos um link para redefinir a senha.' };
 const RESET_INTERVAL_MS = 60_000;
 
-emailRouter.post('/forgot-password', strict, asyncRoute(async (req, res) => {
-  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+// Pedido de redefinição de senha, usado pelo site (aqui) e pelo app Confrontation (/api/app/auth/forgot-password).
+// A resposta é a mesma exista a conta ou não.
+export async function requestPasswordReset(rawEmail: unknown) {
+  const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
   if (email.length > 190 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new GameError(400, 'Informe um e-mail válido.');
   // A conta de desenvolvimento nunca recebe link de redefinição (o domínio dela não é nosso).
   const account = email === MASTER_EMAIL ? null : await prisma.account.findUnique({ where: { email }, select: { id: true } });
@@ -23,8 +25,9 @@ emailRouter.post('/forgot-password', strict, asyncRoute(async (req, res) => {
   const recent = account ? await prisma.accountToken.findFirst({ where: { accountId: account.id, kind: 'RESET', usedAt: null, createdAt: { gt: new Date(Date.now() - RESET_INTERVAL_MS) } }, select: { tokenHash: true } }) : null;
   // Resposta idêntica exista a conta ou não (e tenha ou não pedido há pouco); o envio não bloqueia a resposta.
   if (account && !recent) void sendPasswordReset(account.id, email).catch(error => console.error('[e-mail] falha na redefinição:', error instanceof Error ? error.message : error));
-  res.json(RESET_RESPONSE);
-}));
+  return RESET_RESPONSE;
+}
+emailRouter.post('/forgot-password', strict, asyncRoute(async (req, res) => { res.json(await requestPasswordReset(req.body?.email)); }));
 emailRouter.post('/reset-password', strict, asyncRoute(async (req, res) => {
   if (!validPassword(req.body?.password)) throw new GameError(400, 'A senha deve ter de 10 a 128 caracteres.');
   const hash = await hashPassword(req.body.password);
