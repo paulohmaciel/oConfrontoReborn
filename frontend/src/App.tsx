@@ -1,4 +1,4 @@
-import {useEffect,useRef,useState} from 'react';
+import {lazy,Suspense,useEffect,useRef,useState} from 'react';
 import {api,ApiError} from './lib/api';
 import {trackPageView,trackSelect} from './lib/analytics';
 import {fmt} from './lib/format';
@@ -6,11 +6,6 @@ import ThemeToggle from './ui/ThemeToggle';
 import Icon from './ui/GameIcon';
 import {emptyPage,type Page} from './ui/Pager';
 import {tabs,adminTab,pathForTab,tabFromPath,paramFromPath,type Tab} from './lib/tabs';
-import ProfilePanel from './features/profile/ProfilePanel';
-import ForumPanel from './features/forum/ForumPanel';
-import GroupHuntPanel from './features/group/GroupHuntPanel';
-import DuelPanel from './features/duel/DuelPanel';
-import NewsPanel from './features/news/NewsPanel';
 import NoticeBanner from './features/news/NoticeBanner';
 import {slotParam} from './ui/ItemTabs';
 import HuntPanel from './features/adventure/HuntPanel';
@@ -26,17 +21,24 @@ import BagPanel from './features/inventory/BagPanel';
 import EquipmentPanel from './features/inventory/EquipmentPanel';
 import ShopPanel from './features/shop/ShopPanel';
 import MarketPanel,{marketQuery,type MarketPage} from './features/market/MarketPanel';
-import ForgePanel from './features/forge/ForgePanel';
-import TasksPanel from './features/tasks/TasksPanel';
-import AtlasPanel from './features/atlas/AtlasPanel';
-import SettingsPanel from './features/settings/SettingsPanel';
-import CharactersPanel from './features/characters/CharactersPanel';
-import PremiumPanel,{type PaymentReturn} from './features/premium/PremiumPanel';
+import {type PaymentReturn} from './features/premium/PremiumPanel';
 import {premiumPhase} from '../../shared/premium';
-import LedgerPanel from './features/ledger/LedgerPanel';
-import SupportPanel from './features/support/SupportPanel';
-import AdminPanel from './features/admin/AdminPanel';
 import type {Hero,Item,Monster,Battle,Blueprint,Listing,Task,JourneyState,GameConfig} from './lib/types';
+// Abas menos usadas chegam só quando são abertas; Jornada, Caçar, Inventário, Mercador, Mercado, Templo e Atributos vêm no primeiro carregamento.
+const ProfilePanel=lazy(()=>import('./features/profile/ProfilePanel'));
+const ForumPanel=lazy(()=>import('./features/forum/ForumPanel'));
+const GroupHuntPanel=lazy(()=>import('./features/group/GroupHuntPanel'));
+const DuelPanel=lazy(()=>import('./features/duel/DuelPanel'));
+const NewsPanel=lazy(()=>import('./features/news/NewsPanel'));
+const ForgePanel=lazy(()=>import('./features/forge/ForgePanel'));
+const TasksPanel=lazy(()=>import('./features/tasks/TasksPanel'));
+const AtlasPanel=lazy(()=>import('./features/atlas/AtlasPanel'));
+const SettingsPanel=lazy(()=>import('./features/settings/SettingsPanel'));
+const CharactersPanel=lazy(()=>import('./features/characters/CharactersPanel'));
+const LedgerPanel=lazy(()=>import('./features/ledger/LedgerPanel'));
+const SupportPanel=lazy(()=>import('./features/support/SupportPanel'));
+const AdminPanel=lazy(()=>import('./features/admin/AdminPanel'));
+const PremiumPanel=lazy(()=>import('./features/premium/PremiumPanel'));
 export default function App(){
  const [signed,setSigned]=useState(false),[checking,setChecking]=useState(true),[register,setRegister]=useState(false);
  const [hero,setHero]=useState<Hero|null>(null),[tab,setTab]=useState<Tab>(()=>tabFromPath(location.pathname)??'journey'),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState('');
@@ -115,6 +117,7 @@ export default function App(){
  <MobileBar tabs={allTabs} tab={tab} fighting={fighting} onTab={goTab}/>
  <div className="game-layout"><Sidebar hero={hero} premiumSoon={premiumSoon} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={goTab} onSelectCharacter={id=>void selectCharacter(id)}/>
  <main><NoticeBanner onOpenNews={()=>setTab('news')}/><div className="page-heading"><div><span className="eyebrow">{fighting?'COMBATE EM ANDAMENTO':'PREPARE SEU PRÓXIMO PASSO'}</span><h1>{allTabs.find(t=>t[0]===tab)?.[1]}</h1></div><span className="world-tag">CAPRIEL · AVENTUREIROS</span></div>{error&&<div className="error notice" role="alert">{error}</div>}{notice&&<div className="success notice" role="status">{notice}</div>}{landing&&<div className="success notice" role="status">{landing} <button className="link-button" onClick={()=>setLanding('')}>Fechar</button></div>}{fighting&&tab!=='hunt'&&<div className="notice">Seu combate continua ativo. <button className="link-button" onClick={()=>setTab('hunt')}>Voltar ao combate</button></div>}
+ <Suspense fallback={<section className="panel"><p className="muted" role="status">Abrindo…</p></section>}>
  {tab==='journey'&&<JourneyPanel hero={hero} state={journeyState} busy={busy} command={command} go={setTab}/>}
  {tab==='journal'&&<JournalPanel characterId={hero.id}/>}
  {tab==='characters'&&<CharactersPanel hero={hero} config={config} command={command} onPremium={()=>setTab('premium')} onSelect={id=>void selectCharacter(id)} onCreated={id=>void afterCreated(id)}/>}
@@ -138,5 +141,5 @@ export default function App(){
  {tab==='duel'&&<DuelPanel hero={hero} openProfile={openProfile}/>}
  {tab==='forum'&&<ForumPanel hero={hero} postId={routeParam} openPost={openPost} openProfile={openProfile} perform={perform}/>}
  {tab==='profile'&&<ProfilePanel hero={hero} name={routeParam||hero.name} openProfile={openProfile} perform={perform}/>}
- </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div></div>;
+ </Suspense></main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div></div>;
 }

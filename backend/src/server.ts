@@ -24,6 +24,8 @@ import { expireDuels } from './game/duelService';
 import { requestId } from './core/monitor';
 import { appRouter } from './confrontation/appRoutes';
 
+// Cada ação do jogo dispara de 4 a 5 pedidos (ação + releituras); 600 por minuto deixa jogar rápido sem bater no limite. API_RATE_LIMIT ajusta.
+const apiLimit = Math.max(60, Number(process.env.API_RATE_LIMIT) || 600);
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
@@ -41,7 +43,7 @@ export function createApp() {
   app.get('/api/health', async (_req,res) => { const t0 = Date.now(); try { await prisma.$queryRaw`SELECT 1`; res.json({ ok: true, dbMs: Date.now() - t0 }); } catch { res.status(503).json({ ok: false }); } });
   // O webhook vem do Mercado Pago (sem cookie e sem Origin do navegador); a autenticidade é verificada pela assinatura HMAC.
   app.use('/api', webhookRoutes);
-  app.use('/api', protectOrigin, rateLimit({ windowMs: 60000, limit: 180, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas ações em pouco tempo. Aguarde um minuto.' } }));
+  app.use('/api', protectOrigin, rateLimit({ windowMs: 60000, limit: apiLimit, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas ações em pouco tempo. Aguarde um minuto.' } }));
   app.use('/api/auth', rateLimit({ windowMs: 15*60000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas tentativas. Aguarde antes de entrar novamente.' } }), authRouter, emailRouter);
   app.use('/api', publicNoticeRoutes);
   app.use('/api', authenticate, analyticsRoutes, readRoutes, taskRoutes, adventureRoutes, economyRoutes, characterRoutes, premiumRoutes, communityRoutes, supportRoutes, adminRoutes, gameRouter());
