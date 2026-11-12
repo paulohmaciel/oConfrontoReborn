@@ -9,7 +9,8 @@ import {classLabel} from '../../../../shared/adventure';
 import {titleName} from '../../../../shared/premium';
 import {freeAvatars,premiumAvatars,limits} from '../../../../shared/community';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
-type Profile={profile:Card&{profileTitle:string|null;profileFrame:string|null;profileAbout:string|null;profileBio:string|null};owner:boolean;sameAccount:boolean;friendCount:number;scrapCount:number;testimonialCount:number;
+type DuelRecord={wins:number;losses:number;honor:number;streak:number;recent:{id:number;mode:string;outcome:string;finishedAt:string|null;result:'WIN'|'LOSS'|'DRAW';foe:string}[]};
+type Profile={profile:Card&{profileTitle:string|null;profileFrame:string|null;profileAbout:string|null;profileBio:string|null};duels:DuelRecord|null;owner:boolean;sameAccount:boolean;friendCount:number;scrapCount:number;testimonialCount:number;
   relation:{id:number;status:string;incoming:boolean}|null};
 type Scrap={id:number;text:string;createdAt:string;author:Card};type Testimonial=Scrap&{status:string};type Visit={visitedAt:string;visitor:Card};
 type Mine={id:number;profileAvatar:string|null;profileAbout:string|null;profileHideVisits:boolean;premium:boolean;aboutLimit:number;incoming:{id:number;from:Card}[];outgoing:{id:number;to:Card}[];pendingTestimonials:number};
@@ -38,6 +39,7 @@ export default function ProfilePanel({hero,name,openProfile,perform}:{hero:Hero;
           {p.owner?<button onClick={()=>setEditing(!editing)}>{editing?'Fechar edição':'Editar perfil'}</button>:!p.sameAccount&&<FriendButton p={p} act={act}/>}
         </section>
         {editing&&mine&&<Editor mine={mine} act={act} onDone={()=>setEditing(false)}/>}
+        {p.duels&&<Duels d={p.duels} owner={p.owner} openProfile={openProfile}/>}
         <section className="panel"><div className="section-title"><h2>Amigos</h2><span>{p.friendCount}</span></div>
           <div className="friend-grid">{friends.items.map(f=><button key={f.id} className="friend" onClick={()=>openProfile(f.name)} title={`${f.name} · Nv. ${f.level}`}><Avatar c={f} size={36}/><small>{f.name}</small></button>)}</div>
           <Pager page={friends.page} pages={friends.pages} busy={friends.loading} onPage={n=>void friends.go(n)}/>
@@ -66,6 +68,16 @@ function FriendButton({p,act}:{p:Profile;act:Act}){
   if(r.status==='ACCEPTED')return <button onClick={()=>{if(window.confirm(`Desfazer a amizade com ${p.profile.name}?`))void act(`friends/${r.id}/remove`,{});}}>Amigos ✓</button>;
   if(r.incoming)return <div className="inline-actions"><button className="primary" onClick={()=>void act(`friends/${r.id}/accept`,{})}>Aceitar amizade</button><button onClick={()=>void act(`friends/${r.id}/decline`,{})}>Recusar</button></div>;
   return <button onClick={()=>void act(`friends/${r.id}/remove`,{})}>Pedido enviado · cancelar</button>;
+}
+const duelResult={WIN:'Venceu',LOSS:'Perdeu para',DRAW:'Empatou com'} as const,duelMode:Record<string,string>={HONOR:'honra',GOLD:'aposta de ouro',LOOT:'espólio'};
+// Registro de duelos no perfil: vitórias, derrotas, sequência, honra e os cinco últimos.
+function Duels({d,owner,openProfile}:{d:DuelRecord;owner:boolean;openProfile:(name:string)=>void}){
+  const total=d.wins+d.losses;
+  return <section className="panel profile-duels"><div className="section-title"><h2>Duelos</h2><span>{total?`${Math.round(d.wins*100/total)}% de vitórias`:''}</span></div>
+    <dl className="duel-record"><div><dt>Vitórias</dt><dd>{d.wins}</dd></div><div><dt>Derrotas</dt><dd>{d.losses}</dd></div><div><dt>Sequência</dt><dd>{d.streak}</dd></div><div><dt>Honra</dt><dd>{d.honor}</dd></div></dl>
+    {d.recent.length?<ul className="duel-recent">{d.recent.map(r=><li key={r.id} className={r.result.toLowerCase()}><span>{duelResult[r.result]} <button className="link-button" onClick={()=>openProfile(r.foe)}>{r.foe}</button></span><small>{duelMode[r.mode]??r.mode}{r.finishedAt?` · ${new Date(r.finishedAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`:''}</small></li>)}</ul>
+      :<p className="muted">{owner?'Você ainda não duelou. Desafie um amigo na aba Duelo.':'Ainda sem duelos.'}</p>}
+  </section>;
 }
 function Report({kind,id,act}:{kind:'scrap'|'testimonial';id:number;act:Act}){
   return <AskReason label="Denunciar" question="Por que você está denunciando? A equipe vai analisar." onSubmit={reason=>void act('report',{kind,id,reason})}/>;

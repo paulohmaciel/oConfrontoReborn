@@ -5,6 +5,7 @@ export const changelog: ChangelogEntry[] = [
     'Configurações ganhou Conta e segurança: troque a senha sem sair do jogo e encerre o acesso dos outros aparelhos com um clique.',
     'O Mercado agora abre no nível 5, para dificultar contas criadas só para repassar ouro e itens.',
     'O Ferreiro passou a mostrar todos os equipamentos da mochila, e não só a página aberta no Inventário.',
+    'O perfil agora mostra os duelos: vitórias, derrotas, sequência, honra e os cinco últimos. Quem escondeu o nome dos registros públicos só vê o próprio.',
     'Caçar abre direto na região mais alta que você já liberou. Denúncias no Fórum e no Perfil agora são escritas na própria tela.',
   ] },
   { id: '2026-11-01-validacao-eventos', date: '2026-11-01', title: 'Validação de eventos do jogo', items: [

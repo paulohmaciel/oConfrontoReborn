@@ -147,7 +147,7 @@ Resolvido em 2026-11-12: os 32 PRs que estavam abertos, um apoiado no outro, for
 3. **Início guiado (~30 min):** a Jornada existe, mas o roteiro de primeira arma melhorada, primeiro chefe e primeira venda (Astra 6) ainda não.
 4. **Combate solo sem efeitos de status** (veneno, queimadura, lentidão) e sem chefes com fases (Astra 4 e 5).
 5. **Guildas e reino:** as tabelas `Guild`, `KingdomState`, `QuestBlueprint` e `CharacterQuest` existem no banco, mas nenhum código usa. Ou viram recurso, ou ficam documentadas como herança da versão antiga.
-6. **Perfil sem os duelos:** vitórias, derrotas e sequência aparecem só na aba Duelo.
+6. ~~Perfil sem os duelos~~: resolvido em 2026-11-12, o perfil mostra o registro e os cinco últimos duelos.
 7. **Pedra de Proteção sem sprite** e **anúncio público de +10** ainda por fazer.
 
 ### Riscos antes de abrir ao público
