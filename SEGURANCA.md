@@ -68,7 +68,7 @@
 
 ### 7. Contas descartáveis alimentando uma principal — Média/Baixa
 - [x] Parcial em 2026-11-12: o Mercado exige nível mínimo (`market.minLevel`, padrão 5) para anunciar e comprar, e pode exigir e-mail confirmado (`market.verifiedEmail`, padrão 0: ligar quando o envio de e-mail estiver funcionando).
-- [ ] Ligar `market.verifiedEmail` no painel depois de configurar o Resend; alerta de fluxo concentrado na conciliação continua por fazer
+- [ ] Ligar `market.verifiedEmail` no painel depois de configurar o Resend; o alerta de fluxo concentrado entrou na conciliação em 2026-11-12 (`feederAlerts`)
 - **Correção (escolher):**
   - Exigir e-mail confirmado e/ou nível ou tempo mínimo para vender no mercado.
   - Reduzir o ouro inicial.
