@@ -177,3 +177,32 @@
 .compare{font-size:11px;margin:3px 0 0;opacity:.9}.compare span{margin-right:8px;white-space:nowrap}
 .compare .up{color:#7fc48f}.compare .down{color:#e07a6b}
 :root[data-theme="light"] .compare .up{color:#2f6b2a}:root[data-theme="light"] .compare .down{color:#8a2a12}
+/* Abas por tipo de item (Mercador e Mercado) e item recomendado */
+.item-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.item-tabs button{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;font-size:12px}
+.shop-list article.recommended{outline:1px solid #c5a569;outline-offset:-1px}
+.shop-list h3 .tag{margin-left:6px;vertical-align:middle}
+.region-levels{margin:6px 0 0;font-size:13px}
+:root[data-theme="light"] .shop-list article.recommended{outline-color:#8a5a1a}
+@media(max-width:760px){.item-tabs button span{font-size:11px}}
+/* Histórico de turnos do combate (features/adventure/TurnLog): seu ataque × ataque do monstro */
+.turn-log{margin-top:16px}.turn-head{display:flex;justify-content:center;margin-bottom:8px}
+.turn-cards{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+.turn-vs{align-self:center;font-size:20px;opacity:.7}
+.turn-card{border-radius:10px;padding:12px 14px;border:1px solid #2f4a3e;background:#16211d;display:flex;flex-direction:column;gap:4px}
+.turn-card header{display:flex;gap:10px;align-items:center}.turn-card header small{display:block;font-size:10px;opacity:.75}.turn-card header b{font-size:14px}
+.turn-card.hero-side{border-color:#3f7a59;box-shadow:inset 4px 0 0 #4d9a63}
+.turn-card.foe-side{border-color:#7a3f3a;box-shadow:inset -4px 0 0 #b8463a}
+.turn-card.crit{box-shadow:inset 4px 0 0 #e8c45a,0 0 0 1px #e8c45a55}.turn-card.heavy{box-shadow:inset -4px 0 0 #f0a53a,0 0 0 1px #f0a53a55}
+.turn-number{margin:4px 0 0;font-size:30px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.turn-number .hit{color:#e07a6b}.turn-number .heal{color:#7fc48f}
+.turn-tag{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.8}
+.mini-bar{height:6px;border-radius:3px;background:#0e1513;overflow:hidden;margin-top:6px}.mini-bar span{display:block;height:100%;background:#b8463a}.mini-bar.mine span{background:#4d9a63}
+.turn-card>small{font-size:11px;opacity:.8}
+.turn-toggle{display:block;margin:10px auto 0}
+.turn-history{margin-top:10px}.turn-table td.crit{font-weight:700}
+:root[data-theme="light"] .turn-card{background:#f4e2bd;border-color:#b9892f;color:#3d2410}
+:root[data-theme="light"] .turn-card.hero-side{box-shadow:inset 4px 0 0 #2f6b2a}:root[data-theme="light"] .turn-card.foe-side{box-shadow:inset -4px 0 0 #8a2a12}
+:root[data-theme="light"] .turn-number .hit{color:#8a2a12}:root[data-theme="light"] .turn-number .heal{color:#2f6b2a}
+:root[data-theme="light"] .mini-bar{background:#e8d4a8}
+@media(max-width:760px){.turn-cards{grid-template-columns:1fr}.turn-vs{display:none}.turn-number{font-size:24px}}

@@ -10,6 +10,7 @@ import ForumPanel from './features/forum/ForumPanel';
 import GroupHuntPanel from './features/group/GroupHuntPanel';
 import NewsPanel from './features/news/NewsPanel';
 import NoticeBanner from './features/news/NoticeBanner';
+import {slotParam} from './ui/ItemTabs';
 import HuntPanel from './features/adventure/HuntPanel';
 import {JourneyPanel,JournalPanel} from './features/adventure/AdventurePanels';
 import {type BaseVocation} from '../../shared/adventure';
@@ -52,7 +53,7 @@ export default function App(){
  const bagPage=useRef(1); const lock=useRef(false);const heroId=useRef<number|null>(null);
  const notifyError=(e:unknown)=>{setError(e instanceof Error?e.message:'Ocorreu um erro.');if(e instanceof ApiError&&e.status===401){setSigned(false);setHero(null);heroId.current=null;}};
  async function refresh(id:number,page=1){
-  const f=bagFilterRef.current,query=`page=${page}${f.slot?`&slot=${f.slot}`:''}${f.q?`&q=${encodeURIComponent(f.q)}`:''}${f.fav?'&favorites=1':''}`;
+  const f=bagFilterRef.current,query=`page=${page}${f.slot?`&slot=${slotParam(f.slot)}`:''}${f.q?`&q=${encodeURIComponent(f.q)}`:''}${f.fav?'&favorites=1':''}`;
   const [h,bag]=await Promise.all([api<Hero>(`/characters/${id}`),api<typeof inventory>(`/characters/${id}/inventory?${query}`)]);
   bagPage.current=bag.page; setHero(h);setInventory(bag);
   setJourneyState(await api<JourneyState>(`/characters/${id}/journey`));
@@ -93,6 +94,8 @@ export default function App(){
  if(checking)return <div className="loading-screen">Abrindo os portões…</div>;
  if(!signed||!hero)return <><NoticeBanner/><LoginScreen authView={authView} setAuthView={setAuthView} resetToken={resetToken} register={register} setRegister={setRegister} signupVocation={signupVocation} setSignupVocation={setSignupVocation} busy={busy} error={error} setError={setError} landing={landing} authenticate={authenticate} authenticateDev={authenticateDev}/></>;
  const fighting=!!hero.activeBattleId,allTabs:readonly (readonly [Tab,string,string])[]=staff?[...tabs,adminTab]:tabs;
+ // Clique num lugar do equipamento: abre o Inventário filtrado por aquele tipo (a Mochila mostra as mochilas).
+ const openSlot=(slot:string)=>{const f={slot,q:'',fav:false};setBagFilter(f);bagFilterRef.current=f;setSelected(null);setTab('bag');if(hero)void perform(()=>refresh(hero.id,1),'');};
  const openProfile=(name:string)=>{setRouteParam(name);setTab('profile');window.scrollTo(0,0);};
  const openPost=(id:string)=>{setRouteParam(id);setTab('forum');window.scrollTo(0,0);};
  const goTab=(id:Tab)=>{setRouteParam('');setTab(id);setSearch('');setSelected(null);window.scrollTo(0,0);};
@@ -111,7 +114,7 @@ export default function App(){
  {tab==='support'&&<SupportPanel/>}
  {tab==='admin'&&staff&&<AdminPanel/>}
  {tab==='hunt'&&<HuntPanel hero={hero} state={journeyState} monsters={monsters} battle={battle} busy={busy} start={start} turn={turn} goTemple={()=>setTab('temple')} dismiss={()=>setBattle(null)}/>}
- {tab==='bag'&&<div className="equipment-inline"><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command}/></div>}
+ {tab==='bag'&&<div className="equipment-inline"><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div>}
  {tab==='bag'&&<BagPanel hero={hero} inventory={inventory} selected={selected} setSelected={setSelected} bagFilter={bagFilter} setBagFilter={setBagFilter} premiumActive={premiumActive} busy={busy} fighting={fighting} config={config} price={price} setPrice={setPrice} command={command} perform={perform} onApplyFilter={()=>{bagFilterRef.current=bagFilter;void perform(()=>refresh(hero.id,1),'');}} goPage={p=>void perform(()=>refresh(hero.id,p),'')}/>}
  {tab==='shop'&&<ShopPanel hero={hero} shop={shop} busy={busy} command={command}/>}
  {tab==='market'&&<MarketPanel hero={hero} market={market} setMarket={setMarket} config={config} busy={busy} perform={perform} command={command}/>}
@@ -124,5 +127,5 @@ export default function App(){
  {tab==='group'&&<GroupHuntPanel hero={hero} perform={perform} openProfile={openProfile}/>}
  {tab==='forum'&&<ForumPanel hero={hero} postId={routeParam} openPost={openPost} openProfile={openProfile} perform={perform}/>}
  {tab==='profile'&&<ProfilePanel hero={hero} name={routeParam||hero.name} openProfile={openProfile} perform={perform}/>}
- </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command}/></div></div>;
+ </main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div></div>;
 }

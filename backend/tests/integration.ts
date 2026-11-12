@@ -44,7 +44,7 @@ test('MySQL: autenticação, isolamento, transações e economia',async t=>{
       const item=await prisma.inventoryItem.create({data:{characterId:hero.id,blueprintId:potion.id,quantity:2}});
       await prisma.character.update({where:{id:hero.id},data:{hp:500}});
       const key=randomUUID();await usePotion(a.id,hero.id,item.id,key);await usePotion(a.id,hero.id,item.id,key);
-      assert.equal((await prisma.character.findUniqueOrThrow({where:{id:hero.id}})).hp,600);
+      const healed=await prisma.character.findUniqueOrThrow({where:{id:hero.id}});assert.equal(healed.hp,Math.min(healed.maxHp,500+100+Math.floor(healed.maxHp*.1)),'Health Potion: 100 + 10% da vida máxima, uma vez só com a mesma chave');
       assert.equal((await prisma.inventoryItem.findUniqueOrThrow({where:{id:item.id}})).quantity,1);
     });
     await t.test('equipamentos concorrentes mantêm apenas um item por slot',async()=>{
