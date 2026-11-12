@@ -11,6 +11,7 @@ import { loadSettings } from '../core/settings';
 import { scaleInt } from '../../../shared/economy';
 import { vocationAllowed, skillCosts } from '../../../shared/adventure';
 import { defeatAdvice, type DefeatAdvice } from './defeatAdvice';
+import { inGroupBattle } from './groupHuntService';
 const dice = (min: number, max: number) => randomInt(min, max + 1);
 
 export class BattleService {
@@ -20,6 +21,7 @@ export class BattleService {
       const character = await lockCharacter(tx, accountId, characterId);
       const existing = await tx.battle.findFirst({ where: { characterId, isFinished: false } });
       if (existing) return existing;
+      if (await inGroupBattle(tx, characterId)) throw new GameError(409, 'Você está numa caçada em grupo. Termine-a antes de caçar sozinho.');
       if (character.hp <= 0 || character.energy < 5) throw new GameError(409, 'Vida ou energia insuficiente.');
       if (character.huntEndsAt) throw new GameError(409, 'Resolva a caça pendente antes de combater.');
       const monster = await tx.monster.findUnique({ where: { id: monsterId } });
