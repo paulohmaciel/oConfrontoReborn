@@ -1,4 +1,5 @@
 import { skillCosts, vocations, baseVocation } from '../../../shared/adventure';
+import { expForLevel } from '../../../shared/progression';
 export const actions = ['ATTACK', 'TRIPLE_HIT', 'FIFTH_HIT', 'HEAL', 'DEFEND_SHIELD', 'INTERRUPT', 'FLEE'] as const;
 export type Action = typeof actions[number];
 export class GameError extends Error {
@@ -14,8 +15,7 @@ export function integer(value: unknown, min = 1): number {
   return value;
 }
 export function getExpForLevel(level: number): bigint {
-  const l = BigInt(integer(level));
-  return 50n * (l*l*l - 6n*l*l + 17n*l - 12n) / 3n;
+  return expForLevel(integer(level));
 }
 export interface Fighter { hp: number; maxHp: number; mana: number; attack: number; defense: number; agility?: number; vocation?:string; criticalChance?:number;fireResistance?:number;dodgeChance?:number }
 export interface Enemy { hp: number; attack: number; defense: number; isBoss?:boolean; turn?:number;element?:string }
