@@ -91,77 +91,82 @@
 .boss-phase{margin:10px 0 6px;font-size:13px;text-align:center;opacity:.85}.boss-phase.rage{opacity:1;font-weight:600;color:#f0a67c}:root[data-theme="light"] .boss-phase.rage{color:#8f3d12}
 .boss-line{margin:0 0 10px;text-align:center;font-style:italic;font-size:13px;opacity:.85}
 
-/* ----- Arena animada (features/adventure/BattleStage.tsx) ----- */
-.battle-stage{--reach:min(34vw,300px);position:relative;display:flex;justify-content:space-between;align-items:flex-end;height:250px;margin:14px 0 0;padding:0 clamp(12px,9%,120px) 34px;border-radius:10px;overflow:hidden;
-  background:radial-gradient(120% 90% at 50% 0,#2b3a44 0,#1a2329 55%,#131a1e 100%);border:1px solid #33413f}
+/* ----- Arena animada (ui/BattleStage.tsx): caçada, Duelo e Caçada em grupo ----- */
+/* --dir: +1 para quem está à esquerda (avança para a direita), -1 para quem está à direita. */
+.battle-stage-wrap{position:sticky;top:8px;z-index:5;margin:14px 0 0}
+.battle-stage{--reach:min(34vw,300px);position:relative;display:flex;justify-content:space-between;align-items:flex-end;height:250px;padding:0 clamp(12px,9%,120px) 34px;border-radius:10px;overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 0,#2b3a44 0,#1a2329 55%,#131a1e 100%);border:1px solid #33413f;box-shadow:0 10px 24px #000a}
 .battle-stage .stage-floor{position:absolute;left:0;right:0;bottom:0;height:86px;background:linear-gradient(#27332c,#1a231e);border-top:1px solid #3b4a40;box-shadow:inset 0 14px 26px #0006}
-.battle-stage .fighter{position:relative;z-index:1;display:grid;justify-items:center}
+.battle-stage .stage-side{position:relative;z-index:1;display:flex;align-items:flex-end;gap:4px}
+.battle-stage .stage-side.many{gap:0}.battle-stage .stage-side.many .fighter:nth-child(even){margin-bottom:26px}.battle-stage .stage-side.many .fighter+.fighter{margin-left:-18px}
+.battle-stage .fighter{position:relative;display:grid;justify-items:center;--dir:1}
+.battle-stage .fighter.right{--dir:-1}
 .battle-stage .fighter .body{position:relative;filter:drop-shadow(0 10px 6px #000a)}
 .battle-stage .fighter .body::after{content:'';position:absolute;left:14%;right:14%;bottom:-6px;height:14px;border-radius:50%;background:#0008;filter:blur(4px);z-index:-1}
 .battle-stage .sprite{image-rendering:pixelated;display:block}
 .battle-stage .stage-sprite{position:relative;display:block}.battle-stage .stage-sprite img{width:100%;height:100%;transform-origin:0 0}
-.battle-stage .hero .stage-sprite{transform:scaleX(-1)}
-
-.battle-stage .nameplate{position:absolute;bottom:-28px;white-space:nowrap;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:#0b1114cc;color:#dfe6e2;border:1px solid #ffffff1a}
-.battle-stage .foe.boss .nameplate{color:#f0c98a;border-color:#8a6a2a}
-.battle-stage .foe.rage .body{filter:drop-shadow(0 0 10px #e0522d) drop-shadow(0 10px 6px #000a)}
-/* Parados, os dois respiram. */
+.battle-stage .fighter.left .stage-sprite{transform:scaleX(-1)}
+.battle-stage .nameplate{position:absolute;bottom:-28px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:#0b1114cc;color:#dfe6e2;border:1px solid #ffffff1a}
+.battle-stage .fighter.many .nameplate{max-width:86px}
+.battle-stage .fighter.boss .nameplate{color:#f0c98a;border-color:#8a6a2a}
+.battle-stage .fighter.rage .body{filter:drop-shadow(0 0 10px #e0522d) drop-shadow(0 10px 6px #000a)}
+/* Parados, todos respiram. */
 .battle-stage .fighter.idle .body{animation:stage-breathe 1.8s ease-in-out infinite alternate}
-.battle-stage .foe.idle .body{animation-delay:.6s}
+.battle-stage .fighter.right.idle .body{animation-delay:.6s}
 @keyframes stage-breathe{to{transform:translateY(-5px)}}
-/* Golpes. */
-.battle-stage .hero.lunge{animation:stage-hero-lunge .26s ease-in}
-.battle-stage .hero.cast .body{animation:stage-cast .34s ease-out}
-.battle-stage .foe.lunge{animation:stage-foe-lunge .3s ease-in}
-.battle-stage .foe.lunge.heavy{animation:stage-foe-heavy .3s ease-in}
-@keyframes stage-hero-lunge{0%{transform:translateX(0)}70%{transform:translateX(var(--reach)) rotate(8deg)}100%{transform:translateX(calc(var(--reach)*.85))}}
-@keyframes stage-foe-lunge{0%{transform:translateX(0)}70%{transform:translateX(calc(var(--reach)*-1)) rotate(-8deg)}100%{transform:translateX(calc(var(--reach)*-.85))}}
-@keyframes stage-foe-heavy{0%{transform:translateX(0) scale(1)}35%{transform:translateX(30px) scale(1.15)}75%{transform:translateX(calc(var(--reach)*-1)) scale(1.25) rotate(-12deg)}100%{transform:translateX(calc(var(--reach)*-.85)) scale(1.2)}}
-@keyframes stage-cast{0%{transform:translateX(0)}40%{transform:translateX(-14px) scale(1.06)}100%{transform:translateX(10px)}}
-.battle-stage .projectile{position:absolute;left:22%;bottom:120px;z-index:2;animation:stage-projectile .34s linear forwards;filter:drop-shadow(0 0 8px #ffd27a)}
-@keyframes stage-projectile{from{transform:translateX(0) rotate(0)}to{transform:translateX(calc(var(--reach)*1.25)) rotate(360deg)}}
+/* Golpe corpo a corpo: vai, bate e volta num movimento só. O alvo reage no instante do impacto (.late). */
+.battle-stage .fighter.lunge{z-index:3;animation:stage-lunge .56s cubic-bezier(.5,0,.3,1)}
+.battle-stage .fighter.lunge.heavy{animation:stage-lunge-heavy .6s cubic-bezier(.5,0,.3,1)}
+@keyframes stage-lunge{0%{transform:translateX(0)}12%{transform:translateX(calc(-16px*var(--dir)))}42%,52%{transform:translateX(calc(var(--reach)*var(--dir))) rotate(calc(10deg*var(--dir)))}100%{transform:translateX(0)}}
+@keyframes stage-lunge-heavy{0%{transform:translateX(0) scale(1)}22%{transform:translateX(calc(-30px*var(--dir))) scale(1.18)}48%,58%{transform:translateX(calc(var(--reach)*var(--dir))) scale(1.28) rotate(calc(14deg*var(--dir)))}100%{transform:translateX(0) scale(1)}}
+.battle-stage .fighter.cast .body{animation:stage-cast .5s ease-out}
+@keyframes stage-cast{0%{transform:translateX(0)}30%{transform:translateX(calc(-14px*var(--dir))) scale(1.08)}55%{transform:translateX(calc(12px*var(--dir)))}100%{transform:translateX(0)}}
+.battle-stage .projectile{position:absolute;bottom:120px;z-index:4;filter:drop-shadow(0 0 8px #ffd27a);opacity:0}
+.battle-stage .projectile.left{left:22%;animation:stage-shot-right .26s linear .08s forwards}
+.battle-stage .projectile.right{right:22%;animation:stage-shot-left .26s linear .08s forwards}
+@keyframes stage-shot-right{from{transform:translateX(0) rotate(0);opacity:1}to{transform:translateX(calc(var(--reach)*1.2)) rotate(360deg);opacity:1}}
+@keyframes stage-shot-left{from{transform:translateX(0) rotate(0);opacity:1}to{transform:translateX(calc(var(--reach)*-1.2)) rotate(-360deg);opacity:1}}
 /* Apanhar: tranco para trás e clarão. */
-.battle-stage .fighter.hit .body{animation:stage-hit .44s ease-out}
-.battle-stage .hero.hit .body{--knock:-18px}.battle-stage .foe.hit .body{--knock:18px}
-@keyframes stage-hit{0%{transform:translateX(0);filter:brightness(3) saturate(0)}25%{transform:translateX(var(--knock)) rotate(-6deg);filter:brightness(2.2) sepia(1) hue-rotate(-40deg) saturate(4)}55%{transform:translateX(calc(var(--knock)*-.4))}100%{transform:translateX(0);filter:none}}
-.battle-stage .foe.dying .body{animation:stage-hit .2s ease-out,stage-fall .3s ease-in .18s forwards}
-.battle-stage .fighter.down .body{transform:rotate(86deg) translate(34px,10px);opacity:.38;filter:grayscale(1)}
-.battle-stage .hero.down .body{transform:rotate(-86deg) translate(-34px,10px)}
-@keyframes stage-fall{to{transform:rotate(86deg) translate(34px,10px);opacity:.38;filter:grayscale(1)}}
-.battle-stage .hero.down .body{animation:stage-hero-fall .5s ease-in}
-@keyframes stage-hero-fall{from{transform:none;opacity:1;filter:none}}
+.battle-stage .fighter.hit .body{animation:stage-hit .44s ease-out both}
+.battle-stage .fighter.hit.late .body{animation-delay:.24s}
+@keyframes stage-hit{0%{transform:translateX(0);filter:brightness(3) saturate(0)}25%{transform:translateX(calc(-20px*var(--dir))) rotate(calc(-7deg*var(--dir)));filter:brightness(2.2) sepia(1) hue-rotate(-40deg) saturate(4)}55%{transform:translateX(calc(8px*var(--dir)))}100%{transform:translateX(0);filter:drop-shadow(0 10px 6px #000a)}}
+.battle-stage .fighter.hit.guard .body{animation-name:stage-hit-guard}
+@keyframes stage-hit-guard{0%{filter:brightness(1.8)}30%{transform:translateX(calc(-7px*var(--dir)))}100%{transform:translateX(0);filter:drop-shadow(0 10px 6px #000a)}}
+.battle-stage .fighter.dying .body{animation:stage-hit .3s ease-out .24s both,stage-fall .36s ease-in .56s forwards}
+.battle-stage .fighter.down .body{transform:rotate(calc(-86deg*var(--dir))) translate(calc(-34px*var(--dir)),10px);opacity:.38;filter:grayscale(1)}
+@keyframes stage-fall{to{transform:rotate(calc(-86deg*var(--dir))) translate(calc(-34px*var(--dir)),10px);opacity:.38;filter:grayscale(1)}}
 /* Cura, guarda, esquiva, fuga. */
-.battle-stage .hero.heal .body{animation:stage-heal .56s ease-out}
-@keyframes stage-heal{0%{filter:drop-shadow(0 0 0 #6fe08a)}40%{transform:translateY(-10px);filter:drop-shadow(0 0 18px #6fe08a) brightness(1.4)}100%{transform:none;filter:drop-shadow(0 0 0 #6fe08a)}}
-.battle-stage .guard-shield{position:absolute;right:-18px;bottom:20px;z-index:2;animation:stage-guard .3s ease-out;filter:drop-shadow(0 0 10px #8fc3ff)}
+.battle-stage .fighter.heal .body{animation:stage-heal .6s ease-out}
+@keyframes stage-heal{0%{filter:drop-shadow(0 0 0 #6fe08a)}40%{transform:translateY(-12px);filter:drop-shadow(0 0 18px #6fe08a) brightness(1.4)}100%{transform:none;filter:drop-shadow(0 10px 6px #000a)}}
+.battle-stage .guard-shield{position:absolute;bottom:20px;z-index:2;animation:stage-guard .3s ease-out;filter:drop-shadow(0 0 10px #8fc3ff)}
+.battle-stage .fighter.left .guard-shield{right:-18px}.battle-stage .fighter.right .guard-shield{left:-18px}
 @keyframes stage-guard{from{transform:scale(.3) translateY(20px);opacity:0}}
-.battle-stage .hero.hit.guard .body{--knock:-6px}
-.battle-stage .hero.dodge .body{animation:stage-dodge .44s ease-out}
-@keyframes stage-dodge{0%{transform:none}35%{transform:translate(-46px,-14px) skewX(12deg);opacity:.55}100%{transform:none;opacity:1}}
-.battle-stage .hero.flee{animation:stage-flee .52s ease-in forwards}
-.battle-stage .hero.gone{transform:translateX(-140%);opacity:0}
-@keyframes stage-flee{to{transform:translateX(-140%);opacity:0}}
+.battle-stage .fighter.dodge .body{animation:stage-dodge .46s ease-out .2s both}
+@keyframes stage-dodge{0%{transform:none}35%{transform:translate(calc(-48px*var(--dir)),-16px) skewX(calc(12deg*var(--dir)));opacity:.55}100%{transform:none;opacity:1}}
+.battle-stage .fighter.flee{animation:stage-flee .56s ease-in forwards}
+.battle-stage .fighter.gone{transform:translateX(calc(-160%*var(--dir)));opacity:0}
+@keyframes stage-flee{to{transform:translateX(calc(-160%*var(--dir)));opacity:0}}
 /* Chefe concentrando e golpe interrompido. */
-.battle-stage .foe.charge .body{animation:stage-charge .56s ease-in-out}
+.battle-stage .fighter.charge .body{animation:stage-charge .6s ease-in-out}
 @keyframes stage-charge{50%{transform:scale(1.16);filter:drop-shadow(0 0 22px #ff9a3c) brightness(1.3)}}
-.battle-stage .foe.stagger .body{animation:stage-stagger .5s ease-out}
-@keyframes stage-stagger{20%{transform:translateX(22px) rotate(10deg)}45%{transform:translateX(8px) rotate(-6deg)}70%{transform:translateX(16px) rotate(5deg)}}
-/* Efeitos de status no herói. */
+.battle-stage .fighter.stagger .body{animation:stage-stagger .54s ease-out}
+@keyframes stage-stagger{20%{transform:translateX(calc(-22px*var(--dir))) rotate(calc(-10deg*var(--dir)))}45%{transform:translateX(calc(-8px*var(--dir))) rotate(calc(6deg*var(--dir)))}70%{transform:translateX(calc(-16px*var(--dir))) rotate(calc(-5deg*var(--dir)))}}
+/* Efeitos de status. */
 .battle-stage .fx-poison .sprite{filter:hue-rotate(70deg) saturate(1.6)}
 .battle-stage .fx-burn .sprite{filter:sepia(.7) saturate(3) hue-rotate(-25deg) brightness(1.1)}
 .battle-stage .fx-slow .sprite{filter:saturate(.5) hue-rotate(160deg) brightness(1.1)}
 /* Números que sobem. */
-.battle-stage .float{position:absolute;top:-10px;left:50%;z-index:3;white-space:nowrap;font-family:Georgia,serif;font-size:26px;font-weight:700;color:#ffd27a;text-shadow:0 2px 0 #000,0 0 8px #000;transform:translateX(-50%);animation:stage-float .85s ease-out forwards;pointer-events:none}
+.battle-stage .float{position:absolute;top:-10px;left:50%;z-index:5;white-space:nowrap;font-family:Georgia,serif;font-size:26px;font-weight:700;color:#ffd27a;text-shadow:0 2px 0 #000,0 0 8px #000;transform:translateX(-50%);animation:stage-float .9s ease-out both;pointer-events:none}
+.battle-stage .float.late{animation-delay:.24s}
 .battle-stage .float.crit{font-size:36px;color:#ff7a4d}.battle-stage .float.heal{color:#7fe59a}.battle-stage .float.miss{font-size:20px;color:#cfe3ff}.battle-stage .float.fx{font-size:20px;color:#c79bff}
-@keyframes stage-float{0%{transform:translate(-50%,10px) scale(.6);opacity:0}18%{transform:translate(-50%,-6px) scale(1.15);opacity:1}100%{transform:translate(-50%,-64px) scale(1);opacity:0}}
-.battle-stage.shake{animation:stage-shake .3s linear}
+.battle-stage .fighter.many .float{font-size:20px}.battle-stage .fighter.many .float.crit{font-size:26px}
+@keyframes stage-float{0%{transform:translate(-50%,10px) scale(.6);opacity:0}18%{transform:translate(-50%,-6px) scale(1.15);opacity:1}70%{opacity:1}100%{transform:translate(-50%,-64px) scale(1);opacity:0}}
+.battle-stage.shake{animation:stage-shake .3s linear .24s}
 @keyframes stage-shake{20%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-1px)}}
+.stage-motion{display:block;margin:4px 0 0 auto;font-size:12px;opacity:.75}
 /* Nomes e barras logo abaixo da arena. */
 .arena .fighters.staged{padding-top:14px}.arena .fighters.staged h3{margin-top:0}
 :root[data-theme="light"] .battle-stage{background:radial-gradient(120% 90% at 50% 0,#f6e7c4 0,#e6d2a2 60%,#d8c08a 100%);border-color:#b9892f}
 :root[data-theme="light"] .battle-stage .stage-floor{background:linear-gradient(#cdb37a,#b99a5e);border-top-color:#a67c3a;box-shadow:inset 0 14px 26px #63311322}
-@media(max-width:760px){.battle-stage{--reach:46vw;height:210px;padding:0 10px 32px}.battle-stage .fighter .stage-sprite{width:96px!important;height:96px!important}.battle-stage .foe.boss .stage-sprite{width:112px!important;height:112px!important}.battle-stage .float{font-size:22px}.battle-stage .float.crit{font-size:28px}.battle-stage .projectile{left:20%;bottom:100px}}
-/* A arena fica presa no topo enquanto a pessoa rola até as habilidades: o golpe acontece sempre à vista. */
-.battle-stage{position:sticky;top:8px;z-index:5;box-shadow:0 10px 24px #000a}
-@media(max-width:760px){.battle-stage{top:66px}}
-@media(max-height:560px){.battle-stage{position:relative;top:0}}
+@media(max-width:760px){.battle-stage-wrap{top:66px}.battle-stage{--reach:46vw;height:210px;padding:0 10px 32px}.battle-stage .fighter .stage-sprite{width:96px!important;height:96px!important}.battle-stage .fighter.boss .stage-sprite{width:112px!important;height:112px!important}.battle-stage .fighter.many .stage-sprite{width:64px!important;height:64px!important}.battle-stage .float{font-size:22px}.battle-stage .float.crit{font-size:28px}.battle-stage .projectile{bottom:100px}}
+@media(max-height:560px){.battle-stage-wrap{position:relative;top:0}}

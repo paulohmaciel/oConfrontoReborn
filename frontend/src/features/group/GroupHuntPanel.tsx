@@ -4,6 +4,7 @@ import {msg} from '../../lib/format';
 import type {Hero,Perform} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
 import {Feedback} from '../../ui/Feedback';
+import BattleStage,{heroSpriteOf,shotOf,spriteOf,stageNumber,type Step} from '../../ui/BattleStage';
 import {classLabel,baseVocation,vocations} from '../../../../shared/adventure';
 import {groupActions,type GroupAction,type GroupHunt} from '../../../../shared/groupHunt';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
@@ -86,9 +87,34 @@ export default function GroupHuntPanel({hero,perform,openProfile}:{hero:Hero;per
   </div>;
 }
 
+// Arena do grupo. O servidor devolve só o texto da rodada; a cena é montada comparando a vida de cada um com a leitura anterior:
+// quem estava de pé ataca, a fera perde o que perdeu, e depois ela revida em quem perdeu vida (quem ganhou vida foi curado).
+function GroupStage({b}:{b:Battle}){
+  const prev=useRef<{id:number;sig:string;boss:number;hp:Record<number,number>}|null>(null);
+  const [scene,setScene]=useState<{turn:string;steps:Step[]}>({turn:'inicio',steps:[]});
+  const sig=`${b.bossHp}|${b.fighters.map(f=>f.hp).join(',')}`;
+  useEffect(()=>{
+    const p=prev.current,hp=Object.fromEntries(b.fighters.map(f=>[f.characterId,f.hp]));
+    if(p&&p.id===b.id&&p.sig!==sig){
+      const steps:Step[]=[],lost=p.boss-b.bossHp,stood=b.fighters.filter(f=>(p.hp[f.characterId]??0)>0);
+      if(lost>0)steps.push({cues:[...stood.map(f=>{const v=baseVocation(f.vocation);return {who:String(f.characterId),cls:v==='KNIGHT'?'lunge':'cast',shot:v==='KNIGHT'?undefined:shotOf(v)};}),
+        {who:'fera',cls:`hit late${b.bossHp<=0?' dying':''}`,float:{text:`−${stageNumber(lost)}`,kind:'dmg' as const}}],shake:true,ms:b.bossHp<=0?900:680});
+      const hurt=b.fighters.filter(f=>f.hp<(p.hp[f.characterId]??f.hp)),healed=b.fighters.filter(f=>f.hp>(p.hp[f.characterId]??f.hp));
+      if(hurt.length&&b.bossHp>0)steps.push({cues:[{who:'fera',cls:'lunge heavy'},...hurt.map(f=>({who:String(f.characterId),cls:`hit late${f.hp<=0?' dying':''}`,float:{text:`−${stageNumber((p.hp[f.characterId]??0)-f.hp)}`,kind:'dmg' as const}}))],shake:true,ms:hurt.some(f=>f.hp<=0)?900:680});
+      if(healed.length)steps.push({cues:healed.map(f=>({who:String(f.characterId),cls:'heal',float:{text:`+${stageNumber(f.hp-(p.hp[f.characterId]??0))}`,kind:'heal' as const}})),ms:620});
+      setScene({turn:sig,steps});
+    }
+    prev.current={id:b.id,sig,boss:b.bossHp,hp};
+  },[b.id,sig]); // eslint-disable-line react-hooks/exhaustive-deps
+  const size=b.fighters.length<=1?128:b.fighters.length===2?104:84;
+  return <BattleStage scene={b.id} turn={scene.turn} steps={scene.steps}
+    left={b.fighters.map(f=>({id:String(f.characterId),name:f.character.name,src:heroSpriteOf(baseVocation(f.vocation)),size,down:f.hp<=0}))}
+    right={[{id:'fera',name:b.name,src:spriteOf(b.sprite),size:160,boss:true,down:b.bossHp<=0}]}/>;
+}
 function BattleView({b,hero,remaining,busy,choose,openProfile}:{b:Battle;hero:Hero;remaining:number;busy:boolean;choose:(a:GroupAction)=>void;openProfile:(n:string)=>void}){
   const me=b.fighters.find(f=>f.characterId===hero.id);
   return <section className="panel group-battle"><div className="section-title"><h2>{b.name}</h2><span>{b.isFinished?outcomeLabel[b.outcome]??b.outcome:`Rodada ${b.round} · ${remaining}s`}</span></div>
+    <GroupStage b={b}/>
     <div className="boss-card"><Icon name={b.sprite} size={80}/><div className="boss-info">
       <div className="gbar"><span style={{width:bar(b.bossHp,b.bossMaxHp)}}/></div><p>{b.bossHp.toLocaleString('pt-BR')} / {b.bossMaxHp.toLocaleString('pt-BR')} de vida</p>
       <p className={b.freed||b.choice==='SLEEP'?'pos':'muted'}>{mechanicLine(b)}</p>

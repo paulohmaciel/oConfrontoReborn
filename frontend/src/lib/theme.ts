@@ -11,12 +11,14 @@ export function applyTheme(theme: Theme, persist = true) {
   if (persist) { try { localStorage.setItem(THEME_KEY, theme); } catch { /* Tema funciona mesmo sem armazenamento. */ } }
 }
 
-// "Reduzir movimento": sem escolha salva, segue o sistema (prefers-reduced-motion); aplicado antes da renderização, como o tema.
+// Animações: ligadas por padrão (decisão do dono em 2026-11-12, por causa da arena de batalha). Só ficam paradas se a pessoa
+// desligar no jogo (Configurações ou o botão da arena). Quem pede menos movimento no sistema ainda tem as transições e os
+// enfeites reduzidos pelas regras @media(prefers-reduced-motion) do CSS. Aplicado antes da renderização, como o tema.
 export type Motion = 'reduce' | 'full';
 export const MOTION_KEY = 'oconfronto-motion';
 export function savedMotion(): Motion {
-  try { const v = localStorage.getItem(MOTION_KEY); if (v === 'reduce' || v === 'full') return v; } catch { /* segue o sistema */ }
-  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduce' : 'full';
+  try { if (localStorage.getItem(MOTION_KEY) === 'reduce') return 'reduce'; } catch { /* sem armazenamento: animações ligadas */ }
+  return 'full';
 }
 export function applyMotion(motion: Motion, persist = true) {
   if (motion === 'reduce') document.documentElement.dataset.motion = 'reduce'; else delete document.documentElement.dataset.motion;
