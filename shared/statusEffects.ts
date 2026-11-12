@@ -18,4 +18,7 @@ export function monsterStatus(m: { element?: string | null; regionKey?: string |
   if (m.regionKey === 'frost' || m.regionKey === 'era2') return 'SLOW';
   return null;
 }
+// Chefes têm duas fases: ao cair para metade da vida ou menos, entram em fúria e batem mais forte até o fim da luta.
+export const bossRage = { atPercent: 50, attackPercent: 110 };
+export const bossPhase = (m: { isBoss?: boolean | null; hp: number; maxHp?: number | null }): 1 | 2 => m.isBoss && m.maxHp && m.hp > 0 && m.hp * 100 <= m.maxHp * bossRage.atPercent ? 2 : 1;
 export const statusWarning: Record<StatusKind, string> = { POISON: 'Pode envenenar', BURN: 'Pode queimar', SLOW: 'Pode deixar lento' };

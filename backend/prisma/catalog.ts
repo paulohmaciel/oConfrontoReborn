@@ -142,7 +142,7 @@ export const monsters: CatalogMonster[] = [
   { name: 'Minotaur Archer', level: 31, regionKey: 'labyrinth', hp: 3059, attack: 97, defense: 70, experience: 1538, goldMin: 213, goldMax: 426 },
   { name: 'Valkyrie', level: 33, regionKey: 'orc_camp', hp: 3242, attack: 99, defense: 74, experience: 1742, goldMin: 235, goldMax: 470 },
   { name: 'Minotaur Mage', level: 35, regionKey: 'labyrinth', hp: 3415, attack: 100, defense: 78, experience: 1960, goldMin: 258, goldMax: 516 },
-  { name: 'Orc Leader', level: 36, regionKey: 'orc_camp', isBoss: true, hp: 4995, attack: 147, defense: 79, experience: 4148, goldMin: 270, goldMax: 540 },
+  { name: 'Orc Leader', level: 36, regionKey: 'orc_camp', isBoss: true, hp: 4995, attack: 140, defense: 79, experience: 4148, goldMin: 270, goldMax: 540 },
   { name: 'Minotaur Guard', level: 41, regionKey: 'labyrinth', hp: 3823, attack: 110, defense: 87, experience: 2690, goldMin: 333, goldMax: 666 },
   { name: 'Demon Skeleton', level: 46, regionKey: 'abyss', hp: 4336, attack: 113, defense: 98, experience: 3386, goldMin: 403, goldMax: 806 },
   { name: 'Fire Devil', level: 51, regionKey: 'abyss', element: 'FIRE', hp: 4875, attack: 181, defense: 112, experience: 4162, goldMin: 478, goldMax: 956 },
