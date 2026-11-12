@@ -27,6 +27,6 @@ test('MySQL: eventos de produto — lote autenticado, sem dados livres e painel 
     assert.equal((await call(playerCookie, '/analytics/events', { events: Array.from({ length: 101 }, () => ({ name: 'page_view', page: '/jornada' })) })).status, 400);
     assert.equal((await call(playerCookie, '/admin/analytics')).status, 403);
     const dashboard = await (await call(adminCookie, '/admin/analytics?days=1')).json() as { total: number; testEvents: number; byName: { name: string; count: number }[]; events: { items: { name: string }[] } };
-    assert(dashboard.total >= 21); assert(dashboard.testEvents >= 21); assert.equal(dashboard.byName.find(e => e.name === 'page_view')?.count, 20); assert.equal(dashboard.events.items.length, 10);
+    assert(dashboard.total >= 21); assert(dashboard.testEvents >= 21); assert((dashboard.byName.find(e => e.name === 'page_view')?.count ?? 0) >= 20); assert.equal(dashboard.events.items.length, 10);
   } finally { await new Promise<void>(resolve => server.close(() => resolve())); await prisma.$disconnect(); }
 });

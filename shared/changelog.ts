@@ -1,6 +1,12 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-conta-e-seguranca', date: '2026-11-12', title: 'Sua conta mais segura', items: [
+    'Configurações ganhou Conta e segurança: troque a senha sem sair do jogo e encerre o acesso dos outros aparelhos com um clique.',
+    'O Mercado agora abre no nível 5, para dificultar contas criadas só para repassar ouro e itens.',
+    'O Ferreiro passou a mostrar todos os equipamentos da mochila, e não só a página aberta no Inventário.',
+    'Caçar abre direto na região mais alta que você já liberou. Denúncias no Fórum e no Perfil agora são escritas na própria tela.',
+  ] },
   { id: '2026-11-01-validacao-eventos', date: '2026-11-01', title: 'Validação de eventos do jogo', items: [
     'Navegações e escolhas em listas agora registram page_view e select_content, sem texto pessoal do jogador.',
     'A Equipe ganhou a tela Validação: dispare lotes reais de até 100 eventos, com atalhos para 20 pageviews ou 30 seleções, e confira o registro logo abaixo.',

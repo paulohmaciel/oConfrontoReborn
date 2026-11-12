@@ -18,6 +18,9 @@ export const MASTER_EMAIL = 'mestre@localhost.dev';
 export const RIVAL_EMAIL = 'rival@localhost.dev';
 // Cópia do Mestre (só desenvolvimento): mesmo nível, atributos, classe e equipamento vestido, em outra conta para poder duelar com ele.
 export const COPY_EMAIL = 'mestre1@localhost.dev';
+// Contas que só existem para desenvolvimento e demonstração. Em produção nenhuma delas entra, mesmo que tenha ficado no banco.
+export const DEV_EMAILS: readonly string[] = [MASTER_EMAIL, RIVAL_EMAIL, COPY_EMAIL, 'vendedor-teste@example.invalid'];
+export const devAccountBlocked = (email: string, env = process.env) => env.NODE_ENV === 'production' && (DEV_EMAILS.includes(email) || email.endsWith('@localhost.dev'));
 export const isLoopbackHost = (host = '127.0.0.1') => ['127.0.0.1', '::1', 'localhost'].includes(host.trim().toLowerCase());
 
 function tokenFromCookie(cookie = '') { return cookie.split(';').map(s => s.trim()).find(s => s.startsWith('oc_session='))?.slice(11) ?? ''; }
@@ -31,11 +34,12 @@ function banMessage(ban: { reason: string; expiresAt: Date | null }) {
 export const authenticate: RequestHandler = asyncRoute(async (req, res, next) => {
   const token = tokenFromCookie(req.headers.cookie);
   if (!/^[a-f0-9]{64}$/.test(token)) throw new GameError(401, 'Entre na sua conta.');
-  const session = await prisma.session.findUnique({ where: { tokenHash: digest(token) }, include: { account: { select: { role: true, emailVerifiedAt: true } } } });
-  if (!session || session.expiresAt <= new Date()) throw new GameError(401, 'Sessão expirada. Entre novamente.');
+  const session = await prisma.session.findUnique({ where: { tokenHash: digest(token) }, include: { account: { select: { role: true, emailVerifiedAt: true, email: true } } } });
+  if (!session || session.expiresAt <= new Date() || devAccountBlocked(session.account.email)) throw new GameError(401, 'Sessão expirada. Entre novamente.');
   const ban = await activeBan(session.accountId);
   if (ban) throw new GameError(403, banMessage(ban));
   res.locals.accountId = session.accountId;
+  res.locals.sessionHash = session.tokenHash;
   res.locals.role = session.account.role;
   res.locals.emailVerified = !!session.account.emailVerifiedAt;
   next();
@@ -97,7 +101,7 @@ authRouter.post('/login', asyncRoute(async (req, res) => {
   const account = await prisma.account.findUnique({ where: { email } });
   const dummy = 'scrypt:00000000000000000000000000000000:' + '0'.repeat(128);
   const valid = await verifyPassword(password, account?.password ?? dummy);
-  if (!valid || !account) throw new GameError(401, 'E-mail ou senha incorretos.');
+  if (!valid || !account || devAccountBlocked(account.email)) throw new GameError(401, 'E-mail ou senha incorretos.');
   const ban = await activeBan(account.id);
   if (ban) throw new GameError(403, banMessage(ban));
   await loginCookie(res, account.id);

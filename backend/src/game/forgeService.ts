@@ -112,10 +112,13 @@ export async function forgeOverview(accountId: number, characterId: number) {
   const [settings, materialRows, recipes] = await Promise.all([loadSettings(prisma),
     prisma.itemBlueprint.findMany({ where: { name: { in: forgeMaterials.map(m => m.name) } }, select: { id: true, name: true, spriteUrl: true } }),
     prisma.itemBlueprint.findMany({ where: { npcPrice: { gt: 0 }, slot: { in: [...forgeableSlots] } }, orderBy: [{ minLevel: 'asc' }, { id: 'asc' }], take: 400 })]);
+  // Toda a mochila que o Ferreiro pode trabalhar (não só a página aberta no Inventário).
+  const bag = await prisma.inventoryItem.findMany({ where: { characterId, isEquipped: false, quantity: 1, blueprint: { slot: { in: [...forgeableSlots] } } },
+    include: { blueprint: true, rareItem: { select: { id: true, serial: true, status: true } } }, orderBy: [{ upgradeTier: 'desc' }, { id: 'asc' }], take: 200 });
   const stacks = await prisma.inventoryItem.groupBy({ by: ['blueprintId'], where: { characterId, isEquipped: false, blueprintId: { in: materialRows.map(m => m.id) } }, _sum: { quantity: true } });
   const have = new Map(stacks.map(s => [s.blueprintId, s._sum.quantity ?? 0]));
   const materials = forgeMaterials.map(m => { const row = materialRows.find(r => r.name === m.name); return { name: m.name, minLevel: m.minLevel, spriteUrl: row?.spriteUrl ?? '', have: row ? have.get(row.id) ?? 0 : 0 }; });
-  return { level: c.level, craftMaterials: settings['forge.craftMaterials'], salvageMaterials: settings['forge.salvageMaterials'], shopMaxLevel: settings['shop.maxEquipmentLevel'], materials,
+  return { level: c.level, craftMaterials: settings['forge.craftMaterials'], salvageMaterials: settings['forge.salvageMaterials'], shopMaxLevel: settings['shop.maxEquipmentLevel'], materials, bag,
     recipes: recipes.map(r => ({ id: r.id, name: r.name, slot: r.slot, minLevel: r.minLevel, vocations: r.vocations, spriteUrl: r.spriteUrl, attack: r.attack, defense: r.defense, armor: r.armor, magicAttack: r.magicAttack,
       material: materialForLevel(r.minLevel).name, craftGold: craftCost(r, settings).toString(), reforgeGold: reforgeCost(r, settings).toString() })) };
 }

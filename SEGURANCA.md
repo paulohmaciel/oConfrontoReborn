@@ -1,6 +1,6 @@
 # Segurança — pendências para corrigir antes de publicar
 
-> Levantamento de 2026-10-31. Em 2026-10-31 (mesmo dia) foram corrigidos os itens **1, 2, 3, 4, 8, 9 e 10** e parte do 5 (ver cada seção). Continuam pendentes: 5 (apagar a conta), 6, 7, 11, 12 e 13.
+> Levantamento de 2026-10-31. Em 2026-10-31 (mesmo dia) foram corrigidos os itens **1, 2, 3, 4, 8, 9 e 10** e parte do 5 (ver cada seção). Em 2026-11-12: 11 e 12 corrigidos; 6 e 7 parciais; contas de desenvolvimento não entram mais em produção (`devAccountBlocked`) e o servidor de produção recusa subir com e-mail só no terminal. Continuam pendentes: 5 (apagar a conta), o que resta de 6 e 7, e 13.
 > Ao corrigir um item, marque `[x]` com a data e registre também no `TODO.md`.
 
 **Escopo:** `backend/src`, `backend/prisma` (scripts), `shared/`, `frontend/src`, `scripts/`, `iniciar.bat`, `.env.example` e histórico do git. Só leitura de código + `npm audit`.
@@ -62,11 +62,13 @@
 - **Correção:** usar um domínio reservado (`mestre@oconfronto.test`) e bloquear redefinição de senha para domínios reservados. Na prática, resolve-se junto com o item 2 (apagar a conta).
 
 ### 6. `TRUST_PROXY` e limites de uso — Média (depende da hospedagem)
-- [ ] Decidir no deploy
+- [x] Parcial em 2026-11-12: o servidor avisa no log quando chega `X-Forwarded-For` sem `TRUST_PROXY`, e avisa na subida quando `TRUST_PROXY` está ligado com `HOST` público (`startupWarnings` em `server.ts`).
+- [ ] Definir `TRUST_PROXY=1` e `HOST=127.0.0.1` no deploy (dono)
 - **Correção:** documentar no `OPERACAO.md` a regra: `TRUST_PROXY=1` **somente** com proxy na frente e `HOST=127.0.0.1`. Registrar um aviso no log quando chegar `X-Forwarded-For` sem `trust proxy` ligado.
 
 ### 7. Contas descartáveis alimentando uma principal — Média/Baixa
-- [ ] Decidir
+- [x] Parcial em 2026-11-12: o Mercado exige nível mínimo (`market.minLevel`, padrão 5) para anunciar e comprar, e pode exigir e-mail confirmado (`market.verifiedEmail`, padrão 0: ligar quando o envio de e-mail estiver funcionando).
+- [ ] Ligar `market.verifiedEmail` no painel depois de configurar o Resend; alerta de fluxo concentrado na conciliação continua por fazer
 - **Correção (escolher):**
   - Exigir e-mail confirmado e/ou nível ou tempo mínimo para vender no mercado.
   - Reduzir o ouro inicial.
@@ -86,11 +88,11 @@
 - **Correção:** intervalo por conta (ex.: 1 pedido por minuto e N por dia), igual ao que já existe em `/resend-verification`.
 
 ### 11. Sessões — Baixa
-- [ ] Corrigir
+- [x] Corrigido em 2026-11-12: `POST /auth/change-password` (pede a senha atual, encerra os outros acessos, invalida links de redefinição pendentes e avisa por e-mail), `POST /auth/logout-all` e `GET /auth/sessions`; bloco "Conta e segurança" em Configurações. Teste: `backend/tests/account-integration.ts`.
 - **Correção:** criar `POST /auth/change-password` (pede a senha atual e revoga as outras sessões) e um botão "Sair de todos os dispositivos".
 
 ### 12. Mercado trava personagem alheio antes de conferir o dono — Baixa
-- [ ] Corrigir
+- [x] Corrigido em 2026-11-12: `buyListing` confere a posse antes de qualquer trava (teste em `operations-integration.ts`).
 - **Correção:** conferir a posse (`SELECT … WHERE id=? AND accountId=?`) antes do laço de travas, mantendo a ordem por id.
 
 ### 13. `.env` no histórico do git — Informativo

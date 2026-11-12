@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import AskReason from '../../ui/AskReason';
 import {api} from '../../lib/api';
 import {smooth} from '../../lib/theme';
 import type {Hero,Perform} from '../../lib/types';
@@ -61,7 +62,7 @@ function PostView({hero,id,openPost,openProfile,perform}:{hero:Hero;id:number;op
   if(error)return <section className="panel"><button className="link-button" onClick={()=>openPost('')}>← Voltar ao fórum</button><p className="error" role="alert">{error}</p></section>;
   if(!d)return <section className="panel"><p>Carregando…</p></section>;
   const p=d.post,isQuestion=p.category==='duvidas';
-  const report=(kind:string,itemId:number)=>{const reason=window.prompt('Por que você está denunciando? A equipe vai analisar.');if(reason&&reason.trim().length>=2)void act('community/report',{kind,id:itemId,reason});};
+  const report=(kind:string,itemId:number,reason:string)=>void act('community/report',{kind,id:itemId,reason});
   const commentEl=(c:Comment,child=false)=><article className={`comment ${child?'reply':''} ${p.solvedCommentId===c.id?'solved':''}`} key={c.id}>
     {c.deleted?<p className="muted">[comentário apagado]</p>:<>
       <Votes score={c.score} mine={c.myVote} disabled={c.mine} onVote={v=>void act('forum/vote',{commentId:c.id,value:v},'')}/>
@@ -70,7 +71,7 @@ function PostView({hero,id,openPost,openProfile,perform}:{hero:Hero;id:number;op
         <p className="post-actions">{!p.locked&&<button className="link-button" onClick={()=>setReply(reply===c.id?null:c.id)}>Responder</button>}
           {p.mine&&isQuestion&&<button className="link-button" onClick={()=>void act(`forum/posts/${p.id}/solve`,{commentId:p.solvedCommentId===c.id?null:c.id})}>{p.solvedCommentId===c.id?'Desmarcar resolvida':'Marcar como resolvida'}</button>}
           {c.mine&&<button className="link-button" onClick={()=>{if(window.confirm('Apagar este comentário?'))void act(`forum/comment/${c.id}/delete`,{});}}>Apagar</button>}
-          {!c.mine&&<button className="link-button" onClick={()=>report('comment',c.id)}>Denunciar</button>}</p>
+          {!c.mine&&<AskReason label="Denunciar" question="Por que você está denunciando? A equipe vai analisar." onSubmit={r=>report('comment',c.id,r)}/>}</p>
         {reply===c.id&&<CommentForm onSend={body=>act(`forum/posts/${p.id}/comments`,{body,parentId:c.id}).then(()=>setReply(null))} label={`Responder a ${c.author?.name??'comentário'}`}/>}
         {!child&&<Replies list={d.comments.filter(r=>r.parentId===c.id)} render={r=>commentEl(r,true)}/>}</div></>}
   </article>;
@@ -80,7 +81,7 @@ function PostView({hero,id,openPost,openProfile,perform}:{hero:Hero;id:number;op
         <div className="thread-body"><h2 className="thread-heading">{p.title}</h2>
           <p className="thread-meta"><span className="pill">{cat(p.category)?.name}</span>{p.solvedCommentId&&<span className="pill solved">✓ Resolvida</span>} <Who a={p.author} openProfile={openProfile}/> · {ago(p.createdAt)}</p>
           <p className="post-text">{p.body}</p>
-          <p className="post-actions">{p.mine?<button className="link-button" onClick={()=>{if(window.confirm('Apagar este tópico?'))void act(`forum/post/${p.id}/delete`,{}).then(()=>openPost(''));}}>Apagar tópico</button>:<button className="link-button" onClick={()=>report('post',p.id)}>Denunciar</button>}</p></div></article></section>
+          <p className="post-actions">{p.mine?<button className="link-button" onClick={()=>{if(window.confirm('Apagar este tópico?'))void act(`forum/post/${p.id}/delete`,{}).then(()=>openPost(''));}}>Apagar tópico</button>:<AskReason label="Denunciar" question="Por que você está denunciando? A equipe vai analisar." onSubmit={r=>report('post',p.id,r)}/>}</p></div></article></section>
     <section className="panel"><div className="section-title"><h2>{p.commentCount} {p.commentCount===1?'comentário':'comentários'}</h2></div>
       {p.locked?<p className="muted">Este tópico foi trancado pela equipe.</p>:<CommentForm onSend={body=>act(`forum/posts/${p.id}/comments`,{body})} label={isQuestion?'Responder a dúvida':'Comentar'}/>}
       {visible.map(c=>commentEl(c))}<ShowMore rest={rest} onMore={more}/>

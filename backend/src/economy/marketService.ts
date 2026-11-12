@@ -13,8 +13,12 @@ export function parsePrice(value: unknown) {
   if (n > MAX_GOLD) throw new GameError(400, 'Preço acima do limite.');
   return n;
 }
-async function assertCanTrade(tx: Prisma.TransactionClient, accountId: number) {
+type TradeRules = { 'market.minLevel': number; 'market.verifiedEmail': number };
+async function assertCanTrade(tx: Prisma.TransactionClient, accountId: number, level: number, rules: TradeRules) {
   const now = new Date();
+  if (level < rules['market.minLevel']) throw new GameError(403, `O mercado abre no nível ${rules['market.minLevel']}.`);
+  if (rules['market.verifiedEmail'] && !(await tx.account.findUnique({ where: { id: accountId }, select: { emailVerifiedAt: true } }))?.emailVerifiedAt)
+    throw new GameError(403, 'Confirme seu e-mail (em Configurações) para usar o mercado.');
   const ban = await tx.punishment.findFirst({ where: { accountId, kind: 'MARKET_BAN', revokedAt: null, startsAt: { lte: now }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] } });
   if (ban) throw new GameError(403, 'Você está impedido de usar o mercado no momento.');
 }
@@ -23,14 +27,14 @@ export async function listItem(accountId: number, characterId: number, itemId: n
   return transaction(async tx => {
     const c = await lockCharacter(tx, accountId, characterId);
     return once(tx, characterId, key, ['list', itemId, price.toString()], async () => {
-      await assertCanTrade(tx, accountId);
+      const settings = await loadSettings(tx), listingFee = BigInt(settings['market.listingFeeGold']);
+      await assertCanTrade(tx, accountId, c.level, settings);
       if (await tx.battle.findFirst({ where: { characterId, isFinished: false }, select: { id: true } })) throw new GameError(409, 'Encerre o combate antes de anunciar.');
       const item = await tx.inventoryItem.findFirst({ where: { id: itemId, characterId } });
       if (!item) throw new GameError(404, 'Item não encontrado.');
       if (item.isEquipped || item.equippedSlot || item.quantity < 1) throw new GameError(409, 'Desequipe o item primeiro.');
       assertNotFavorite(item, 'anunciar');
       if (await tx.marketListing.count({ where: { sellerId: characterId, status: 'OPEN' } }) >= MAX_OPEN_LISTINGS) throw new GameError(409, `Limite de ${MAX_OPEN_LISTINGS} anúncios abertos.`);
-      const settings = await loadSettings(tx), listingFee = BigInt(settings['market.listingFeeGold']);
       if (c.goldInHand < listingFee) throw new GameError(409, `Ouro insuficiente para a taxa de anúncio (${listingFee}).`);
       const expiresAt = new Date(Date.now() + settings['market.durationHours'] * 3_600_000);
       const listing = await tx.marketListing.create({ data: { sellerId: characterId, blueprintId: item.blueprintId, quantity: item.quantity, upgradeTier: item.upgradeTier, rareItemId: item.rareItemId, price, expiresAt, listingFee } });
@@ -45,6 +49,8 @@ export async function buyListing(accountId: number, characterId: number, listing
   integer(listingId);
   return transaction(async tx => {
     // Ordem global: personagens em ordem de ID, depois anúncio. Evita deadlock em compras cruzadas.
+    // Posse conferida antes de qualquer trava: uma conta nunca segura a linha do personagem de outra.
+    if (!await tx.character.findFirst({ where: { id: characterId, accountId }, select: { id: true } })) throw new GameError(404, 'Personagem não encontrado.');
     const hint = await tx.marketListing.findUnique({ where: { id: listingId }, select: { sellerId: true, seller: { select: { accountId: true } } } });
     if (!hint) throw new GameError(404, 'Anúncio não encontrado.');
     if (hint.sellerId === characterId) throw new GameError(409, 'Você não pode comprar seu anúncio.');
@@ -54,14 +60,15 @@ export async function buyListing(accountId: number, characterId: number, listing
       await tx.$queryRaw`SELECT id FROM \`Character\` WHERE id = ${id} FOR UPDATE`;
     }
     const buyer = await lockCharacter(tx, accountId, characterId);
-    await assertCanTrade(tx, accountId);
+    const settings = await loadSettings(tx);
+    await assertCanTrade(tx, accountId, buyer.level, settings);
     await tx.$queryRaw`SELECT id FROM MarketListing WHERE id = ${listingId} FOR UPDATE`;
     const listing = await tx.marketListing.findUniqueOrThrow({ where: { id: listingId } });
     if (listing.status === 'SOLD' && listing.buyerId === characterId) return { listingId, status: 'SOLD' };
     if (listing.status !== 'OPEN') throw new GameError(409, 'Anúncio indisponível.');
     if (listing.expiresAt && listing.expiresAt <= new Date()) throw new GameError(409, 'Este anúncio expirou.');
     if (listing.price <= 0 || buyer.goldInHand < listing.price) throw new GameError(409, 'Ouro insuficiente.');
-    const settings = await loadSettings(tx), fee = saleFee(listing.price, settings['market.saleFeePercent']);
+    const fee = saleFee(listing.price, settings['market.saleFeePercent']);
     const ref = { type: 'listing', id: listingId };
     await addGold(tx, characterId, 0n - listing.price, 'MARKET_PURCHASE', ref);
     await addGold(tx, listing.sellerId, listing.price, 'MARKET_SALE', ref);

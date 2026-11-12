@@ -28,6 +28,9 @@ export const settingDefs = {
   'market.saleFeePercent': { default: 5, min: 0, max: 50, label: 'Taxa sobre vendas no mercado (mínimo 1 de ouro)', unit: '%', group: 'Mercado' },
   'market.listingFeeGold': { default: 10, min: 0, max: 1_000_000, label: 'Taxa fixa para anunciar', unit: 'ouro', group: 'Mercado' },
   'market.durationHours': { default: 48, min: 1, max: 720, label: 'Duração dos anúncios', unit: 'horas', group: 'Mercado' },
+  // Contra contas descartáveis que só existem para passar ouro e itens a uma conta principal.
+  'market.minLevel': { default: 5, min: 1, max: 1000, label: 'Nível mínimo para anunciar e comprar no mercado', unit: 'nível', group: 'Mercado' },
+  'market.verifiedEmail': { default: 0, min: 0, max: 1, label: 'Exigir e-mail confirmado para usar o mercado (1 = sim; ligue quando o envio de e-mail estiver funcionando)', unit: '0/1', group: 'Mercado' },
   'economy.goldRewardPercent': { default: 100, min: 10, max: 500, label: 'Ouro de monstros e missões', unit: '%', group: 'Recompensas' },
   'economy.xpRewardPercent': { default: 100, min: 10, max: 500, label: 'XP de monstros e missões', unit: '%', group: 'Recompensas' },
   'economy.npcBuyPercent': { default: 100, min: 50, max: 300, label: 'Preço da loja NPC', unit: '%', group: 'Preços' },

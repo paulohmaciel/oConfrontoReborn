@@ -23,7 +23,7 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
   assert.match(process.env.DATABASE_URL ?? '', /\/[^/?]*_test(?:\?|$)/, 'Use uma base dedicada terminada em _test.');
   const tag = randomUUID().slice(0, 8), password = 'Operations-test-2026!', hash = await hashPassword(password);
   const mk = (n: string, extra: object = {}, charExtra: object = {}) => prisma.account.create({ data: { email: `ops-${tag}-${n}@example.invalid`, password: hash, ...extra,
-    characters: { create: { name: `Ops ${n} ${tag}`, goldInHand: 10000n, hp: 1000, maxHp: 1000, ...charExtra } } }, include: { characters: true } });
+    characters: { create: { name: `Ops ${n} ${tag}`, level: 5, goldInHand: 10000n, hp: 1000, maxHp: 1000, ...charExtra } } }, include: { characters: true } });
   const [seller, buyer, premiumAcc, staffSupport, admin, victim] = await Promise.all([mk('s'), mk('b'), mk('p'), mk('sup', { role: 'SUPPORT' }), mk('adm', { role: 'ADMIN' }), mk('v')]);
   const sellerChar = seller.characters[0], buyerChar = buyer.characters[0];
   const sword = await prisma.itemBlueprint.findUniqueOrThrow({ where: { name: 'Sword' } });
@@ -46,6 +46,17 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       assert.equal(gold.length, 2); assert.equal(gold.reduce((n, e) => n + e.delta, 0n), -BigInt(potion.npcPrice) * 5n);
       assert.equal(await lastBalance(sellerChar.id), (await prisma.character.findUniqueOrThrow({ where: { id: sellerChar.id } })).goldInHand);
       assert.equal((await prisma.itemLedger.aggregate({ where: { characterId: sellerChar.id, blueprintId: potion.id, reason: 'NPC_BUY' }, _sum: { delta: true } }))._sum.delta, 5);
+    });
+    await t.test('mercado: abaixo do nível mínimo não anuncia nem compra; conta alheia não chega às travas', async () => {
+      const novato = await mk('novato', {}, { level: 1 });
+      const item = await prisma.inventoryItem.create({ data: { characterId: novato.characters[0].id, blueprintId: sword.id } });
+      await assert.rejects(() => listItem(novato.id, novato.characters[0].id, item.id, '100', randomUUID()), /mercado abre no nível/);
+      const mine = await prisma.inventoryItem.create({ data: { characterId: sellerChar.id, blueprintId: sword.id } });
+      const { listingId } = await listItem(seller.id, sellerChar.id, mine.id, '100', randomUUID());
+      await assert.rejects(() => buyListing(novato.id, novato.characters[0].id, listingId), /mercado abre no nível/);
+      // Comprar "como" o personagem de outra conta é recusado antes de travar qualquer linha.
+      await assert.rejects(() => buyListing(novato.id, buyerChar.id, listingId), /Personagem não encontrado/);
+      await cancelListing(seller.id, sellerChar.id, listingId);
     });
     await t.test('mercado: taxa de anúncio, taxa de venda e saldos conferem com o livro-razão', async () => {
       const item = await prisma.inventoryItem.create({ data: { characterId: sellerChar.id, blueprintId: sword.id } });
@@ -228,7 +239,7 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       assert.equal(deliveries[0].delta, 1);
     });
     await t.test('economia: o mesmo dono não compra de si mesmo, config perigosa é recusada e o ouro confere com o livro-razão', async () => {
-      const alt = await prisma.character.create({ data: { accountId: buyer.id, name: `Alt ${tag}`, goldInHand: 5000n, hp: 100, maxHp: 100 } });
+      const alt = await prisma.character.create({ data: { accountId: buyer.id, name: `Alt ${tag}`, level: 5, goldInHand: 5000n, hp: 100, maxHp: 100 } });
       const item = await prisma.inventoryItem.create({ data: { characterId: alt.id, blueprintId: sword.id } });
       const { listingId } = await listItem(buyer.id, alt.id, item.id, '2000', randomUUID());
       await assert.rejects(buyListing(buyer.id, buyerChar.id, listingId), /mesma conta|outro personagem/);
@@ -292,7 +303,7 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       assert.equal(await prisma.itemLedger.count({ where: { characterId: smith.id, reason: 'PROTECTION_USE' } }), protectedCount);
     });
     await t.test('item raro (+10): número único e em sequência, sobrevive ao mercado, anonimato respeitado, venda ao NPC marca destruído', async () => {
-      const smith = await prisma.character.create({ data: { accountId: victim.id, name: `Raro ${tag}`, goldInHand: 1_000_000_000n, hp: 100, maxHp: 100 } });
+      const smith = await prisma.character.create({ data: { accountId: victim.id, name: `Raro ${tag}`, level: 5, goldInHand: 1_000_000_000n, hp: 100, maxHp: 100 } });
       const blueprint = await prisma.itemBlueprint.upsert({ where: { name: `Espada de Teste ${tag}` }, update: {}, create: { name: `Espada de Teste ${tag}`, slot: 'WEAPON', spriteUrl: '', attack: 10, npcPrice: 100 } });
       const winners: number[] = [];
       for (let n = 0; n < 60 && winners.length < 3; n++) {

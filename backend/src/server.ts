@@ -3,7 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import path from 'node:path';
-import { authRouter, authenticate, protectOrigin, isLoopbackHost, devQuickLoginEnabled } from './account/auth';
+import { authRouter, authenticate, protectOrigin, isLoopbackHost, devQuickLoginEnabled, DEV_EMAILS } from './account/auth';
 import { analyticsRoutes } from './account/analyticsRoutes';
 import { gameRouter, gameErrorHandler } from './game/routes';
 import { readRoutes } from './game/readRoutes';
@@ -29,6 +29,8 @@ export function createApp() {
   app.disable('x-powered-by');
   // Atrás de proxy reverso (produção), defina TRUST_PROXY=1 para que os limites de uso contem o IP real do visitante.
   if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY);
+  // Cabeçalho de proxy chegando sem TRUST_PROXY: todos os visitantes dividiriam o mesmo limite de uso. Avisa uma vez.
+  if (!process.env.TRUST_PROXY) { let warned = false; app.use((req, _res, next) => { if (!warned && req.headers['x-forwarded-for']) { warned = true; console.warn('[segurança] Chegou X-Forwarded-For mas TRUST_PROXY não está definido: há um proxy na frente e os limites de uso estão contando o IP dele. Defina TRUST_PROXY=1 no .env (ver OPERACAO.md).'); } next(); }); }
   app.use(requestId());
   app.use(helmet({ contentSecurityPolicy: { directives: { 'img-src': ["'self'", 'data:'], 'upgrade-insecure-requests': process.env.NODE_ENV === 'production' ? [] : null } } }));
   app.set('json replacer', (_key: string, value: unknown) => typeof value === 'bigint' ? value.toString() : value);
@@ -59,11 +61,26 @@ export function startupSafetyErrors(env = process.env): string[] {
     errors.push(`DEV_QUICK_LOGIN=1 com HOST=${host}: a entrada "mestre" só pode existir com o servidor escutando em 127.0.0.1. Remova DEV_QUICK_LOGIN do .env ou use HOST=127.0.0.1.`);
   if (origin.startsWith('https://') && !production)
     errors.push(`APP_ORIGIN=${origin} exige NODE_ENV=production (cookie Secure e CSP). Inicie com: npm run start:prod`);
+  // Em produção, e-mail só no terminal significa que ninguém recupera a senha. ALLOW_CONSOLE_MAIL=1 libera (beta fechado, por conta e risco).
+  if (production && (env.MAIL_DRIVER ?? 'console') === 'console' && env.ALLOW_CONSOLE_MAIL !== '1')
+    errors.push('MAIL_DRIVER=console em produção: recuperação de senha e confirmação de e-mail não chegariam a ninguém. Configure MAIL_DRIVER=resend, RESEND_API_KEY e MAIL_FROM (ou ALLOW_CONSOLE_MAIL=1 para um beta fechado).');
+  if (production && env.DEV_QUICK_LOGIN === '1')
+    errors.push('DEV_QUICK_LOGIN=1 em produção: remova essa linha do .env.');
   return errors;
+}
+// Avisos que não impedem a subida.
+export function startupWarnings(env = process.env): string[] {
+  const warnings: string[] = [];
+  if (env.TRUST_PROXY && !isLoopbackHost(env.HOST ?? '127.0.0.1'))
+    warnings.push(`TRUST_PROXY ligado com HOST=${env.HOST}: se o servidor também for alcançável direto pela internet, o visitante forja o próprio IP e escapa dos limites de uso. Use HOST=127.0.0.1 atrás do proxy.`);
+  return warnings;
 }
 if (require.main === module) {
   const problems = startupSafetyErrors();
   if (problems.length) { for (const p of problems) console.error(`[segurança] ${p}`); process.exit(1); }
+  for (const w of startupWarnings()) console.warn(`[segurança] ${w}`);
+  if (process.env.NODE_ENV === 'production') void prisma.account.findMany({ where: { OR: [{ email: { in: [...DEV_EMAILS] } }, { email: { endsWith: '@localhost.dev' } }] }, select: { email: true } })
+    .then(found => { if (found.length) console.warn(`[segurança] Contas de desenvolvimento no banco de produção (não conseguem entrar, mas devem ser removidas): ${found.map(a => a.email).join(', ')}. Veja OPERACAO.md.`); }).catch(() => {});
   if (process.env.DEV_QUICK_LOGIN === '1') console.warn(devQuickLoginEnabled() ? '[dev] Entrada "mestre" ligada (somente neste computador). Remova DEV_QUICK_LOGIN do .env antes de publicar.' : '[segurança] DEV_QUICK_LOGIN ignorado: exige NODE_ENV=development e HOST em loopback.');
   const port = Number(process.env.PORT ?? 3333);
   const sweep = setInterval(() => {
