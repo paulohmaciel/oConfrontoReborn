@@ -3,24 +3,26 @@ import {api} from '../../lib/api';
 import Icon from '../../ui/GameIcon';
 import {Limited} from '../../ui/ShowMore';
 import {Pager,usePaged} from '../../ui/Pager';
-import {vocations,type BaseVocation} from '../../../../shared/adventure';
+import {vocations,type BaseVocation,JOURNEY_CORE_STEPS} from '../../../../shared/adventure';
 import type {Hero,JourneyState,Journal,Memory,BattleRecord} from '../../lib/types';
 export function VocationPicker({value,onChange,disabled=false}:{value:BaseVocation;onChange:(v:BaseVocation)=>void;disabled?:boolean}) {
   return <div className="vocation-grid" role="group" aria-label="Escolha sua vocação">{(Object.keys(vocations) as BaseVocation[]).map(v=><button type="button" key={v} className={`vocation-card ${value===v?'chosen':''}`} aria-pressed={value===v} disabled={disabled} onClick={()=>onChange(v)}>
     <Icon name={vocations[v].icon} size={36}/><strong>{vocations[v].name}</strong><small>{vocations[v].role}</small><span>{vocations[v].description}</span>
   </button>)}</div>;
 }
-type Go=(tab:'hunt'|'forge'|'tasks'|'bag'|'temple'|'journal')=>void;
+type Go=(tab:'hunt'|'forge'|'tasks'|'bag'|'temple'|'journal'|'stats'|'market'|'profile')=>void;
+// Rótulo do botão de cada etapa: diz para onde ele leva.
+const stepGo:Record<string,string>={hunt:'Ir caçar',forge:'Ir ao Ferreiro',tasks:'Ver as missões',stats:'Abrir Atributos',temple:'Ir ao Templo',bag:'Abrir o Inventário',market:'Ir ao Mercado',profile:'Abrir o Perfil'};
 export function JourneyPanel({hero,state,busy,command,go}:{hero:Hero;state:JourneyState|null;busy:boolean;command:(action:string,body?:unknown)=>Promise<void>;go:Go}) {
   const [vocation,setVocation]=useState<BaseVocation>('KNIGHT');
   if(!state)return <section className="panel"><p>Abrindo o mapa da sua jornada…</p></section>;
   const active=state.steps.find(s=>s.active);
-  return <><div className="intro-banner"><div><span className="eyebrow">SEUS PRIMEIROS PASSOS</span><h2>{state.finished?'Os portões estão abertos.':'Uma aventura, um passo de cada vez.'}</h2><p>{state.finished?'Explore as regiões, complete seu bestiário e aperfeiçoe sua estratégia.':`${state.step} de ${state.steps.length} etapas concluídas. As recompensas são recebidas uma única vez.`}</p></div><Icon name="Backpack" size={64}/></div>
+  return <><div className="intro-banner"><div><span className="eyebrow">SEUS PRIMEIROS PASSOS</span><h2>{state.finished?'Os portões estão abertos.':'Uma aventura, um passo de cada vez.'}</h2><p>{state.finished?'Explore as regiões, complete seu bestiário e aperfeiçoe sua estratégia.':state.step>=JOURNEY_CORE_STEPS?`${state.step} de ${state.steps.length} etapas. As regiões já estão abertas; as etapas que faltam apresentam o resto de Capriel e pagam uma vez só.`:`${state.step} de ${state.steps.length} etapas concluídas. As recompensas são recebidas uma única vez.`}</p></div><Icon name="Backpack" size={64}/></div>
     {hero.hp===0&&<div className="notice">Você tombou e precisa de cura. <button className="link-button" onClick={()=>go('temple')}>Visitar o Templo de Capriel</button></div>}
     {!hero.vocationChosen&&<section className="panel journey-vocation"><h2>Como você quer lutar?</h2><p className="muted">Escolha com cuidado. Seu inventário será preservado e a arma da vocação será entregue na mochila.</p><VocationPicker value={vocation} onChange={setVocation} disabled={busy||!!hero.activeBattleId}/><button className="primary" disabled={busy||!!hero.activeBattleId} onClick={()=>void command('vocation',{vocation})}>Confirmar {vocations[vocation].name}</button></section>}
     <section className="panel journey-steps"><div className="section-title"><h2>Jornada do aventureiro</h2><span>{state.step}/{state.steps.length}</span></div>{state.steps.map(s=><article className={`journey-step ${s.claimed?'completed':s.active?'current':'locked'}`} key={s.key}>
       <div className="step-number">{s.claimed?'✓':s.index+1}</div><Icon name={s.icon} size={36}/><div><h3>{s.title}</h3><p>{s.description}</p><small>{s.claimed?'Concluída':s.active?`${s.current}/${s.target}`:'Conclua a etapa anterior'} · +{s.xp} XP · +{s.gold} ouro{s.index===0?' · 2 poções de vida + 1 de mana':''}</small></div>
-      {s.active&&(s.ready?<button className="primary" disabled={busy||!!hero.activeBattleId} onClick={()=>void command('journey/claim',{expectedStep:s.index})}>Reivindicar recompensa</button>:s.action!=='vocation'?<button disabled={busy} onClick={()=>go(s.action as 'hunt'|'forge'|'tasks')}>Seguir para o objetivo</button>:null)}
+      {s.active&&(s.ready?<button className="primary" disabled={busy||!!hero.activeBattleId} onClick={()=>void command('journey/claim',{expectedStep:s.index})}>Reivindicar recompensa</button>:s.action!=='vocation'?<button disabled={busy} onClick={()=>go(s.action as Parameters<Go>[0])}>{stepGo[s.action]??'Seguir para o objetivo'}</button>:null)}
     </article>)}</section>
     {active?.key==='boss'&&<div className="notice">Na pedreira, enfrente o guardião: quando ele anunciar o golpe pesado, escolha Defender ou Interromper.</div>}
     

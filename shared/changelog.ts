@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-inicio-guiado', date: '2026-11-12', title: 'A Jornada ficou maior', items: [
+    'Cinco etapas novas depois do Guardião da Pedreira: distribuir atributos, visitar o Templo, fazer a primeira venda, anunciar no Mercado e fazer um amigo. Cada uma leva você à aba certa e paga uma vez.',
+    'Quem já tinha terminado a Jornada não perde nada: as regiões continuam abertas, e as etapas novas que você já cumpriu podem ser recebidas na hora.',
+  ] },
   { id: '2026-11-12-conta-e-seguranca', date: '2026-11-12', title: 'Sua conta mais segura', items: [
     'Configurações ganhou Conta e segurança: troque a senha sem sair do jogo e encerre o acesso dos outros aparelhos com um clique.',
     'O Mercado agora abre no nível 5, para dificultar contas criadas só para repassar ouro e itens.',
