@@ -170,3 +170,34 @@
 :root[data-theme="light"] .battle-stage .stage-floor{background:linear-gradient(#cdb37a,#b99a5e);border-top-color:#a67c3a;box-shadow:inset 0 14px 26px #63311322}
 @media(max-width:760px){.battle-stage-wrap{top:66px}.battle-stage{--reach:46vw;height:210px;padding:0 10px 32px}.battle-stage .fighter .stage-sprite{width:96px!important;height:96px!important}.battle-stage .fighter.boss .stage-sprite{width:112px!important;height:112px!important}.battle-stage .fighter.many .stage-sprite{width:64px!important;height:64px!important}.battle-stage .float{font-size:22px}.battle-stage .float.crit{font-size:28px}.battle-stage .projectile{bottom:100px}}
 @media(max-height:560px){.battle-stage-wrap{position:relative;top:0}}
+
+/* ----- Folhas de sprites próprias (4 colunas × 6 linhas, viradas para a direita) ----- */
+/* Coluna: 0, 33.333%, 66.667%, 100%. Linha: 0 parado, 20% avançar, 40% atacar, 60% defender, 80% curar, 100% apanhar e cair. */
+.battle-stage .sheet-sprite{display:block;background-repeat:no-repeat;background-size:400% 600%;background-position:0 0;image-rendering:auto}
+.battle-stage .fighter.right .sheet-sprite{transform:scaleX(-1)}
+.battle-stage .fighter.sheeted .body::after{left:26%;right:26%;bottom:10%}
+.battle-stage .fighter.sheeted .nameplate{bottom:-28px}
+.battle-stage .fighter.sheeted.idle .body{animation:none}
+@keyframes sheet-row{from{background-position-x:0}to{background-position-x:100%}}
+.battle-stage .fighter.sheeted.idle .sheet-sprite{background-position-y:0;animation:sheet-row .9s steps(4,jump-none) infinite}
+.battle-stage .fighter.sheeted.right.idle .sheet-sprite{animation-delay:.35s}
+.battle-stage .fighter.sheeted.cast .sheet-sprite{background-position-y:40%;animation:sheet-row .5s steps(4,jump-none) both}
+.battle-stage .fighter.sheeted.heal .sheet-sprite,.battle-stage .fighter.sheeted.charge .sheet-sprite{background-position-y:80%;animation:sheet-row .6s steps(4,jump-none) both}
+.battle-stage .fighter.sheeted.guard .sheet-sprite{background-position:66.667% 60%;animation:none}
+.battle-stage .fighter.sheeted.flee .sheet-sprite,.battle-stage .fighter.sheeted.dodge .sheet-sprite{background-position-y:20%;animation:sheet-row .32s steps(4,jump-none) infinite}
+/* Golpe corpo a corpo: corre (linha 2), ataca (linha 3) e volta correndo, no ritmo do avanço do corpo. */
+.battle-stage .fighter.sheeted.lunge .sheet-sprite{animation:sheet-lunge .56s step-end both}
+.battle-stage .fighter.sheeted.lunge.heavy .sheet-sprite{animation-duration:.6s}
+@keyframes sheet-lunge{0%{background-position:0 20%}12%{background-position:33.333% 20%}24%{background-position:66.667% 20%}34%{background-position:0 40%}42%{background-position:33.333% 40%}50%{background-position:66.667% 40%}62%{background-position:100% 40%}74%{background-position:100% 20%}88%,100%{background-position:0 0}}
+/* Apanhar: dois quadros da linha 6; cair: os dois últimos, e fica deitado. */
+.battle-stage .fighter.sheeted.hit .sheet-sprite,.battle-stage .fighter.sheeted.stagger .sheet-sprite{animation:sheet-hit .44s step-end forwards}
+.battle-stage .fighter.sheeted.hit.late .sheet-sprite{animation-delay:.24s}
+.battle-stage .fighter.sheeted.hit.guard .sheet-sprite{animation:none;background-position:66.667% 60%}
+@keyframes sheet-hit{0%{background-position:0 100%}45%{background-position:33.333% 100%}100%{background-position:33.333% 100%}}
+.battle-stage .fighter.sheeted.dying .sheet-sprite{animation:sheet-die .66s step-end .24s forwards}
+@keyframes sheet-die{0%{background-position:0 100%}22%{background-position:33.333% 100%}48%{background-position:66.667% 100%}74%,100%{background-position:100% 100%}}
+.battle-stage .fighter.sheeted.dying .body{animation:stage-hit .3s ease-out .24s both}
+.battle-stage .fighter.sheeted.down .sheet-sprite{background-position:100% 100%;animation:none}
+.battle-stage .fighter.sheeted.down .body{transform:none;opacity:1;filter:drop-shadow(0 10px 6px #000a) saturate(.7)}
+.battle-stage:has(.sheeted){height:290px}
+@media(max-width:760px){.battle-stage:has(.sheeted){height:230px}.battle-stage .fighter .sheet-sprite{width:150px!important;height:150px!important}.battle-stage .fighter.many .sheet-sprite{width:104px!important;height:104px!important}}

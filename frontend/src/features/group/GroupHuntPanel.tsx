@@ -4,7 +4,7 @@ import {msg} from '../../lib/format';
 import type {Hero,Perform} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
 import {Feedback} from '../../ui/Feedback';
-import BattleStage,{heroSpriteOf,shotOf,spriteOf,stageNumber,type Step} from '../../ui/BattleStage';
+import BattleStage,{heroSheetOf,heroSpriteOf,shotOf,spriteOf,stageNumber,type Step} from '../../ui/BattleStage';
 import {classLabel,baseVocation,vocations} from '../../../../shared/adventure';
 import {groupActions,type GroupAction,type GroupHunt} from '../../../../shared/groupHunt';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
@@ -108,7 +108,7 @@ function GroupStage({b}:{b:Battle}){
   },[b.id,sig]); // eslint-disable-line react-hooks/exhaustive-deps
   const size=b.fighters.length<=1?128:b.fighters.length===2?104:84;
   return <BattleStage scene={b.id} turn={scene.turn} steps={scene.steps}
-    left={b.fighters.map(f=>({id:String(f.characterId),name:f.character.name,src:heroSpriteOf(baseVocation(f.vocation)),size,down:f.hp<=0}))}
+    left={b.fighters.map(f=>({id:String(f.characterId),name:f.character.name,src:heroSpriteOf(baseVocation(f.vocation)),sheet:heroSheetOf(baseVocation(f.vocation)),size,down:f.hp<=0}))}
     right={[{id:'fera',name:b.name,src:spriteOf(b.sprite),size:160,boss:true,down:b.bossHp<=0}]}/>;
 }
 function BattleView({b,hero,remaining,busy,choose,openProfile}:{b:Battle;hero:Hero;remaining:number;busy:boolean;choose:(a:GroupAction)=>void;openProfile:(n:string)=>void}){
