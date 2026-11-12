@@ -9,7 +9,7 @@ export const characterRoutes = Router();
 characterRoutes.get('/characters', asyncRoute(async (_req, res) => {
   const accountId = res.locals.accountId;
   const [characters, { limit, premium }] = await Promise.all([
-    prisma.character.findMany({ where: { accountId }, select: { id: true, name: true, level: true, vocation: true }, orderBy: { id: 'asc' } }), characterLimit(prisma, accountId)]);
+    prisma.character.findMany({ where: { accountId }, select: { id: true, name: true, level: true, vocation: true, classTier: true }, orderBy: { id: 'asc' } }), characterLimit(prisma, accountId)]);
   res.json({ characters, limit, premium });
 }));
 characterRoutes.post('/characters', asyncRoute(async (req, res) => { res.status(201).json(await createExtraCharacter(res.locals.accountId, req.body?.name, req.body?.vocation)); }));

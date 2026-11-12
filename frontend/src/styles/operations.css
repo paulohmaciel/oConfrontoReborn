@@ -65,3 +65,22 @@
 .xp-bar::-webkit-progress-bar{background:#0e1418}.xp-bar::-webkit-progress-value{background:linear-gradient(90deg,#7a5f2a,#d0b16d);border-radius:3px}.xp-bar::-moz-progress-bar{background:#c0a363}
 .xp-detail{font-size:9px;color:#697c76;font-variant-numeric:tabular-nums}
 @media(max-width:760px){.xp-meter{grid-column:1/-1;margin-top:4px;padding-top:6px}}
+
+/* Mural de missões: quem pede, história, objetivo e progresso. */
+.mission-filters{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 8px}.mission-filters button{min-height:36px}
+.mission{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:16px 0;border-bottom:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+.mission .sprite{margin-top:4px}.mission-body{min-width:0;display:grid;gap:5px}.mission-body h3{font-family:Georgia,serif;font-size:17px;font-weight:400}
+.mission-story{font-size:12px;line-height:1.65;opacity:.85;font-style:italic}.mission-goal{font-size:11px;opacity:.75}
+.mission-progress{display:flex;align-items:center;gap:8px;max-width:280px}.mission-progress progress{flex:1;height:6px;appearance:none;border:0;border-radius:3px;overflow:hidden;background:color-mix(in srgb,currentColor 14%,transparent)}
+.mission-progress progress::-webkit-progress-bar{background:color-mix(in srgb,currentColor 14%,transparent)}.mission-progress progress::-webkit-progress-value{background:#b9892f}.mission-progress progress::-moz-progress-bar{background:#b9892f}
+.mission-progress small{font-size:11px;font-variant-numeric:tabular-nums}
+.mission.done{opacity:.6}.mission>button{align-self:center;min-width:110px}
+@media(max-width:760px){.mission{grid-template-columns:auto 1fr}.mission>button{grid-column:1/-1;width:100%}}
+
+/* Escada de classes (Personagens). */
+.class-ladder{list-style:none;margin:12px 0 16px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.class-ladder li{display:flex;gap:10px;align-items:center;padding:10px;border-radius:10px;border:1px solid color-mix(in srgb,currentColor 18%,transparent);opacity:.55}
+.class-ladder li b{flex:0 0 auto;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;font-size:12px;border:1px solid currentColor}
+.class-ladder li div{display:grid;gap:2px;min-width:0}.class-ladder li small{font-size:11px;opacity:.8}
+.class-ladder li.done{opacity:.9}.class-ladder li.done b{background:color-mix(in srgb,#2f8f4e 35%,transparent);border-color:#2f8f4e}
+.class-ladder li.next{opacity:1;border-color:#b9892f;box-shadow:0 0 0 1px #b9892f}.class-ladder li.next b{background:#b9892f;border-color:#b9892f;color:#171b1c}

@@ -145,6 +145,6 @@ Decisão do dono: **❓4 = B (Eras)**. O jogo agora tem conteúdo do nível 1 ao
 
 1. **❓1 Ritmo:** ~31 lutas por nível (≈ 260–400 h até o 1000) está bom? Mais lento = monstros dão menos XP.
 2. **❓2 Energia:** manter "só no Templo" ou criar recuperação passiva com o tempo? Isso muda o tempo total mais do que qualquer outro número.
-3. **❓3 Promoções:** uma 2ª promoção (ex.: nível 200) e uma 3ª (ex.: 500)?
+3. **❓3 Promoções:** decidido em 2026-10-31 — 8 classes por vocação (20, 100, 250, 400, 550, 700, 850, 1000).
 4. **❓4 Conteúdo de 250 a 1000:** A, B ou C (acima).
 5. **❓5 Licença:** importar sprites novos só depois da decisão sobre TibiaWiki/CipSoft já registrada no `TODO.md`.
