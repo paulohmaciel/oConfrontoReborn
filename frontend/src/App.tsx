@@ -82,7 +82,7 @@ export default function App(){
    if(tab==='market')api<Page<Listing>>('/market').then(setMarket).catch(notifyError);
    if(tab==='tasks')api<Task[]>(`/characters/${id}/tasks`).then(setTasks).catch(notifyError);
  },[tab,signed]);
- async function perform(work:()=>Promise<unknown>,message='Ação concluída.'){if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{const result=await work();const serverMessage=result&&typeof result==='object'&&'message' in result&&typeof result.message==='string'?result.message:'';setNotice(typeof result==='string'&&result?result:serverMessage||message);setSelected(null);if(heroId.current)await refresh(heroId.current,bagPage.current);
+ async function perform(work:()=>Promise<unknown>,message='Feito, aventureiro.'){if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{const result=await work();const serverMessage=result&&typeof result==='object'&&'message' in result&&typeof result.message==='string'?result.message:'';setNotice(typeof result==='string'&&result?result:serverMessage||message);setSelected(null);if(heroId.current)await refresh(heroId.current,bagPage.current);
   if(tab==='market'&&heroId.current)setMarket({...await api<Page<Listing>>(`/market?page=${market.page}${marketQuery(market.filters,hero?.level??1)}`),filters:market.filters});if(tab==='tasks'&&heroId.current)setTasks(await api<Task[]>(`/characters/${heroId.current}/tasks`));
  }catch(e){notifyError(e);if(heroId.current)await refresh(heroId.current,bagPage.current).catch(()=>{});}finally{lock.current=false;setBusy(false);}}
  const command=(action:string,body:unknown={})=>perform(()=>api(`/characters/${heroId.current}/${action}`,body,crypto.randomUUID()));

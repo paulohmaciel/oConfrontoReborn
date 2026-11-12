@@ -1,6 +1,9 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-10-31-voz-rpg', date: '2026-10-31', title: 'Textos com voz de aventura', items: [
+    'Combate, caçada, jornada, diário, mochila, templo e mercado foram reescritos com linguagem de RPG: Batalha em curso, Partir para nova caçada, Beber poção, Seu golpe causa X de dano…',
+  ] },
   { id: '2026-10-31-nomes', date: '2026-10-31', title: 'Nomes de habilidades do Cavaleiro', items: [
     'Triplo hit agora se chama Golpe brutal, e Quinto hit virou Fúria berserker. O espólio dos monstros também ganhou nome em português nas telas.',
   ] },

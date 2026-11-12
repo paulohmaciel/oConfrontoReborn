@@ -99,7 +99,7 @@ export async function sellNpc(accountId: number, characterId: number, itemId: nu
     assertNotFavorite(item, 'vender');
     // O NPC paga só o preço-base: a melhoria se perderia. Quem quer valorizar o item deve anunciá-lo no mercado.
     if (item.upgradeTier > 0 && !confirmUpgraded)
-      throw new GameError(409, `Este item está melhorado (+${item.upgradeTier}). O NPC paga só o preço-base e a melhoria se perde. Anuncie no mercado para vendê-lo por mais.`);
+      throw new GameError(409, `Este item está melhorado (+${item.upgradeTier}). O Mercador paga só o preço-base e a melhoria se perde. Ofereça no Mercado para vendê-lo por mais.`);
     const settings = await loadSettings(tx);
     const proceeds = npcSellPrice(item.blueprint.npcPrice, settings['economy.npcSellPercent']) * BigInt(item.quantity);
     await tx.inventoryItem.delete({ where: { id: itemId } });
