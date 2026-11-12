@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import AskReason from '../../ui/AskReason';
 import {api} from '../../lib/api';
 import type {Hero,Perform} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
@@ -67,7 +68,7 @@ function FriendButton({p,act}:{p:Profile;act:Act}){
   return <button onClick={()=>void act(`friends/${r.id}/remove`,{})}>Pedido enviado · cancelar</button>;
 }
 function Report({kind,id,act}:{kind:'scrap'|'testimonial';id:number;act:Act}){
-  return <button className="link-button" onClick={()=>{const reason=window.prompt('Por que você está denunciando? A equipe vai analisar.');if(reason&&reason.trim().length>=2)void act('report',{kind,id,reason});}}>Denunciar</button>;
+  return <AskReason label="Denunciar" question="Por que você está denunciando? A equipe vai analisar." onSubmit={reason=>void act('report',{kind,id,reason})}/>;
 }
 type ListProps={act:Act;openProfile:(n:string)=>void;path:string;version:number};
 function Scraps({p,hero,act,openProfile,path,version}:ListProps&{p:Profile;hero:Hero}){

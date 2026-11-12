@@ -43,7 +43,10 @@
 - [x] `npm run master:create` cria/redefine o login master (e-mail `mestre@localhost.dev`, senha temporária `Mestre-Temp-2026!`; `-- --aleatoria` gera outra; `-- --senha "..."` escolhe)
 - [x] Senha fixa da conta master removida; `master:create` gera senha aleatória sem exibir; `dev-login` não promove mais conta existente e exige `HOST` loopback + `NODE_ENV=development`; servidor aborta com `DEV_QUICK_LOGIN=1` em host público; `npm run start:prod` (2026-10-31, `SEGURANCA.md` 1–4, 8–10)
 - [ ] **Antes de publicar:** remover `DEV_QUICK_LOGIN` do `.env`, apagar a conta `mestre@localhost.dev` e conferir que nenhuma conta de teste ficou no banco de produção
-- [ ] Segurança ainda pendente (`SEGURANCA.md`): 6 `TRUST_PROXY` no deploy, 7 contas descartáveis, 11 trocar senha/sair de todos, 12 trava do mercado, 13 senha do MySQL
+- [x] Segurança (2026-11-12): 11 trocar senha logado e sair dos outros aparelhos; 12 posse antes da trava no Mercado; 7 nível mínimo no Mercado (`market.minLevel`) e opção de e-mail confirmado (`market.verifiedEmail`); 6 avisos de proxy; contas de desenvolvimento não entram em produção; produção recusa subir com e-mail só no terminal
+- [ ] Segurança ainda pendente (`SEGURANCA.md`): `TRUST_PROXY` e `HOST` no deploy, ligar `market.verifiedEmail` depois do Resend, 13 senha do MySQL
+- [x] Pendências do jogo registradas no Trello, quadro The Final Confrontation, cartões com prefixo [Site] (2026-11-12)
+- [x] Tela: capa e descrição ao compartilhar o link (og:image), "ouro" no lugar de "gp", denúncias sem window.prompt (`ui/AskReason.tsx`), Ferreiro enxerga a mochila inteira, Caçar abre na região liberada mais alta (2026-11-12)
 - [ ] **Antes de publicar:** apagar a conta de teste `vendedor-teste@example.invalid` (Mercador de Testes) e os anúncios dela, criados por `npm run dev:market-demo`
 
 - [x] Tema ESCURO como padrão; home em uma única moldura (capa + menu colado + boas-vindas + conteúdo) (2026-10-28)

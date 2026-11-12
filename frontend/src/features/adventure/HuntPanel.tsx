@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import Icon from '../../ui/GameIcon';
 import TurnLog from './TurnLog';
 import {Limited} from '../../ui/ShowMore';
@@ -16,7 +16,11 @@ const skillGroups=[
 const skillIcon:Record<string,string>={HEAL:'Health Potion',DEFEND_SHIELD:'Mastermind Shield',FLEE:'Boots of Haste',INTERRUPT:'Fire Sword'};
 export default function HuntPanel({hero,state,monsters,battle,busy,start,turn,dismiss,goTemple}:{hero:Hero;state:JourneyState|null;monsters:Monster[];battle:Battle|null;busy:boolean;goTemple:()=>void;start:(m:Monster)=>Promise<void>;turn:(a:string)=>Promise<void>;dismiss:()=>void}) {
   const [region,setRegion]=useState('outskirts'),[search,setSearch]=useState('');
-  useEffect(()=>{if(state?.step===4&&state.regions.find(r=>r.key==='quarry')?.unlocked)setRegion('quarry');},[state?.step]);
+  // Abre na região liberada mais alta (onde o herói caça hoje); na etapa do Guardião, na Pedreira. Depois que a pessoa escolhe, a escolha fica.
+  const chose=useRef(false);
+  useEffect(()=>{if(!state||chose.current)return;const open=(k:string)=>!!state.regions.find(r=>r.key===k)?.unlocked;
+    if(state.step===4&&open('quarry')){setRegion('quarry');return;}
+    const top=regions.filter(r=>open(r.key)).sort((a,b)=>b.minLevel-a.minLevel)[0];if(top)setRegion(top.key);},[state]);
   const profile=vocations[baseVocation(hero.vocation)],costs=skillCosts(hero.vocation),labels=skillLabels(hero.vocation);
   const rematch=battle?monsters.find(m=>m.name===battle.monsterName)??null:null;
   if(battle){const ongoing=battle.status==='ONGOING';return <section className="arena">
@@ -40,7 +44,7 @@ export default function HuntPanel({hero,state,monsters,battle,busy,start,turn,di
   const fit=(key:string)=>{const g=range(key);if(!g)return '';return hero.level<g.min?'Perigoso para você':hero.level>g.max+25?'Fácil para você':'Ideal para você';};
   const levels=(key:string)=>{const g=range(key);return g?(g.min===g.max?`Nv. ${g.min}`:`Nv. ${g.min}–${g.max}`):'';};
   const visible=monsters.filter(m=>m.regionKey===region&&m.name.toLowerCase().includes(search.toLowerCase()));
-  return <><div className="region-grid" role="group" aria-label="Regiões de caça"><Limited items={ordered} label="Ver mais regiões" render={r=>{const unlocked=isOpen(r.key);return <button key={r.key} aria-pressed={region===r.key} onClick={()=>{setRegion(r.key);setSearch('');}} className={region===r.key?'selected':''}><RegionIcon region={r.key} fallback={r.icon} size={40}/><strong>{r.name}</strong><small>{unlocked?`Recomendado ${levels(r.key)} · ${fit(r.key)}`:`Abre no nível ${r.minLevel} · etapa ${r.journeyStep} · criaturas ${levels(r.key)}`}</small></button>;}}/></div>
+  return <><div className="region-grid" role="group" aria-label="Regiões de caça"><Limited items={ordered} label="Ver mais regiões" render={r=>{const unlocked=isOpen(r.key);return <button key={r.key} aria-pressed={region===r.key} onClick={()=>{chose.current=true;setRegion(r.key);setSearch('');}} className={region===r.key?'selected':''}><RegionIcon region={r.key} fallback={r.icon} size={40}/><strong>{r.name}</strong><small>{unlocked?`Recomendado ${levels(r.key)} · ${fit(r.key)}`:`Abre no nível ${r.minLevel} · etapa ${r.journeyStep} · criaturas ${levels(r.key)}`}</small></button>;}}/></div>
   <div className="intro-banner"><div><span className="eyebrow">{available?'ALÉM DOS PORTÕES':'TERRAS AINDA FECHADAS'}</span><h2>{selected.name}</h2><p>{selected.description}</p><p className="region-levels"><b>Nível recomendado: {levels(selected.key)||'—'}</b>{available&&fit(selected.key)?` · ${fit(selected.key)} (você está no nível ${hero.level})`:''}</p></div><RegionIcon region={selected.key} fallback={selected.icon} size={88}/></div>
   {!available&&<div className="notice region-notice">Para entrar, alcance o nível {selected.minLevel} e conclua {selected.journeyStep} etapas da jornada. Você pode conhecer as criaturas abaixo.</div>}
   <div className="toolbar"><h2>Criaturas <span>{visible.length}</span></h2><input aria-label="Buscar criatura" placeholder="Buscar criatura…" value={search} onChange={e=>setSearch(e.target.value)}/></div><p className="muted hunt-cost">Cada caçada consome 5 de energia. Os chefes anunciam o golpe pesado: fique atento.</p><div className="monster-grid"><Limited items={visible} label="Ver mais criaturas" render={m=><article className={`monster-card ${m.isBoss?'boss-card':''}`} key={m.id}><div className="card-top"><span className={m.isBoss||m.level>hero.level+5?'tag danger':'tag'}>{m.isBoss?'CHEFE':m.level>hero.level+5?'PERIGOSO':'CAÇA'}</span><span>Nv. {m.level}</span></div><div className="monster-art"><Icon name={m.name} src={m.spriteUrl} size={80}/></div><h3>{m.name}</h3><p className="monster-element">{m.element==='FIRE'?'Dano de fogo':'Dano físico'}{m.isBoss?' · Golpes anunciados':''}</p><div className="monster-facts"><span><b>{m.hp.toLocaleString('pt-BR')}</b>Vida</span><span><b>{m.experience.toLocaleString('pt-BR')}</b>XP</span><span><b>{m.goldMin}–{m.goldMax}</b>Ouro</span></div><button className="hunt-button" disabled={busy||hero.hp<=0||hero.energy<5||!available} onClick={()=>void start(m)}>{available?'Enfrentar':'Terras fechadas'}<span>5 de energia</span></button></article>}/></div>{!visible.length&&<p className="empty">Nenhuma criatura com esse nome ronda estas terras.</p>}</>;

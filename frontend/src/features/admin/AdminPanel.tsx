@@ -1,4 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
+import AskReason from '../../ui/AskReason';
 import {Limited,LimitedRows} from '../../ui/ShowMore';
 import {api} from '../../lib/api';
 import {fmt,brl,when} from '../../lib/format';
@@ -162,7 +163,7 @@ function Notices(){
       <label>Motivo (fica na auditoria)<input value={reason} onChange={e=>setReason(e.target.value)} minLength={5} maxLength={500} required/></label>
       <button className="primary" disabled={a.busy}>Publicar aviso</button></form>
     <Limited items={rows} label="Ver mais" render={n=><div className="ledger-row" key={n.id}><span>{n.kind==='MAINTENANCE'?'Manutenção':'Aviso'} · {when(n.startsAt)}</span><span>{n.message}</span><b>{active(n)?'No ar':n.endedAt?'Encerrado':'Expirado'}</b>
-      {active(n)&&<button disabled={a.busy} onClick={()=>{const r=window.prompt('Motivo para encerrar o aviso (fica na auditoria):');if(r)void a.run(async()=>{await api(`/admin/notices/${n.id}/end`,{reason:r});await load();},'Aviso encerrado.');}}>Encerrar</button>}</div>}/>
+      {active(n)&&<AskReason className="" label="Encerrar" send="Encerrar aviso" disabled={a.busy} question="Motivo para encerrar o aviso (fica na auditoria):" onSubmit={r=>void a.run(async()=>{await api(`/admin/notices/${n.id}/end`,{reason:r});await load();},'Aviso encerrado.')}/>}</div>}/>
     {!rows.length&&<p className="empty">Nenhum aviso publicado ainda.</p>}</section>;
 }
 

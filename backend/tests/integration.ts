@@ -15,7 +15,7 @@ test('MySQL: autenticação, isolamento, transações e economia',async t=>{
   const suffix=randomUUID().slice(0,8), password='Test-local-2026!';
   const hash=await hashPassword(password);
   const fixtures=[];
-  for(let n=0;n<3;n++)fixtures.push(await prisma.account.create({data:{email:`test-${suffix}-${n}@example.invalid`,password:hash,characters:{create:{name:`Test ${suffix} ${n}`,goldInHand:10000n,hp:1000,maxHp:1000,strength:100,statPoints:1}}},include:{characters:true}}));
+  for(let n=0;n<3;n++)fixtures.push(await prisma.account.create({data:{email:`test-${suffix}-${n}@example.invalid`,password:hash,characters:{create:{name:`Test ${suffix} ${n}`,level:5,goldInHand:10000n,hp:1000,maxHp:1000,strength:100,statPoints:1}}},include:{characters:true}}));
   const [a,b,c]=fixtures,hero=a.characters[0],buyer=b.characters[0],other=c.characters[0];
   const bp=await prisma.itemBlueprint.findUniqueOrThrow({where:{name:'Sword'}});
   const monster=await prisma.monster.create({data:{name:`Test Rat ${suffix}`,hp:1,attack:1,defense:0,experience:1,goldMin:10,goldMax:10,spriteUrl:''}});
