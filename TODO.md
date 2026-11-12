@@ -76,7 +76,7 @@
 - [x] **[Astra 1]** Histórico pessoal de tentativas do Ferreiro (aba Meu histórico: sucessos, falhas, quebras, Pedra, ouro gasto, em páginas) (2026-10-31)
 - [x] **[Astra 1]** Efeito visual por faixa (+7 brilho discreto, +9 forte, +10 fogo) — parado com "Menos movimento" (2026-10-31)
 - [x] **[Astra 1]** Pedra de Proteção **só obtida jogando** (2026-10-28): cai de monstros nível 5+ (0,3%; chefes 1%), item de loot; marcada na Forja, só é gasta quando evita uma quebra, registrada no extrato (`PROTECTION_USE`). Nunca vendida por dinheiro real. Teste de integração incluso.
-- [ ] Sprite próprio da Pedra de Proteção (hoje sem imagem; só usar TibiaWiki após decidir a licença) e, se quiser, ajustar a chance de queda
+- [x] Sprite da Pedra de Proteção (2026-11-12): usa a Magic Wall Rune, que já estava no manifest.json com origem e SHA-256 (nada novo baixado); o seed deixou de abrir exceção para ela. A questão da licença dos sprites continua a mesma de todo o catálogo
 - [ ] Rodar `npm run seed` (cria a pedra e as quedas; é upsert, não apaga nada)
 - [x] **[Astra 1]** Materiais por faixa + Ferreiro fabrica, reforja e desmonta (2026-10-31): 8 materiais com sprite do TibiaWiki, Mercador só vende equipamento até o nível 100 (`shop.maxEquipmentLevel`), custos em `forge.*`, extrato com motivos `FORGE_*`, teste de integração
 - [ ] **Você:** `npm run seed` no seu banco para os materiais caírem dos monstros (sem isso o Ferreiro avisa que faltam materiais)
