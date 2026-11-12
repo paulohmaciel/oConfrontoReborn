@@ -9,7 +9,7 @@ const sprite = (name: string) => manifest.entries.find(e => e.name === name)?.pa
 // Monstros que já existiam antes da fase 1 de níveis: mantêm a regra de loot original.
 const original = new Set(['Rat', 'Wolf', 'Guardião da Pedreira', 'Rotworm', 'Orc', 'Minotaur', 'Ghoul', 'Cyclops', 'Dragon', 'Dragon Lord', 'Demon']);
 async function main() {
-  const missing = [...items.map(i => i.sprite ?? i.name), ...monsters.map(m => m.sprite ?? m.name)].filter(n => n !== 'Pedra de Proteção' && !sprite(n));
+  const missing = [...items.map(i => i.sprite ?? i.name), ...monsters.map(m => m.sprite ?? m.name)].filter(n => !sprite(n));
   if (missing.length) throw new Error(`Sem sprite no manifest.json: ${missing.join(', ')}. Importe com npm run icons antes do seed.`);
   for (const { sprite: spriteName, ...i } of items) {
     const data = { magicAttack: 0, criticalChance: 0, fireResistance: 0, speed: 0, vocations: 'ALL', ...i, spriteUrl: sprite(spriteName ?? i.name) };

@@ -1,6 +1,9 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-pedra-de-protecao', date: '2026-11-12', title: 'A Pedra de Proteção ganhou rosto', items: [
+    'A Pedra de Proteção agora tem imagem na mochila, no Ferreiro e no Mercado: a runa de muralha mágica do TibiaWiki.',
+  ] },
   { id: '2026-11-12-leitura-mais-facil', date: '2026-11-12', title: 'Leitura mais fácil', items: [
     'Nenhum texto do jogo fica abaixo de 12 px: rótulos, legendas e números pequenos cresceram.',
     'No celular, o resumo do herói ficou mais baixo e o conteúdo da aba aparece antes.',
