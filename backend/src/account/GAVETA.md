@@ -6,6 +6,7 @@
 - `auth.ts` – cadastro, login, logout, `authenticate`, `protectOrigin`, `activeBan`
 - `accountTokens.ts` – tokens de e-mail (hash, uso único)
 - `emailRoutes.ts` – esqueci/redefinir/verificar/reenviar, trocar senha logado, sair dos outros aparelhos, acessos abertos
+- `accountDeletion.ts` – `deleteAccount`: apaga a conta a pedido do dono (pede a senha). Tira e-mail, senha, sessões, perfil, recados, depoimentos, amizades, visitas, atendimentos, eventos de uso e os dados do app Confrontation; renomeia os personagens para "Apagado #id" e marca `Account.deletedAt`. Extrato, mercado, duelos, punições e pagamentos ficam (conciliação e prazo legal). Contas da equipe não são apagadas por aqui. Hoje só o app chama (`POST /api/app/account/delete`); a página pública é `frontend/public/legal/apagar-conta.html`
 - `analyticsRoutes.ts` – registro de eventos de produto autenticados, sem dados pessoais
 
 ## Rotas
@@ -15,7 +16,7 @@
 Depende de `core`, `economy`, `premium`, `game` (cria o primeiro personagem).
 
 ## Regras que não podem quebrar
-Resposta uniforme em login/recuperação (sem enumerar e-mails). Redefinir senha revoga todas as sessões; trocar senha logado revoga as outras e mantém a atual. Banido não entra. Contas de desenvolvimento (`DEV_EMAILS`) não entram em produção.
+Apagar conta nunca remove linhas de `GoldLedger`, `ItemLedger`, `PremiumOrder`, `PremiumPeriod` nem `Punishment`. Resposta uniforme em login/recuperação (sem enumerar e-mails). Redefinir senha revoga todas as sessões; trocar senha logado revoga as outras e mantém a atual. Banido não entra. Contas de desenvolvimento (`DEV_EMAILS`) não entram em produção.
 
 ## Testes
 `npm run test:integration` (operations-integration, account-integration); `npm test` (backend/tests/startup.test.ts)
