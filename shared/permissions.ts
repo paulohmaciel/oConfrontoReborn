@@ -5,7 +5,7 @@ export const permissions = {
   'accounts.read': staff, 'ledger.read': staff, 'tickets.read': staff, 'tickets.reply': staff,
   'punish.apply': mods, 'audit.read': mods, 'community.moderate': mods, 'notices.manage': mods, 'duels.read': mods,
   'settings.read': admins, 'settings.write': admins, 'economy.read': admins, 'premium.grant': admins,
-  'orders.read': admins, 'orders.manage': admins, 'gold.adjust': admins,
+  'orders.read': admins, 'orders.manage': admins, 'gold.adjust': admins, 'analytics.read': admins,
 } as const satisfies Record<string, readonly Role[]>;
 export type Permission = keyof typeof permissions;
 export function can(role: string, permission: Permission): boolean { return (permissions[permission] as readonly string[]).includes(role); }

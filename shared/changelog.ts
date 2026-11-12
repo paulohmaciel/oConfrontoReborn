@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-01-validacao-eventos', date: '2026-11-01', title: 'Validação de eventos do jogo', items: [
+    'Navegações e escolhas em listas agora registram page_view e select_content, sem texto pessoal do jogador.',
+    'A Equipe ganhou a tela Validação: dispare lotes reais de até 100 eventos, com atalhos para 20 pageviews ou 30 seleções, e confira o registro logo abaixo.',
+  ] },
   { id: '2026-11-01-amigos-no-duelo', date: '2026-11-01', title: 'Amigos dentro do Duelo', items: [
     'A aba Duelo ganhou a seção Amigos: procure um aventureiro pelo nome, peça amizade, aceite ou recuse pedidos e cancele os enviados, sem sair da arena.',
     'Aposta de ouro mais clara: mostra quanto ouro você tem, botões de 1%, 5% e 10%, aviso quando o valor passa do seu ouro e o motivo quando o Desafiar está desligado.',

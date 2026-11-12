@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import path from 'node:path';
 import { authRouter, authenticate, protectOrigin, isLoopbackHost, devQuickLoginEnabled } from './account/auth';
+import { analyticsRoutes } from './account/analyticsRoutes';
 import { gameRouter, gameErrorHandler } from './game/routes';
 import { readRoutes } from './game/readRoutes';
 import { prisma } from './core/db';
@@ -38,7 +39,7 @@ export function createApp() {
   app.use('/api', protectOrigin, rateLimit({ windowMs: 60000, limit: 180, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas ações em pouco tempo. Aguarde um minuto.' } }));
   app.use('/api/auth', rateLimit({ windowMs: 15*60000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas tentativas. Aguarde antes de entrar novamente.' } }), authRouter, emailRouter);
   app.use('/api', publicNoticeRoutes);
-  app.use('/api', authenticate, readRoutes, taskRoutes, adventureRoutes, economyRoutes, characterRoutes, premiumRoutes, communityRoutes, supportRoutes, adminRoutes, gameRouter());
+  app.use('/api', authenticate, analyticsRoutes, readRoutes, taskRoutes, adventureRoutes, economyRoutes, characterRoutes, premiumRoutes, communityRoutes, supportRoutes, adminRoutes, gameRouter());
   app.use('/api', (_req,res) => { res.status(404).json({ error: 'Rota não encontrada.' }); });
   app.use(gameErrorHandler);
   const dist = path.resolve('dist');

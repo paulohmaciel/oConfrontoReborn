@@ -31,6 +31,7 @@ model Account {
   premiumPeriods  PremiumPeriod[]
   premiumOrders   PremiumOrder[]
   tickets         SupportTicket[]
+  analyticsEvents AnalyticsEvent[]
 }
 
 model Session {
@@ -856,4 +857,21 @@ model GameNotice {
   createdAt   DateTime  @default(now())
 
   @@index([endedAt, startsAt])
+}
+
+// Eventos de produto, sem texto livre e sem dados pessoais: usados para medir a jornada e validar instrumentação.
+model AnalyticsEvent {
+  id          Int      @id @default(autoincrement())
+  accountId   Int
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name        String   @db.VarChar(64)
+  page        String?  @db.VarChar(120)
+  contentType String?  @db.VarChar(64)
+  contentId   String?  @db.VarChar(120)
+  isTest      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([accountId, createdAt])
+  @@index([page, createdAt])
 }
