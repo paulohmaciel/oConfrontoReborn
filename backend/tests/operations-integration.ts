@@ -338,6 +338,14 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       assert.match(view.label, /Nº 000001/);
       const list = await (await call(viewer.cookie, `/rare-items?blueprintId=${blueprint.id}`)).json();
       assert.equal(list.circulating, 2); assert.equal(list.destroyed, 1);
+      // Coleção pública: páginas de 10, filtros por situação e totais; o nome escondido não aparece em nenhuma lista.
+      assert.equal(list.total, 3); assert.equal(list.page, 1); assert.equal(list.items.length, 3);
+      const only = async (status: string) => (await (await call(viewer.cookie, `/rare-items?blueprintId=${blueprint.id}&status=${status}`)).json()) as { total: number; items: { destroyed: boolean; firstOfKind: boolean }[] };
+      assert.equal((await only('circulating')).total, 2); assert.equal((await only('destroyed')).items[0].destroyed, true); assert.equal((await only('first')).total, 1);
+      assert.equal((await (await call(viewer.cookie, `/rare-items?q=${encodeURIComponent('item-que-nao-existe-' + tag)}`)).json()).total, 0);
+      const totals = await (await call(viewer.cookie, '/rare-items/totals')).json() as { circulating: number; destroyed: number; firsts: number };
+      assert(totals.circulating >= 2); assert(totals.destroyed >= 1); assert(totals.firsts >= 1);
+      assert(!JSON.stringify(await (await call(viewer.cookie, `/rare-items?blueprintId=${blueprint.id}`)).json()).includes(smith.name));
     });
     await t.test('suporte: jogador abre atendimento; equipe responde; nota interna não aparece ao jogador', async () => {
       const player = await login(buyer.email, 'Nova-senha-2026!'), support = await login(staffSupport.email);

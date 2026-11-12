@@ -39,6 +39,7 @@ const LedgerPanel=lazy(()=>import('./features/ledger/LedgerPanel'));
 const SupportPanel=lazy(()=>import('./features/support/SupportPanel'));
 const AdminPanel=lazy(()=>import('./features/admin/AdminPanel'));
 const PremiumPanel=lazy(()=>import('./features/premium/PremiumPanel'));
+const RaresPanel=lazy(()=>import('./features/rares/RaresPanel'));
 export default function App(){
  const [signed,setSigned]=useState(false),[checking,setChecking]=useState(true),[register,setRegister]=useState(false);
  const [hero,setHero]=useState<Hero|null>(null),[tab,setTab]=useState<Tab>(()=>tabFromPath(location.pathname)??'journey'),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState('');
@@ -139,6 +140,7 @@ export default function App(){
  {tab==='news'&&<NewsPanel/>}
  {tab==='group'&&<GroupHuntPanel hero={hero} perform={perform} openProfile={openProfile}/>}
  {tab==='duel'&&<DuelPanel hero={hero} openProfile={openProfile}/>}
+ {tab==='rares'&&<RaresPanel openProfile={openProfile}/>}
  {tab==='forum'&&<ForumPanel hero={hero} postId={routeParam} openPost={openPost} openProfile={openProfile} perform={perform}/>}
  {tab==='profile'&&<ProfilePanel hero={hero} name={routeParam||hero.name} openProfile={openProfile} perform={perform}/>}
  </Suspense></main><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div></div>;
