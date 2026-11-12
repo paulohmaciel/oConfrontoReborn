@@ -82,6 +82,26 @@ test('MySQL: jornada completa, vocação, regiões, chefe e diário',async t=>{
       assert.equal((await prisma.character.findUniqueOrThrow({where:{id:c.id}})).goldInHand,before.goldInHand+250n);
       const state=await transaction(tx=>journeyState(tx,c.id));assert(state.finished);assert.equal(state.step,10);
     });
+    await t.test('efeito de status: criatura do pântano envenena, o efeito fica guardado na batalha e some quando ela termina',async()=>{
+      // Criatura de teste no Pântano Sombrio: muita vida e golpe fraco, para a luta durar; o herói vai ao nível da região.
+      const toad=await prisma.monster.create({data:{name:`Sapo de Teste ${tag}`,level:80,regionKey:'swamp',hp:1_000_000,attack:400,defense:0,experience:1,goldMin:1,goldMax:1,spriteUrl:''}});
+      await prisma.character.update({where:{id:c.id},data:{level:80,hp:100000,maxHp:100000}});
+      const b=await BattleService.start(a.id,c.id,toad.id);
+      assert.equal((await BattleService.snapshot(a.id,c.id,b.id)).monsterStatus,'POISON');
+      let poisoned=false,ticked=false;
+      for(let v=0;v<60&&!(poisoned&&ticked);v++){
+        const r=await BattleService.turn(a.id,c.id,b.id,v,'ATTACK');assert.equal(r.status,'ONGOING');
+        if(r.inflicted==='POISON')poisoned=true;
+        if(r.effectDamage>0){ticked=true;assert.equal(r.turns.at(-1)?.effectDamage,r.effectDamage);}
+      }
+      assert(poisoned,'o veneno deveria ter entrado em 60 golpes');assert(ticked,'o veneno deveria ter causado dano');
+      // Recarregar a tela mostra o mesmo estado; fugir encerra a batalha e os efeitos.
+      const snap=await BattleService.snapshot(a.id,c.id,b.id);
+      await prisma.battle.update({where:{id:b.id},data:{lastLog:{log:[],turns:[],effects:[{kind:'POISON',turns:2},{kind:'INVENTADO',turns:9}]}}});
+      assert.deepEqual((await BattleService.snapshot(a.id,c.id,b.id)).effects,[{kind:'POISON',turns:2}]);
+      const fled=await BattleService.turn(a.id,c.id,b.id,snap.turnVersion,'FLEE');assert.equal(fled.status,'FLED');
+      assert.deepEqual((await BattleService.snapshot(a.id,c.id,b.id)).effects,[]);
+    });
     await t.test('diário retorna conquistas, bestiário e histórico real',async()=>{
       const response=await request(`/characters/${c.id}/journal`);assert.equal(response.status,200);const j=await response.json();
       const ev=await (await request(`/characters/${c.id}/journal/events`)).json();assert(ev.items.length>0&&ev.total>=ev.items.length);assert(j.achievements.find((a:any)=>a.key==='boss-slayer')?.unlockedAt);

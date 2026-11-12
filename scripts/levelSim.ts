@@ -4,6 +4,7 @@ import { combatStats } from '../backend/src/game/combatStats';
 import { vocations, promotion, promotedOf, skillCosts, vocationAllowed, classLevels, type BaseVocation } from '../shared/adventure';
 import { levelGains, typicalAttributes } from '../shared/progression';
 import type { CatalogItem } from '../backend/prisma/catalog';
+import { monsterStatus, type ActiveEffect } from '../shared/statusEffects';
 
 export const allVocations = Object.keys(vocations) as BaseVocation[];
 let seed = 12345; const rng = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
@@ -13,7 +14,7 @@ const dice = (min: number, max: number) => min + Math.floor(rng() * (max - min +
 const gearSlots = ['WEAPON', 'ARMOR', 'HELMET', 'LEGS', 'BOOTS', 'SHIELD', 'AMULET', 'RING', 'AMMO'];
 const power = (i: CatalogItem) => i.attack + (i.magicAttack ?? 0) + i.defense + i.armor + (i.criticalChance ?? 0) + (i.fireResistance ?? 0) / 2 + (i.speed ?? 0);
 export type Hero = ReturnType<typeof hero>;
-export interface Foe { hp: number; attack: number; defense: number; isBoss?: boolean; element?: string }
+export interface Foe { hp: number; attack: number; defense: number; isBoss?: boolean; element?: string; regionKey?: string }
 
 // Personagem no nível, com os pontos distribuídos e o melhor equipamento da loja que ele pode usar.
 export function hero(voc: BaseVocation, level: number, items: CatalogItem[], tier = 0) {
@@ -36,12 +37,13 @@ function choose(hp: number, maxHp: number, mana: number, costs: Record<Action, n
 }
 export function fight(h: Hero, m: Foe) {
   const costs = skillCosts(h.c.vocation);
-  let hp = h.maxHp, mana = h.maxMana, monsterHp = m.hp, turn = 0;
+  let hp = h.maxHp, mana = h.maxMana, monsterHp = m.hp, turn = 0, effects: ActiveEffect[] = [];
+  const status = monsterStatus(m);
   while (turn < 60) {
     const action = choose(hp, h.maxHp, mana, costs, monsterIntent({ ...m, turn }, turn).warning);
-    const r = resolveTurn({ hp, maxHp: h.maxHp, mana, ...h.stats, agility: h.c.agility, vocation: h.c.vocation },
-      { hp: monsterHp, attack: m.attack, defense: m.defense, isBoss: m.isBoss, turn, element: m.element }, action, dice);
-    hp = r.hp; mana = r.mana; monsterHp = r.monsterHp; turn++;
+    const r = resolveTurn({ hp, maxHp: h.maxHp, mana, ...h.stats, agility: h.c.agility, vocation: h.c.vocation, effects },
+      { hp: monsterHp, attack: m.attack, defense: m.defense, isBoss: m.isBoss, turn, element: m.element, status }, action, dice);
+    hp = r.hp; mana = r.mana; monsterHp = r.monsterHp; effects = r.effects; turn++;
     if (r.status !== 'ONGOING') return { won: r.status === 'VICTORY', turns: turn, hpLost: 1 - hp / h.maxHp };
   }
   return { won: false, turns: turn, hpLost: 1 - hp / h.maxHp };

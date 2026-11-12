@@ -81,7 +81,7 @@
 - [x] **[Astra 8]** Mercado: busca por nome, filtros por tipo, "só o que posso usar" e melhoria mínima; comparação ▲/▼ com o equipado; histórico pessoal já está em Extrato (2026-10-31)
 - [x] Poções por faixa de nível (11, sprites TibiaWiki verificados em scripts/sprites-pocoes.json), Mercador/Mercado/mochila por tipo, equipamento leva ao Inventário, nível recomendado nas regiões (2026-10-31). **Você:** rodar `npm run seed` (o iniciar.bat já faz) para as poções novas aparecerem
 - [ ] **[Astra 5]** Chefes individuais com fases
-- [ ] **[Astra 4]** Efeitos de status (veneno, queimadura, lentidão) com duração visível; limite de duração do combate
+- [x] **[Astra 4]** Efeitos de status (2026-11-12): veneno (Pântano Sombrio), queimadura (criaturas de fogo) e lentidão (terras e era de gelo), com duração visível; regras em `shared/statusEffects.ts`, guardados no histórico da batalha (sem migração). `levels:simulate` antes e depois: nenhuma criatura abaixo de 90% de vitória, maior queda de 4 pontos. Falta: limite de duração do combate
 - [ ] **[Astra 2]** Atributos secundários nos itens (crítico, mana, resistência) — respeitando `combatStats.ts` como única origem
 
 ### Itens raros com identidade **[Astra 15]** — decisão: raro = item que chegou ao +10

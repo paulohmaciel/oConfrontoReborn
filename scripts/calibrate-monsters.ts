@@ -17,7 +17,7 @@ function search(lo: number, hi: number, measure: (x: number) => number, goal: nu
 const fights = 120;
 const run = (level: number, foe: Foe) => { resetRng(); return evaluate(level, foe, items, fights); };
 const calibrated = monsters.map(m => {
-  const goal = target(m), foe: Foe = { hp: 1, attack: 1, defense: 0, isBoss: m.isBoss, element: m.element };
+  const goal = target(m), foe: Foe = { hp: 1, attack: 1, defense: 0, isBoss: m.isBoss, element: m.element, regionKey: m.regionKey };
   const avgAttack = allVocations.reduce((t, v) => t + hero(v, m.level, items).stats.attack, 0) / allVocations.length;
   foe.defense = Math.round(avgAttack * .3);
   for (let round = 0; round < 2; round++) {

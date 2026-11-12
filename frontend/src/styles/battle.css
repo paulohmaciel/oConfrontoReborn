@@ -85,3 +85,6 @@
   .turn-side b{font-size:17px}.turn-side small{font-size:12px}
   .turn-number{font-size:32px;margin-left:0}.turn-tag{margin-left:0;font-size:11px;letter-spacing:2px}
 }
+.status-effects{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.status-effects li{font-size:12px;padding:3px 8px;border-radius:999px;border:1px solid #8a8a8a}.status-effects li.poison{border-color:#6fae5f;color:#a8d79b}.status-effects li.burn{border-color:#d2713f;color:#f0a67c}.status-effects li.slow{border-color:#6fa3c9;color:#a9cfe8}
+.status-warning{margin:6px 0 0;font-size:12px;opacity:.85}
+:root[data-theme="light"] .status-effects li.poison{color:#2f6b23}:root[data-theme="light"] .status-effects li.burn{color:#8f3d12}:root[data-theme="light"] .status-effects li.slow{color:#1f5a85}
