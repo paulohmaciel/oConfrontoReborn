@@ -1,6 +1,11 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-sprites-proprios', date: '2026-11-12', title: 'Primeiros personagens com arte própria', items: [
+    'O Cavaleiro ganhou um boneco próprio na arena, animado quadro a quadro: respira parado, corre, golpeia, ergue o escudo, se cura e cai.',
+    'O Wolf virou o Lobo das Cinzas na arena, com as brasas no dorso, mordida, uivo e queda desenhados.',
+    'É um teste: as outras vocações e criaturas continuam com os sprites de antes até a arte nova ficar pronta.',
+  ] },
   { id: '2026-11-12-arena-animada', date: '2026-11-12', title: 'A batalha ganhou vida', items: [
     'Seu herói e a criatura agora aparecem frente a frente numa arena e encenam cada turno: quem ataca avança, quem apanha leva o tranco e pisca, e o número do dano sobe na tela.',
     'Cada vocação tem o seu boneco. Arqueiro, Feiticeiro e Druida atacam de longe, com flecha ou magia voando; cura brilha, a guarda ergue o escudo, a esquiva desvia e quem perde cai.',

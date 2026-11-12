@@ -10,7 +10,9 @@ export type Float={text:string;kind:'dmg'|'crit'|'heal'|'miss'|'fx'};
 // `cls`: lunge | cast | hit | heal | guard | dodge | flee | charge | stagger, com os modificadores heavy, late (acontece no impacto) e dying.
 export type Cue={who:string;cls?:string;float?:Float;shot?:string};
 export type Step={cues:Cue[];shake?:boolean;ms:number};
-export type StageFighter={id:string;name:string;src:string;size?:number;boss?:boolean;rage?:boolean;down?:boolean;gone?:boolean;fx?:string};
+// `sheet`: folha de sprites própria (4 colunas × 6 linhas, virada para a direita). Com ela o boneco anima quadro a quadro;
+// sem ela, usa o sprite parado do TibiaWiki (`src`) com os movimentos de corpo inteiro.
+export type StageFighter={id:string;name:string;src:string;sheet?:string;size?:number;boss?:boolean;rage?:boolean;down?:boolean;gone?:boolean;fx?:string};
 const paths=new Map(manifest.entries.map(e=>[e.name,e.path]));
 export const spriteOf=(name:string,fallback='')=>paths.get(name)??fallback;
 // Boneco de cada vocação (sprites do TibiaWiki já registrados no manifesto) e o que voa quando o golpe é à distância.
@@ -18,6 +20,14 @@ const heroSprites:Record<string,string>={KNIGHT:'Hero',PALADIN:'Hunter',SORCERER
 const shots:Record<string,string>={PALADIN:'Arrow',SORCERER:'Great Fireball Rune',DRUID:'Heavy Magic Missile Rune'};
 export const heroSpriteOf=(baseVocation:string)=>spriteOf(heroSprites[baseVocation]??'Hero',spriteOf('Hero'));
 export const shotOf=(baseVocation:string)=>shots[baseVocation];
+// Arte própria do jogo (frontend/public/assets/sprites, ver CREDITOS.md lá). Linhas da folha: 1 parado, 2 avançar, 3 atacar,
+// 4 defender, 5 curar, 6 apanhar (2 quadros) e cair (2 quadros). Quem não tem folha continua com o sprite do TibiaWiki.
+const heroSheets:Record<string,string>={KNIGHT:'/assets/sprites/cavaleiro.png'};
+const monsterSheets:Record<string,string>={Wolf:'/assets/sprites/lobo-das-cinzas.png'};
+export const heroSheetOf=(baseVocation:string)=>heroSheets[baseVocation];
+export const monsterSheetOf=(name:string)=>monsterSheets[name];
+// O desenho ocupa cerca de 70% do quadro da folha, então o quadro é mostrado maior que um sprite comum.
+export const SHEET_SCALE=1.5;
 export const stageNumber=(v:number)=>v.toLocaleString('pt-BR');
 
 // Os sprites do Tibia têm 64×64, mas muitos bonecos ocupam só parte desse quadro. Para ninguém ficar miúdo, a arena mede a área
@@ -57,9 +67,9 @@ export default function BattleStage({scene,turn,left,right,steps}:{scene:string|
   const fighter=(f:StageFighter,side:'left'|'right',many:boolean)=>{
     const cue=step?.cues.find(c=>c.who===f.id),dying=!!cue?.cls?.includes('dying');
     const down=active?fallen.has(f.id)&&!dying:!!f.down,gone=!active&&!!f.gone;
-    const cls=['fighter',side,f.boss?'boss':'',f.rage&&!down?'rage':'',many?'many':'',down?'down':gone?'gone':cue?.cls??'idle'].join(' ');
+    const cls=['fighter',side,f.sheet?'sheeted':'',f.boss?'boss':'',f.rage&&!down?'rage':'',many?'many':'',down?'down':gone?'gone':cue?.cls??'idle'].join(' ');
     return <div className={cls} key={f.id}>
-      <div className={`body ${f.fx??''}`}><StageSprite src={f.src} alt={f.name} size={f.size??128}/></div>
+      <div className={`body ${f.fx??''}`}>{f.sheet?<span className="sheet-sprite sprite" role="img" aria-label={f.name} style={{width:Math.round((f.size??128)*SHEET_SCALE),height:Math.round((f.size??128)*SHEET_SCALE),backgroundImage:`url(${f.sheet})`}}/>:<StageSprite src={f.src} alt={f.name} size={f.size??128}/>}</div>
       {cue?.cls?.includes('guard')&&<span className="guard-shield"><Icon name="Mastermind Shield" size={many?40:56}/></span>}
       {cue?.float&&<b key={`${index}-${f.id}`} className={`float ${cue.float.kind} ${cue.cls?.includes('late')?'late':''}`}>{cue.float.text}</b>}
       <span className="nameplate">{f.name}</span>

@@ -7,7 +7,7 @@ import {Feedback} from '../../ui/Feedback';
 import {LimitedRows} from '../../ui/ShowMore';
 import {Pager,usePaged} from '../../ui/Pager';
 import FriendsBox from './FriendsBox';
-import BattleStage,{heroSpriteOf,shotOf,stageNumber,type Step} from '../../ui/BattleStage';
+import BattleStage,{heroSheetOf,heroSpriteOf,shotOf,stageNumber,type Step} from '../../ui/BattleStage';
 import {classLabel,classNames,baseVocation} from '../../../../shared/adventure';
 import {duelActionLabels,modeHelp,modeLabels,outcomeLabels,type DuelAction,type DuelMode,type DuelMove,type DuelOutcome,type DuelRoundRecord} from '../../../../shared/pvp';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
@@ -192,8 +192,8 @@ function DuelView({d,hero,left,busy,surrender,setSurrender,choose,forfeit,reload
     <div className="arena-head"><span className="eyebrow">{fighting?`${modeLabels[d.mode].toUpperCase()}${d.mode==='GOLD'?` · POTE ${gold(BigInt(d.stake)*2n)}`:''} · ${d.foe.ready?'O oponente já escolheu':'O oponente está escolhendo'}`:outcomeLabels[d.outcome].toUpperCase()}</span>
       <b>{fighting?`Rodada ${d.round} · resolve ${relative(left)}`:`Rodada ${d.round}`}</b></div>
     <BattleStage scene={d.id} turn={last?.round??0} steps={last?duelScript(last,{[d.me.characterId]:baseVocation(d.me.vocation),[d.foe.characterId]:baseVocation(d.foe.vocation)}):[]}
-      left={[{id:String(d.me.characterId),name:d.me.character.name,src:heroSpriteOf(baseVocation(d.me.vocation)),down:!fighting&&d.me.hp<=0,gone:!fighting&&d.me.hp>0&&d.winnerId===d.foe.characterId}]}
-      right={[{id:String(d.foe.characterId),name:d.foe.character.name,src:heroSpriteOf(baseVocation(d.foe.vocation)),down:!fighting&&d.foe.hp<=0,gone:!fighting&&d.foe.hp>0&&d.winnerId===d.me.characterId}]}/>
+      left={[{id:String(d.me.characterId),name:d.me.character.name,src:heroSpriteOf(baseVocation(d.me.vocation)),sheet:heroSheetOf(baseVocation(d.me.vocation)),down:!fighting&&d.me.hp<=0,gone:!fighting&&d.me.hp>0&&d.winnerId===d.foe.characterId}]}
+      right={[{id:String(d.foe.characterId),name:d.foe.character.name,src:heroSpriteOf(baseVocation(d.foe.vocation)),sheet:heroSheetOf(baseVocation(d.foe.vocation)),down:!fighting&&d.foe.hp<=0,gone:!fighting&&d.foe.hp>0&&d.winnerId===d.me.characterId}]}/>
     <div className="fighters"><Fighter f={d.me} you openProfile={openProfile}/><div className="versus"><Icon name="Logout Block Icon" size={54}/><span>VS</span></div><Fighter f={d.foe} you={false} openProfile={openProfile}/></div>
     {fighting?<>
       {d.me.missed>0&&<p className="notice">Você não escolheu na rodada passada e só defendeu. Mais uma rodada sem escolher é derrota.</p>}
