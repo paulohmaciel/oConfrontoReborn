@@ -29,13 +29,13 @@
   .hero-summary h2{font-size:17px;margin:0}
   .hero-summary p{margin-top:2px}
   .resources{gap:10px}
-  .resources .xp{font-size:9px;padding-top:6px}
+  .resources .xp{font-size:12px;padding-top:6px}
 
   .game-layout main{padding:20px 16px calc(96px + env(safe-area-inset-bottom))}
   .page-heading{margin-bottom:18px}
 
   .mobile-bar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:40;background:#181f23;border-top:1px solid #2c3538;padding:4px 4px calc(4px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px #0004}
-  .mobile-bar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;padding:6px 2px;background:transparent;border:0;border-radius:8px;color:#9bacaa;font-size:10px;position:relative}
+  .mobile-bar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:56px;padding:6px 2px;background:transparent;border:0;border-radius:8px;color:#9bacaa;font-size:12px;position:relative}
   .mobile-bar button .sprite{opacity:.7}
   .mobile-bar button.active{color:#dcc998;background:#35372c}
   .mobile-bar button.active .sprite{opacity:1}
@@ -51,11 +51,21 @@
 .drawer-head{display:flex;align-items:center;gap:12px}
 .drawer-head .crest{flex:0 0 auto}
 .drawer-head h2{font-family:Georgia,serif;font-size:20px}
-.drawer-head p{font-size:11px;color:#7f908c;margin-top:4px}
+.drawer-head p{font-size:12px;color:#7f908c;margin-top:4px}
 .drawer-close{margin-left:auto;font-size:18px;padding:8px 12px;min-width:44px;min-height:44px}
 .mobile-drawer section{display:grid;gap:3px}
 .mobile-drawer section .eyebrow{margin:0 0 4px 6px}
 .mobile-drawer .nav-item{width:100%;font-size:14px;padding:12px;min-height:48px}
 .mobile-drawer .char-switch{margin-top:0}
 .drawer-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:14px;border-top:1px solid #2c3538}
-.drawer-legal{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10px;color:#5c6f70}
+.drawer-legal{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:#5c6f70}
+
+/* Celular: resumo do herói mais baixo, para o conteúdo da aba aparecer antes (a XP exata fica em Atributos). */
+@media(max-width:760px){
+  .sidebar{padding:8px 16px 10px}
+  .hero-summary{margin-bottom:8px}
+  .resources{gap:8px}
+  .xp-meter .xp-detail{display:none}
+  .xp-meter{margin-top:0;padding-top:6px}
+  .resources .xp{padding-top:0}
+}

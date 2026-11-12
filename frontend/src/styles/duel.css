@@ -23,7 +23,7 @@
 .duel-page .market-row p,.duel-page .section-title>span,.duel-page .muted{font-size:12px}
 .duel-page .market-row h3,.duel-page .market-row h3 .link-button{font-size:14px}
 .duel-page .market-row button{font-size:13px;min-height:36px}
-.duel-page .tag{font-size:11px}
+.duel-page .tag{font-size:12px}
 
 :root[data-theme="light"] .duel-record div{background:#f6e6c2;border-color:#d2a964}
 :root[data-theme="light"] .duel-record b{color:#633113}:root[data-theme="light"] .duel-record span{color:#6e4f26}
