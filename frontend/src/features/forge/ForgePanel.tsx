@@ -31,7 +31,7 @@ export default function ForgePanel({hero,inventory,config,busy,fighting,perform}
     {mode==='reforge'&&o&&<ReforgeSection hero={hero} o={o} items={owned.filter(i=>!i.rareItem)} have={have} busy={busy||fighting} act={act}/>}
     {mode==='history'&&<HistorySection hero={hero} refresh={inventory.items}/>}
     {mode==='salvage'&&o&&<SalvageSection hero={hero} o={o} items={owned.filter(i=>!i.rareItem&&!i.isEquipped)} busy={busy||fighting} act={act}/>}
-    {mode!=='upgrade'&&<p className="muted">Materiais caem dos monstros da mesma faixa de nível (chefes sempre deixam alguns) e podem ser trocados no Mercado. O Mercador vende equipamentos só até o nível {o?.shopMaxLevel??100}; acima disso, o equipamento vem daqui ou do loot. A lista de itens seus mostra o equipamento e a página atual da mochila.</p>}
+    {mode!=='upgrade'&&<p className="muted">Materiais caem dos monstros da mesma faixa de nível (chefes sempre deixam alguns) e podem ser trocados no Mercado. O Mercador vende equipamentos só até o nível {o?.shopMaxLevel??100}; acima disso, o equipamento vem daqui ou do espólio dos monstros. A lista de itens seus mostra o equipamento e a página atual da mochila.</p>}
   </section>;
 }
 type Act=(work:()=>Promise<unknown>,message?:string)=>Promise<void>;
