@@ -126,7 +126,8 @@
 ### Depois de validar o jogo
 - [ ] **[Astra 3]** Talentos / especializações / redistribuição com custo
 - [ ] **[Astra 8]** Profissões e receitas; ordens de compra com ouro reservado; troca direta confirmada pelos dois
-- [ ] **[Astra 9]** Amigos/bloqueio, grupos, guildas com baú auditado, moderação
+- [x] **[Astra 9]** Bloqueio de jogador (2026-11-12): botão no perfil, lista em Visitas e pedidos; barra recado, depoimento e pedido de amizade nos dois sentidos e desfaz a amizade; migração `202611120003_character_block`
+- [ ] **[Astra 9]** Guildas com baú auditado
 - [ ] **[Astra 10]** Rankings por classe/categoria, temporadas cosméticas (sem ranking de ouro)
 - [ ] **[Astra 11]** Mais benefícios cosméticos/organização no Premium
 - [ ] **[Astra 5]** Regiões novas, bestiário, expedições, eventos de mundo

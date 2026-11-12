@@ -8,7 +8,7 @@
 - `forumService.ts` – fórum: tópicos, comentários (um nível de resposta), votos, resolvido, apagar o próprio
 
 ## Rotas
-`GET /community/profiles/:nome?as=<id>`, `GET /community/search?q=`, `GET /characters/:id/community`, `POST /characters/:id/community/{profile,scraps,testimonials,friends,report}` e ações por id.
+`GET /community/profiles/:nome?as=<id>`, `GET /community/search?q=`, `GET /characters/:id/community`, `POST /characters/:id/community/{profile,scraps,testimonials,friends,report,block,unblock}` e ações por id.
 
 ## Dependências permitidas
 `core` e `premium` (só `isPremium`). Regras e limites em `shared/community.ts`.
