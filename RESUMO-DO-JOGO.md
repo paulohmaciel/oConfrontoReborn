@@ -1,6 +1,6 @@
 # O Confronto: tudo o que o jogo tem (resumo e avaliação)
 
-Levantamento feito em 2026-11-12 a partir do código do branch mais recente (`codex-validacao-eventos`), não da memória. Os números vêm do catálogo (`backend/prisma/catalog.ts`), das regras em `shared/` e do banco (`backend/prisma/schema.prisma`).
+Levantamento feito em 2026-11-12 a partir do código, não da memória. Atualizado no mesmo dia, depois que os 32 PRs abertos foram juntados no `main`. Os números vêm do catálogo (`backend/prisma/catalog.ts`), das regras em `shared/` e do banco (`backend/prisma/schema.prisma`).
 
 ## Em uma página
 
@@ -92,7 +92,7 @@ Tecnologia: Node.js, TypeScript, Express, Prisma e MySQL no servidor; React na t
 ### Conta
 
 - **Novidades e avisos:** histórico das atualizações e faixa de aviso da equipe (por exemplo, manutenção), que aparece também na tela de entrada.
-- **Premium (30 dias):** só aparência, organização e conveniência. Inclui molduras, conjuntos de equipamento salvos, filtros da mochila, diário detalhado com estatísticas, perfil personalizado e mais personagens. Nunca muda combate, XP, ouro ou espólio. O pagamento é pelo Mercado Pago, mas o preço está em 0 (desligado) até resolver a licença dos sprites.
+- **Premium (30 dias):** a aba mostra a fase do passe (nunca assinou, ativo, terminando, agendado, encerrado), os dias que faltam, os passos da compra, a comparação Grátis × Premium e uma prévia do perfil antes de salvar. A barra lateral avisa quando faltam poucos dias. O Premium é só aparência, organização e conveniência. Inclui molduras, conjuntos de equipamento salvos, filtros da mochila, diário detalhado com estatísticas, perfil personalizado e mais personagens. Nunca muda combate, XP, ouro ou espólio. O pagamento é pelo Mercado Pago, mas o preço está em 0 (desligado) até resolver a licença dos sprites.
 - **Suporte:** pedido de ajuda e denúncia de jogador, com conversa com a equipe.
 - **Ícones:** biblioteca de todos os sprites do TibiaWiki usados, com os créditos.
 - **Configurações:** tema claro (pergaminho) ou escuro (verde, o padrão), e a opção "Menos movimento".
@@ -140,14 +140,15 @@ Cargos de Suporte, Moderador e Administrador, cada um com suas permissões. Toda
 
 ### Lacunas (o que falta ou está pela metade)
 
-1. **Nada disso está no `main`.** O `main` tem 8 commits; os outros 56 estão numa fila de cerca de 20 PRs abertos, um apoiado no outro (#17 até #31, mais o branch `codex-validacao-eventos`). Se um PR do meio mudar, todos os de cima precisam ser refeitos. **É a lacuna mais urgente.**
-2. **Equilíbrio do duelo:** no simulador, o Cavaleiro vence o Druida em cerca de 65% dos duelos do mesmo nível (meta: até 60%), e os duelos acabam em 1,5 a 3 rodadas. O Arqueiro também perde vida demais no simulador de caçada.
-3. **E-mail real:** recuperação de senha e verificação ainda só aparecem no terminal; não há envio de verdade.
-4. **Início guiado (~30 min):** a Jornada existe, mas o roteiro de primeira arma melhorada, primeiro chefe e primeira venda (Astra 6) ainda não.
-5. **Combate solo sem efeitos de status** (veneno, queimadura, lentidão) e sem chefes com fases (Astra 4 e 5).
-6. **Guildas e reino:** as tabelas `Guild`, `KingdomState`, `QuestBlueprint` e `CharacterQuest` existem no banco, mas nenhum código usa. Ou viram recurso, ou ficam documentadas como herança da versão antiga.
-7. **Perfil sem os duelos:** vitórias, derrotas e sequência aparecem só na aba Duelo.
-8. **Pedra de Proteção sem sprite** e **anúncio público de +10** ainda por fazer.
+Resolvido em 2026-11-12: os 32 PRs que estavam abertos, um apoiado no outro, foram juntados no `main` (do #2 ao #32 em ordem, e o #1, da Jornada do Premium, por último, com os conflitos resolvidos). Testes completos passaram no resultado.
+
+1. **Equilíbrio do duelo:** no simulador, o Cavaleiro vence o Druida em cerca de 65% dos duelos do mesmo nível (meta: até 60%), e os duelos acabam em 1,5 a 3 rodadas. O Arqueiro também perde vida demais no simulador de caçada.
+2. **E-mail real:** recuperação de senha e verificação ainda só aparecem no terminal; não há envio de verdade.
+3. **Início guiado (~30 min):** a Jornada existe, mas o roteiro de primeira arma melhorada, primeiro chefe e primeira venda (Astra 6) ainda não.
+4. **Combate solo sem efeitos de status** (veneno, queimadura, lentidão) e sem chefes com fases (Astra 4 e 5).
+5. **Guildas e reino:** as tabelas `Guild`, `KingdomState`, `QuestBlueprint` e `CharacterQuest` existem no banco, mas nenhum código usa. Ou viram recurso, ou ficam documentadas como herança da versão antiga.
+6. **Perfil sem os duelos:** vitórias, derrotas e sequência aparecem só na aba Duelo.
+7. **Pedra de Proteção sem sprite** e **anúncio público de +10** ainda por fazer.
 
 ### Riscos antes de abrir ao público
 
@@ -160,8 +161,7 @@ Cargos de Suporte, Moderador e Administrador, cada um com suas permissões. Toda
 
 ### Recomendação de ordem
 
-1. **Juntar a fila de PRs no `main`**, de baixo para cima (#17 → #31, depois o `codex-validacao-eventos`), rodando os testes a cada junção.
-2. **Fechar o pacote "antes de publicar":** e-mail real, segurança pendente, contas de teste, textos legais e backup agendado.
-3. **Ajustar o equilíbrio** do Cavaleiro × Druida no duelo e da vida do Arqueiro, usando os simuladores que já existem.
-4. **Início guiado de 30 minutos:** é o que mais segura o jogador novo.
-5. **Depois do beta:** efeitos de status e chefes com fases, guildas (usando ou apagando as tabelas paradas), duelos no perfil, temporadas de ranking e a decisão da licença para ligar o Premium.
+1. **Fechar o pacote "antes de publicar":** e-mail real, segurança pendente, contas de teste, textos legais e backup agendado.
+2. **Ajustar o equilíbrio** do Cavaleiro × Druida no duelo e da vida do Arqueiro, usando os simuladores que já existem.
+3. **Início guiado de 30 minutos:** é o que mais segura o jogador novo.
+4. **Depois do beta:** efeitos de status e chefes com fases, guildas (usando ou apagando as tabelas paradas), duelos no perfil, temporadas de ranking e a decisão da licença para ligar o Premium.
