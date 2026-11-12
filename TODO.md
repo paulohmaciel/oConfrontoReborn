@@ -48,6 +48,7 @@
 - [x] Duelos no perfil (/perfil/Nome): vitórias, derrotas, sequência, honra e os cinco últimos; respeita `fameHidden` (2026-11-12)
 - [x] Duelo: ajustes de equilíbrio no painel, padrão neutro (`pvp.healPercent`, `pvp.defensePercent`, `pvp.taken*`); `npm run duel:simulate` aceita os mesmos valores. Medição de 2026-11-12 (400 duelos por par): hoje pior par 69% e 1,8 rodada; com dano 60, cura 40, Cavaleiro 115 e Arqueiro 85 fica 68% e 2,9 rodadas, mas o Cavaleiro de nível 20 cai para 32% contra o Feiticeiro. Decisão do dono.
 - [x] Desempenho (2026-11-12): abas menos usadas carregam sob demanda (arquivo principal de 530 para 381 KB), leitura da Jornada sem travar o personagem, limite da API em 600 pedidos por minuto (`API_RATE_LIMIT`)
+- [x] Acessibilidade (2026-11-12): nenhum font-size abaixo de 12 px (95 regras), atalho "Pular para o conteúdo", alvo mínimo de 24 px em botões de texto e paginação, resumo do herói mais baixo no celular (149 px)
 - [x] Pendências do jogo registradas no Trello, quadro O Confronto Reborn (https://trello.com/b/dFBF6cYn/o-confronto-reborn), cartões com prefixo [Site] (2026-11-12)
 - [x] Tela: capa e descrição ao compartilhar o link (og:image), "ouro" no lugar de "gp", denúncias sem window.prompt (`ui/AskReason.tsx`), Ferreiro enxerga a mochila inteira, Caçar abre na região liberada mais alta (2026-11-12)
 - [x] `npm run dev:accounts` lista as contas de desenvolvimento do banco; com `-- --bloquear` tranca cada uma (senha aleatória, sem cargo, acessos encerrados, anúncios cancelados), sem apagar nada (2026-11-12)

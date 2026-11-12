@@ -1,5 +1,5 @@
 .theme-toggle { display: inline-flex; padding: 3px; gap: 3px; border-radius: 6px; border: 1px solid #687363; background: #141c1b; flex-shrink: 0; }
-.theme-toggle button { min-height: 32px; min-width: 52px; padding: 6px 10px; border-radius: 3px; border: 1px solid transparent; background: transparent; color: #b1c2b7; font-size: 11px; font-weight: 500; }
+.theme-toggle button { min-height: 32px; min-width: 52px; padding: 6px 10px; border-radius: 3px; border: 1px solid transparent; background: transparent; color: #b1c2b7; font-size:12px; font-weight: 500; }
 .theme-toggle button[aria-pressed="true"] { color: #e4d2a0; background: #3d4735; border-color: #77815b; }
 .theme-toggle button:hover:not(:disabled) { color: #f1e6c7; background: #333f35; border-color: #69745c; }
 .login-card>.theme-toggle { display: flex; width: fit-content; margin: -10px 0 25px auto; }
