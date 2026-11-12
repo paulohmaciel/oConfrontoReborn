@@ -32,6 +32,9 @@ model Account {
   premiumOrders   PremiumOrder[]
   tickets         SupportTicket[]
   analyticsEvents AnalyticsEvent[]
+  confrontationSave  ConfrontationSave?
+  confrontationSyncs ConfrontationSync[]
+  confrontationRanks ConfrontationRank[]
 }
 
 model Session {
@@ -874,4 +877,57 @@ model AnalyticsEvent {
   @@index([name, createdAt])
   @@index([accountId, createdAt])
   @@index([page, createdAt])
+}
+
+// ----- Confrontation (app Godot) -----
+// Save do app por conta, com versão, e o "registro verificado": o progresso que passou pelos tetos por hora.
+// O save fica como o app mandou (menos o ouro cortado); os rankings usam só os números verificados.
+model ConfrontationSave {
+  accountId     Int       @id
+  account       Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  version       Int       @default(0)
+  data          String    @db.LongText
+  sizeBytes     Int
+  clientSavedAt DateTime?
+  savedAt       DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  verifiedAt    DateTime
+  goldTotal     BigInt    @default(0)
+  xpTotal       BigInt    @default(0)
+  items         Int       @default(0)
+  furthest      Int       @default(1)
+  vigilBest     Int       @default(0)
+  power         BigInt    @default(0)
+  syncs         Int       @default(0)
+  adjustments   Int       @default(0)
+}
+
+// Uma linha por envio: o que o app disse, o que o servidor aceitou e por quê (auditoria dos tetos).
+model ConfrontationSync {
+  id        Int      @id @default(autoincrement())
+  accountId Int
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  version   Int
+  hours     Float
+  claimed   Json
+  accepted  Json
+  adjusted  String   @default("") @db.VarChar(120)
+  createdAt DateTime @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([adjusted, createdAt])
+}
+
+// Rankings: o melhor valor verificado de cada conta por período ("all" ou semana ISO "2026-W46") e métrica.
+model ConfrontationRank {
+  id        Int      @id @default(autoincrement())
+  accountId Int
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  period    String   @db.VarChar(8)
+  metric    String   @db.VarChar(8)
+  value     BigInt
+  reachedAt DateTime
+
+  @@unique([accountId, period, metric])
+  @@index([period, metric, value])
 }
