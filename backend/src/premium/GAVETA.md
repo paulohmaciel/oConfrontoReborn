@@ -4,6 +4,7 @@
 
 ## Arquivos
 - `premium.ts` – períodos encadeados, `premiumStatus`/`isPremium`
+- `shared/premium.ts` – benefícios (com sprite), títulos, molduras e `premiumPhase` (ativo / terminando / agendado / encerrado), usado pela tela e testado em `premium.test.ts`
 - `premiumService.ts` – checkout, processamento de pagamento, reembolso
 - `mercadopago.ts` – API, assinatura HMAC
 - `webhookRoutes.ts` – `POST /webhooks/mercadopago`

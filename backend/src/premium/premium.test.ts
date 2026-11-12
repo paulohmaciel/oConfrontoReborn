@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
-import { layoutPeriods } from '../../../shared/premium';
+import { layoutPeriods, premiumPhase } from '../../../shared/premium';
 import { verifySignature } from './mercadopago';
 
 const DAY = 86_400_000, t0 = new Date('2026-11-01T12:00:00Z');
@@ -47,6 +47,14 @@ test('assinatura do Mercado Pago: rejeita segredo, id, request-id, ts ou formato
   assert.equal(verifySignature({ xSignature: 'lixo', xRequestId: 'req-1', dataId: '555', secret }), false);
   assert.equal(verifySignature({ xSignature: 'ts=1,v1=zz', xRequestId: 'req-1', dataId: '555', secret }), false);
   assert.equal(verifySignature({ xSignature: '', xRequestId: '', dataId: '', secret }), false);
+});
+test('fase do passe: ativo, perto do fim, agendado, encerrado e nunca assinado', () => {
+  assert.deepEqual(premiumPhase({ active: true, until: at(10) }, t0), { phase: 'active', daysLeft: 10 });
+  assert.deepEqual(premiumPhase({ active: true, until: at(2.5) }, t0), { phase: 'expiring', daysLeft: 3 });
+  assert.equal(premiumPhase({ active: false, until: null, upcoming: at(1) }, t0).phase, 'queued');
+  assert.equal(premiumPhase({ active: false, until: null, lastEndedAt: at(-5) }, t0).phase, 'ended');
+  assert.equal(premiumPhase({ active: false, until: null }, t0).phase, 'free');
+  assert.equal(premiumPhase({ active: true, until: at(3).toISOString() }, t0).phase, 'expiring');
 });
 test('assinatura do Mercado Pago: com tolerância, recusa ts antigo ou futuro (em segundos ou milissegundos)', () => {
   const now = 1_700_000_000_000; // ms

@@ -186,3 +186,34 @@
 .region-levels{margin:6px 0 0;font-size:13px}
 :root[data-theme="light"] .shop-list article.recommended{outline-color:#8a5a1a}
 @media(max-width:760px){.item-tabs button span{font-size:11px}}
+
+/* Jornada do Premium: estado do passe, passos de compra, comparação e prévia do perfil. */
+.premium-page{display:flex;flex-direction:column;gap:18px}.premium-page>.notice{margin:0}
+.premium-hero{display:flex;flex-direction:column;gap:18px;border-color:color-mix(in srgb,#b9892f 45%,transparent);background-image:radial-gradient(ellipse at 100% 0,color-mix(in srgb,#b9892f 16%,transparent),transparent 60%)}
+.premium-status{display:flex;gap:20px;align-items:center}.premium-status h2{font-family:Georgia,serif;font-size:24px;font-weight:400;margin:6px 0 8px}.premium-status p{max-width:620px}
+.premium-crown{flex:0 0 auto;width:92px;height:92px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,#b9892f 30%,transparent),transparent 70%)}.premium-crown .sprite{filter:drop-shadow(0 8px 8px #0005)}
+.premium-hero.phase-free .premium-crown .sprite,.premium-hero.phase-ended .premium-crown .sprite{filter:grayscale(.55) drop-shadow(0 8px 8px #0005)}
+.premium-meter{display:flex;align-items:center;gap:10px;margin-top:12px;max-width:420px}.premium-meter progress{flex:1;height:6px;appearance:none;border:0;border-radius:3px;overflow:hidden;background:color-mix(in srgb,currentColor 14%,transparent)}
+.premium-meter progress::-webkit-progress-bar{background:color-mix(in srgb,currentColor 14%,transparent)}.premium-meter progress::-webkit-progress-value{background:#b9892f;border-radius:3px}.premium-meter progress::-moz-progress-bar{background:#b9892f}.premium-meter small{font-size:11px;opacity:.75;white-space:nowrap}
+.premium-hero.phase-expiring .premium-meter progress::-webkit-progress-value{background:#c4613a}.premium-hero.phase-expiring .premium-meter progress::-moz-progress-bar{background:#c4613a}
+.premium-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.premium-steps li{display:flex;gap:10px;padding:12px;border-radius:10px;border:1px solid color-mix(in srgb,currentColor 18%,transparent);opacity:.6}
+.premium-steps li.current{opacity:1;border-color:#b9892f}.premium-steps li.done{opacity:.85}.premium-steps b{flex:0 0 auto;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;font-size:12px;border:1px solid currentColor}
+.premium-steps li.current b{background:#b9892f;border-color:#b9892f;color:#171b1c}.premium-steps li.done b{background:color-mix(in srgb,#2f8f4e 35%,transparent);border-color:#2f8f4e}.premium-steps div{display:flex;flex-direction:column;gap:3px;min-width:0}.premium-steps span{font-size:12px;opacity:.8;line-height:1.5}
+.premium-cta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}.premium-soon{padding:12px 14px;border-radius:10px;border:1px dashed color-mix(in srgb,#b9892f 55%,transparent)}
+.premium-benefits{margin:0}.premium-benefits div{position:relative;gap:6px}.premium-benefits .sprite{margin-bottom:2px}.premium-benefits .pill{align-self:flex-start;margin-top:auto;opacity:.75}.premium-benefits .link-button{align-self:flex-start;margin-top:auto}
+.premium-benefits div.unlocked{border-color:color-mix(in srgb,#b9892f 50%,transparent)}
+.premium-watch{display:flex;align-items:center;gap:10px}.premium-spinner{flex:0 0 auto;width:14px;height:14px;border-radius:50%;border:2px solid color-mix(in srgb,currentColor 30%,transparent);border-top-color:#b9892f;animation:premium-spin .9s linear infinite}
+@keyframes premium-spin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.premium-spinner{animation:none;border-color:#b9892f}}
+.premium-celebrate{display:flex;align-items:center;gap:16px;border-color:#b9892f}.premium-celebrate h2{font-family:Georgia,serif;font-size:22px;font-weight:400;margin-bottom:4px}.premium-celebrate>div{flex:1}
+.compare-table{width:100%;border-collapse:collapse;font-size:13px}.compare-table th,.compare-table td{padding:10px 8px;border-bottom:1px solid color-mix(in srgb,currentColor 14%,transparent);text-align:center}
+.compare-table th[scope=row]{text-align:left;font-weight:500}.compare-table thead th{font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.75}.compare-table td:last-child{font-weight:700;color:#b9892f}.compare-table tbody tr:first-child td{font-weight:400;color:inherit;opacity:.8}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.profile-editor{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:24px;align-items:start}.profile-editor .ops-form{margin-top:0}
+.profile-card{display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:10px;border:1px solid color-mix(in srgb,currentColor 22%,transparent);position:sticky;top:16px}.profile-card h3{font-family:Georgia,serif;font-size:20px;font-weight:400}.profile-card .crest{flex:0 0 auto}
+.profile-bio{margin-top:8px;font-style:italic;font-size:12px;line-height:1.6;opacity:.85;overflow-wrap:anywhere}
+.emblem-picker,.frame-picker{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}.emblem-picker legend,.frame-picker legend{font-weight:600;margin-bottom:6px;padding:0}
+.emblem-picker button{width:48px;height:48px;padding:0;display:grid;place-items:center}.emblem-picker button.selected,.frame-picker button.selected{border-color:#b9892f;box-shadow:0 0 0 1px #b9892f}
+.frame-picker button{display:flex;align-items:center;gap:8px;font-size:12px}.frame-picker i{width:14px;height:14px;border-radius:50%;border:2px solid color-mix(in srgb,currentColor 40%,transparent)}
+.swatch-gold i{background:#d9a93c}.swatch-emerald i{background:#2fae6a}.swatch-ruby i{background:#c43a4b}.swatch-azure i{background:#3d7ad9}
+.order-paid{color:#2f8f4e}.order-refunded,.order-failed{opacity:.7}
+@media(max-width:760px){.premium-status{flex-direction:column;align-items:flex-start}.premium-steps{grid-template-columns:1fr}.profile-editor{grid-template-columns:1fr}.profile-card{position:static}.compare-table{font-size:12px}}

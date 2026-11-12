@@ -31,7 +31,8 @@ import TasksPanel from './features/tasks/TasksPanel';
 import AtlasPanel from './features/atlas/AtlasPanel';
 import SettingsPanel from './features/settings/SettingsPanel';
 import CharactersPanel from './features/characters/CharactersPanel';
-import PremiumPanel from './features/premium/PremiumPanel';
+import PremiumPanel,{type PaymentReturn} from './features/premium/PremiumPanel';
+import {premiumPhase} from '../../shared/premium';
 import LedgerPanel from './features/ledger/LedgerPanel';
 import SupportPanel from './features/support/SupportPanel';
 import AdminPanel from './features/admin/AdminPanel';
@@ -43,7 +44,7 @@ export default function App(){
  const [market,setMarket]=useState<MarketPage>(emptyPage<Listing>()),[tasks,setTasks]=useState<Task[]>([]),[battle,setBattle]=useState<Battle|null>(null),[selected,setSelected]=useState<Item|null>(null),[price,setPrice]=useState('100'),[search,setSearch]=useState('');
  const [atlasSearch,setAtlasSearch]=useState('');
  const [journeyState,setJourneyState]=useState<JourneyState|null>(null),[signupVocation,setSignupVocation]=useState<BaseVocation>('KNIGHT');
- const [config,setConfig]=useState<GameConfig|null>(null),[staff,setStaff]=useState(false),[premiumActive,setPremiumActive]=useState(false),[roster,setRoster]=useState<{id:number;name:string;level:number;vocation:string}[]>([]);
+ const [config,setConfig]=useState<GameConfig|null>(null),[staff,setStaff]=useState(false),[premiumActive,setPremiumActive]=useState(false),[premiumSoon,setPremiumSoon]=useState(false),[premiumReturn,setPremiumReturn]=useState<PaymentReturn|null>(null),[roster,setRoster]=useState<{id:number;name:string;level:number;vocation:string}[]>([]);
  const [authView,setAuthView]=useState<'form'|'forgot'|'reset'>(()=>new URLSearchParams(location.search).has('redefinir')?'reset':'form'),[resetToken]=useState(()=>new URLSearchParams(location.search).get('redefinir')??''),[landing,setLanding]=useState('');
  const [bagFilter,setBagFilter]=useState({slot:'',q:'',fav:false}),bagFilterRef=useRef(bagFilter);
  const [menuOpen,setMenuOpen]=useState(false),[routeParam,setRouteParam]=useState(()=>paramFromPath(location.pathname));
@@ -71,17 +72,20 @@ export default function App(){
   heroId.current=id;setRoster(me.characters);await refresh(id);
   const [m,s]=await Promise.all([api<Monster[]>('/monsters'),api<Blueprint[]>('/shop')]);setMonsters(m);setShop(s);
   api<GameConfig>('/config').then(setConfig).catch(()=>{});api<{role:string}>('/admin/me').then(()=>setStaff(true)).catch(()=>setStaff(false));
-  api<{active:boolean}>('/premium').then(p=>setPremiumActive(p.active)).catch(()=>{});setSigned(true);
+  loadPremium();setSigned(true);
  }
  async function selectCharacter(id:number){await perform(async()=>{heroId.current=id;try{localStorage.setItem('oc_character',String(id));}catch{}setBattle(null);setBagFilter({slot:'',q:'',fav:false});bagFilterRef.current={slot:'',q:'',fav:false};const me=await api<{characters:typeof roster}>('/me');setRoster(me.characters);setTab('journey');},'');}
  async function afterCreated(id:number){await enter(id);try{localStorage.setItem('oc_character',String(id));}catch{}setTab('journey');}
- async function reloadPremium(){if(heroId.current)await refresh(heroId.current,bagPage.current);api<{active:boolean}>('/premium').then(p=>setPremiumActive(p.active)).catch(()=>{});}
+ function loadPremium(){api<{active:boolean;until:string|null}>('/premium').then(p=>{setPremiumActive(p.active);setPremiumSoon(premiumPhase(p).phase==='expiring');}).catch(()=>{});}
+ async function reloadPremium(){if(heroId.current)await refresh(heroId.current,bagPage.current);loadPremium();}
  useEffect(()=>{
   const params=new URLSearchParams(location.search);const verify=params.get('verificar'),premium=params.get('premium');
   if(params.has('verificar')||params.has('redefinir')||params.has('premium'))history.replaceState(null,'',location.pathname);
   if(verify)void verifyEmailToken(verify).then(setLanding);
-  if(premium)setLanding(premium==='ok'?'Pagamento recebido! Seu Premium será liberado assim que o Mercado Pago confirmar.':premium==='pendente'?'Pagamento pendente. Assim que for confirmado, o Premium é liberado automaticamente.':'O pagamento não foi concluído. Você pode tentar novamente quando quiser.');
-  enter().catch(e=>{if(!(e instanceof ApiError&&e.status===401))notifyError(e);}).finally(()=>setChecking(false));
+  // Volta do Mercado Pago: abre a aba Premium, que acompanha a confirmação. Sem sessão, avisa na tela de login.
+  const paid:PaymentReturn|null=premium?(premium==='ok'||premium==='pendente'?premium:'falhou'):null;
+  if(paid){setPremiumReturn(paid);setTab('premium');}
+  enter().catch(e=>{if(!(e instanceof ApiError&&e.status===401))notifyError(e);else if(paid)setLanding(paid==='ok'?'Pagamento recebido! Entre na sua conta para acompanhar a liberação do Premium.':paid==='pendente'?'Pagamento pendente. Assim que for confirmado, o Premium é liberado automaticamente.':'O pagamento não foi concluído. Você pode tentar novamente quando quiser.');}).finally(()=>setChecking(false));
  },[]);
  useEffect(()=>{if(!signed||!heroId.current)return;const id=heroId.current;
    if(tab==='market')api<Page<Listing>>('/market').then(setMarket).catch(notifyError);
@@ -104,23 +108,23 @@ export default function App(){
  const openProfile=(name:string)=>{setRouteParam(name);setTab('profile');window.scrollTo(0,0);};
  const openPost=(id:string)=>{setRouteParam(id);setTab('forum');window.scrollTo(0,0);};
  const goTab=(id:Tab)=>{setRouteParam('');setTab(id);setSearch('');setSelected(null);window.scrollTo(0,0);};
- const logout=()=>void perform(async()=>{await api('/auth/logout',{});setSigned(false);setHero(null);heroId.current=null;setBattle(null);setStaff(false);setPremiumActive(false);},'');
+ const logout=()=>void perform(async()=>{await api('/auth/logout',{});setSigned(false);setHero(null);heroId.current=null;setBattle(null);setStaff(false);setPremiumActive(false);setPremiumSoon(false);},'');
  return <div className={`shell ${hero.profileFrame?`frame-${hero.profileFrame}`:''}`}><header className="topbar"><div className="wordmark">O CONFRONTO<span>CRÔNICAS DE UM AVENTUREIRO</span></div><div className="top-meta"><ThemeToggle/><span className="online-dot"/> Mundo local <span className="separator">|</span><Icon name="Gold Coin" size={24}/><b>{fmt(hero.goldInHand)}</b><button className="quiet logout" onClick={logout}>Sair</button>
   <button type="button" className="menu-button" aria-label="Abrir menu" aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={()=>setMenuOpen(true)}><span/><span/><span/>{hero.statPoints>0&&<i className="menu-dot" aria-label="Pontos de atributo para distribuir"/>}</button></div></header>
  <MobileDrawer open={menuOpen} onClose={()=>setMenuOpen(false)} hero={hero} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={goTab} onSelectCharacter={id=>void selectCharacter(id)} onLogout={logout}/>
  <MobileBar tabs={allTabs} tab={tab} fighting={fighting} onTab={goTab}/>
- <div className="game-layout"><Sidebar hero={hero} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={goTab} onSelectCharacter={id=>void selectCharacter(id)}/>
+ <div className="game-layout"><Sidebar hero={hero} premiumSoon={premiumSoon} roster={roster} busy={busy} fighting={fighting} tabs={allTabs} tab={tab} onTab={goTab} onSelectCharacter={id=>void selectCharacter(id)}/>
  <main><NoticeBanner onOpenNews={()=>setTab('news')}/><div className="page-heading"><div><span className="eyebrow">{fighting?'COMBATE EM ANDAMENTO':'PREPARE SEU PRÓXIMO PASSO'}</span><h1>{allTabs.find(t=>t[0]===tab)?.[1]}</h1></div><span className="world-tag">CAPRIEL · AVENTUREIROS</span></div>{error&&<div className="error notice" role="alert">{error}</div>}{notice&&<div className="success notice" role="status">{notice}</div>}{landing&&<div className="success notice" role="status">{landing} <button className="link-button" onClick={()=>setLanding('')}>Fechar</button></div>}{fighting&&tab!=='hunt'&&<div className="notice">Seu combate continua ativo. <button className="link-button" onClick={()=>setTab('hunt')}>Voltar ao combate</button></div>}
  {tab==='journey'&&<JourneyPanel hero={hero} state={journeyState} busy={busy} command={command} go={setTab}/>}
  {tab==='journal'&&<JournalPanel characterId={hero.id}/>}
- {tab==='characters'&&<CharactersPanel hero={hero} config={config} command={command} onSelect={id=>void selectCharacter(id)} onCreated={id=>void afterCreated(id)}/>}
- {tab==='premium'&&<PremiumPanel hero={hero} onChanged={reloadPremium}/>}
+ {tab==='characters'&&<CharactersPanel hero={hero} config={config} command={command} onPremium={()=>setTab('premium')} onSelect={id=>void selectCharacter(id)} onCreated={id=>void afterCreated(id)}/>}
+ {tab==='premium'&&<PremiumPanel hero={hero} onChanged={reloadPremium} go={setTab} returning={premiumReturn} onReturnSeen={()=>setPremiumReturn(null)}/>}
  {tab==='ledger'&&<LedgerPanel characterId={hero.id}/>}
  {tab==='support'&&<SupportPanel/>}
  {tab==='admin'&&staff&&<AdminPanel/>}
  {tab==='hunt'&&<HuntPanel hero={hero} state={journeyState} monsters={monsters} battle={battle} busy={busy} start={start} turn={turn} goTemple={()=>setTab('temple')} dismiss={()=>setBattle(null)}/>}
  {tab==='bag'&&<div className="equipment-inline"><EquipmentPanel hero={hero} busy={busy} fighting={fighting} command={command} inBag={tab==='bag'} openSlot={openSlot}/></div>}
- {tab==='bag'&&<BagPanel hero={hero} inventory={inventory} selected={selected} setSelected={setSelected} bagFilter={bagFilter} setBagFilter={setBagFilter} premiumActive={premiumActive} busy={busy} fighting={fighting} config={config} price={price} setPrice={setPrice} command={command} perform={perform} onApplyFilter={()=>{bagFilterRef.current=bagFilter;void perform(()=>refresh(hero.id,1),'');}} goPage={p=>void perform(()=>refresh(hero.id,p),'')}/>}
+ {tab==='bag'&&<BagPanel hero={hero} inventory={inventory} selected={selected} setSelected={setSelected} bagFilter={bagFilter} setBagFilter={setBagFilter} premiumActive={premiumActive} onPremium={()=>setTab('premium')} busy={busy} fighting={fighting} config={config} price={price} setPrice={setPrice} command={command} perform={perform} onApplyFilter={()=>{bagFilterRef.current=bagFilter;void perform(()=>refresh(hero.id,1),'');}} goPage={p=>void perform(()=>refresh(hero.id,p),'')}/>}
  {tab==='shop'&&<ShopPanel hero={hero} shop={shop} busy={busy} command={command}/>}
  {tab==='market'&&<MarketPanel hero={hero} market={market} setMarket={setMarket} config={config} busy={busy} perform={perform} command={command}/>}
  {tab==='forge'&&<ForgePanel hero={hero} inventory={inventory} config={config} busy={busy} fighting={fighting} perform={perform}/>}
