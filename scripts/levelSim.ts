@@ -11,7 +11,7 @@ export const resetRng = (s = 12345) => { seed = s; };
 const dice = (min: number, max: number) => min + Math.floor(rng() * (max - min + 1));
 // Distribuição típica dos pontos ganhos (força, vitalidade, agilidade, resistência).
 const split: Record<BaseVocation, [number, number, number, number]> = { KNIGHT: [.6, .4, 0, 0], PALADIN: [.5, .2, .3, 0], SORCERER: [.1, .3, 0, .6], DRUID: [.1, .3, 0, .6] };
-const gearSlots = ['WEAPON', 'ARMOR', 'HELMET', 'LEGS', 'BOOTS', 'SHIELD', 'AMULET', 'RING'];
+const gearSlots = ['WEAPON', 'ARMOR', 'HELMET', 'LEGS', 'BOOTS', 'SHIELD', 'AMULET', 'RING', 'AMMO'];
 const power = (i: CatalogItem) => i.attack + (i.magicAttack ?? 0) + i.defense + i.armor + (i.criticalChance ?? 0) + (i.fireResistance ?? 0) / 2 + (i.speed ?? 0);
 export type Hero = ReturnType<typeof hero>;
 export interface Foe { hp: number; attack: number; defense: number; isBoss?: boolean; element?: string }

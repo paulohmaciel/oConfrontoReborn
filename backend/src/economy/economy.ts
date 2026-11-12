@@ -3,7 +3,8 @@ import { GameError } from '../core/engine';
 import type { GoldReason, ItemReason } from '../../../shared/economy';
 type Tx = Prisma.TransactionClient;
 export interface Ref { type: string; id: number }
-const STACKABLE = ['LOOT', 'CONSUMABLE', 'AMMO'];
+// Munição (flechas, virotes e runas de foco) é equipamento permanente: não é gasta em combate, então não empilha.
+const STACKABLE = ['LOOT', 'CONSUMABLE'];
 export const isStackable = (slot: string) => STACKABLE.includes(slot);
 
 // Toda alteração de ouro passa por aqui, na mesma transação da operação, e deixa um registro auditável.
