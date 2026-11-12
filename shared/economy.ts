@@ -79,8 +79,8 @@ export const settingDefs = {
   'confrontation.stagesPerHour': { default: 6, min: 1, max: 100, label: 'App: fases novas por hora aceitas', unit: 'fases/h', group: 'Confrontation (app)' },
   'confrontation.maxStage': { default: 20, min: 1, max: 1000, label: 'App: última fase da campanha (a Vigília só conta depois dela)', unit: 'fase', group: 'Confrontation (app)' },
   'confrontation.vigilPerHour': { default: 30, min: 1, max: 10_000, label: 'App: níveis de Vigília por hora aceitos', unit: 'níveis/h', group: 'Confrontation (app)' },
-  'confrontation.powerPercentPerHour': { default: 50, min: 1, max: 1000, label: 'App: crescimento do poder da companhia por hora (sobre o último verificado)', unit: '%/h', group: 'Confrontation (app)' },
-  'confrontation.powerPerHour': { default: 20_000, min: 1, max: 1_000_000_000, label: 'App: poder somado por hora aceito mesmo partindo de pouco', unit: 'poder/h', group: 'Confrontation (app)' },
+  'confrontation.powerPercentPerHour': { default: 25, min: 1, max: 1000, label: 'App: crescimento do poder da companhia por hora (sobre o último verificado)', unit: '%/h', group: 'Confrontation (app)' },
+  'confrontation.powerPerHour': { default: 3_000, min: 1, max: 1_000_000_000, label: 'App: poder somado por hora aceito mesmo partindo de pouco', unit: 'poder/h', group: 'Confrontation (app)' },
   'confrontation.firstSyncHours': { default: 48, min: 0, max: 720, label: 'App: horas de jogo aceitas no primeiro envio (progresso feito antes da conta)', unit: 'h', group: 'Confrontation (app)' },
   'confrontation.sessionDays': { default: 30, min: 1, max: 365, label: 'App: validade da entrada no app (renovada com o uso)', unit: 'dias', group: 'Confrontation (app)' },
 } as const satisfies Record<string, SettingDef>;

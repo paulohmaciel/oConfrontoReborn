@@ -7,7 +7,7 @@ const caps = defaultSettings();
 const at = (p: Partial<Progress>): Progress => ({ ...freshProgress(), ...p });
 
 test('dentro do teto, tudo o que o app diz entra', () => {
-  const claimed = at({ goldTotal: 20_000n, xpTotal: 10_000n, items: 100, furthest: 3, power: 5_000n });
+  const claimed = at({ goldTotal: 20_000n, xpTotal: 10_000n, items: 100, furthest: 3, power: 2_500n });
   const { accepted, adjusted } = capProgress(freshProgress(), claimed, 1, caps);
   assert.deepEqual(adjusted, []);
   assert.deepEqual(accepted, claimed);
@@ -49,9 +49,9 @@ test('fase nunca passa da última da campanha', () => {
 
 test('poder: o maior entre a porcentagem do anterior e o fixo por hora', () => {
   const small = capProgress(at({ power: 100n }), at({ power: 10n ** 9n }), 1, caps).accepted.power;
-  assert.equal(small, 100n + 20_000n);
+  assert.equal(small, 100n + 3_000n);
   const big = capProgress(at({ power: 1_000_000n }), at({ power: 10n ** 9n }), 1, caps).accepted.power;
-  assert.equal(big, 1_500_000n);
+  assert.equal(big, 1_250_000n);
 });
 
 test('número que desce entra (jogo novo), sem ajuste', () => {
