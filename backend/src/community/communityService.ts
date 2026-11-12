@@ -161,7 +161,7 @@ export async function respondFriend(accountId: number, characterId: number, id: 
       return { message: 'Pedido aceito.' };
     }
     await tx.friendship.delete({ where: { id } });
-    return { message: action === 'decline' ? 'Pedido recusado.' : 'Amizade desfeita.' };
+    return { message: action === 'decline' ? 'Pedido recusado.' : f.status === 'PENDING' ? 'Pedido cancelado.' : 'Amizade desfeita.' };
   });
 }
 

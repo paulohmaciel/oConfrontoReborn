@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-01-amigos-no-duelo', date: '2026-11-01', title: 'Amigos dentro do Duelo', items: [
+    'A aba Duelo ganhou a seção Amigos: procure um aventureiro pelo nome, peça amizade, aceite ou recuse pedidos e cancele os enviados, sem sair da arena.',
+    'Aposta de ouro mais clara: mostra quanto ouro você tem, botões de 1%, 5% e 10%, aviso quando o valor passa do seu ouro e o motivo quando o Desafiar está desligado.',
+  ] },
   { id: '2026-10-31-duelo-valendo', date: '2026-10-31', title: 'Duelo valendo: ouro, espólio e honra', items: [
     'Ao desafiar, escolha o que está em jogo: Honra, Aposta de ouro ou Espólio. O convite mostra o risco antes de aceitar, e o Espólio pede confirmação.',
     'Aposta de ouro: os dois depositam o mesmo valor (até 10% do ouro do mais pobre). Quem vence leva o pote, menos a taxa da arena; empate devolve.',
