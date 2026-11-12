@@ -172,3 +172,8 @@
 @media (prefers-reduced-motion:reduce){.tier-glow{animation:none}}
 /* O ".bag-slot>span" é o rótulo +N/×N no canto; o ícone com brilho/fogo também é span e fica no lugar normal. */
 .bag-slot>.tier-glow,.bag-slot>.fire-icon{position:relative;right:auto;bottom:auto}
+/* Mercado: filtros e comparação com o equipado (▲/▼ além da cor) */
+.market-filters select{min-width:150px}.market-filters .shop-filter{margin:0}
+.compare{font-size:11px;margin:3px 0 0;opacity:.9}.compare span{margin-right:8px;white-space:nowrap}
+.compare .up{color:#7fc48f}.compare .down{color:#e07a6b}
+:root[data-theme="light"] .compare .up{color:#2f6b2a}:root[data-theme="light"] .compare .down{color:#8a2a12}

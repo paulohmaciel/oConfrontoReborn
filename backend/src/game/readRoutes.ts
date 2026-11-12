@@ -50,9 +50,14 @@ readRoutes.get('/shop', asyncRoute(async (_req,res) => {
 }));
 readRoutes.get('/market', asyncRoute(async (req,res) => {
   const { page, skip, take } = pageOf(req.query), q = String(req.query.q ?? '').trim().slice(0, 40);
+  // Filtros opcionais: tipo de item (slot), nível máximo de uso e melhoria mínima.
+  const slots = ['WEAPON', 'ARMOR', 'HELMET', 'LEGS', 'BOOTS', 'SHIELD', 'AMULET', 'RING', 'AMMO', 'BACKPACK', 'LOOT', 'CONSUMABLE'];
+  const slot = slots.includes(String(req.query.slot)) ? String(req.query.slot) as ItemSlot : undefined;
+  const maxLevel = req.query.maxLevel ? Math.min(1000, integer(Number(req.query.maxLevel))) : undefined, minTier = req.query.minTier ? Math.min(10, integer(Number(req.query.minTier), 0)) : 0;
   await expireListings(20);
   // Mais recentes primeiro; a busca filtra pelo nome do item.
-  const where: Prisma.MarketListingWhereInput = { status: 'OPEN', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }], ...(q ? { blueprint: { name: { contains: q } } } : {}) };
+  const blueprint: Prisma.ItemBlueprintWhereInput = { ...(q ? { name: { contains: q } } : {}), ...(slot ? { slot } : {}), ...(maxLevel ? { minLevel: { lte: maxLevel } } : {}) };
+  const where: Prisma.MarketListingWhereInput = { status: 'OPEN', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }], ...(Object.keys(blueprint).length ? { blueprint } : {}), ...(minTier ? { upgradeTier: { gte: minTier } } : {}) };
   const [items, total] = await Promise.all([prisma.marketListing.findMany({ where, include: { blueprint: true, seller: { select: { name: true } } }, orderBy: { id: 'desc' }, skip, take }), prisma.marketListing.count({ where })]);
   res.json(paged(items, total, page));
 }));
