@@ -27,3 +27,26 @@ export async function itemDrift(db: PrismaClient | Prisma.TransactionClient, lim
     ORDER BY x.characterId, x.blueprintId LIMIT ${Math.max(1, Math.min(limit, 5000))}`;
   return rows.map(r => ({ characterId: r.characterId, blueprintId: r.blueprintId, inventory: Number(r.inv), ledger: Number(r.led), difference: Number(r.inv) - Number(r.led) }));
 }
+
+// Fluxo concentrado: conta que, nos últimos `days` dias, vendeu no Mercado para várias contas recém-criadas.
+// É o desenho de "contas descartáveis alimentando uma principal" (cada conta nova nasce com ouro e gasta tudo num anúncio caro da principal).
+// Não prova nada sozinho: é um sinal para a equipe olhar. Conta nova = criada até `days` dias antes da compra.
+export interface FeederAlert { accountId: number; email: string; seller: string; newBuyers: number; goldFromNew: string; goldTotal: string; share: number }
+export async function feederAlerts(db: PrismaClient | Prisma.TransactionClient, days = 7, minNewBuyers = 3, minSharePercent = 50): Promise<FeederAlert[]> {
+  const since = new Date(Date.now() - days * 86_400_000);
+  const rows = await db.$queryRaw<{ accountId: number; email: string; seller: string; newBuyers: bigint; goldFromNew: Prisma.Decimal | bigint | null; goldTotal: Prisma.Decimal | bigint | null }[]>`
+    SELECT sa.id AS accountId, sa.email, MIN(sc.name) AS seller,
+      COUNT(DISTINCT CASE WHEN ba.createdAt >= DATE_SUB(l.soldAt, INTERVAL ${days} DAY) THEN ba.id END) AS newBuyers,
+      SUM(CASE WHEN ba.createdAt >= DATE_SUB(l.soldAt, INTERVAL ${days} DAY) THEN l.price ELSE 0 END) AS goldFromNew,
+      SUM(l.price) AS goldTotal
+    FROM \`MarketListing\` l
+    JOIN \`Character\` sc ON sc.id = l.sellerId JOIN \`Account\` sa ON sa.id = sc.accountId
+    JOIN \`Character\` bc ON bc.id = l.buyerId JOIN \`Account\` ba ON ba.id = bc.accountId
+    WHERE l.status = 'SOLD' AND l.soldAt >= ${since}
+    GROUP BY sa.id, sa.email
+    HAVING newBuyers >= ${minNewBuyers}
+    ORDER BY goldFromNew DESC LIMIT 100`;
+  return rows.map(r => { const fromNew = BigInt(String(r.goldFromNew ?? 0).split('.')[0]), total = BigInt(String(r.goldTotal ?? 0).split('.')[0]);
+    return { accountId: r.accountId, email: r.email, seller: r.seller, newBuyers: Number(r.newBuyers), goldFromNew: fromNew.toString(), goldTotal: total.toString(), share: total > 0n ? Number(fromNew * 100n / total) : 0 }; })
+    .filter(a => a.share >= minSharePercent);
+}

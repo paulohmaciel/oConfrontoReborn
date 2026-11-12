@@ -14,7 +14,7 @@ import { premiumStatus } from '../src/premium/premium';
 import { processMercadoPagoPayment } from '../src/premium/premiumService';
 import { issueToken } from '../src/account/accountTokens';
 import { unequip, upgrade, sellNpc } from '../src/game/gameService';
-import { itemDrift } from '../src/economy/reconcile';
+import { itemDrift, feederAlerts } from '../src/economy/reconcile';
 import { loadSettings } from '../src/core/settings';
 
 // Estes cenários pressupõem os padrões de configuração (taxa de venda 5%, anúncio 10 de ouro, promoção 5000).
@@ -57,6 +57,18 @@ test('MySQL: livro-razão, mercado com taxas e expiração, Premium, pagamentos,
       // Comprar "como" o personagem de outra conta é recusado antes de travar qualquer linha.
       await assert.rejects(() => buyListing(novato.id, buyerChar.id, listingId), /Personagem não encontrado/);
       await cancelListing(seller.id, sellerChar.id, listingId);
+    });
+    await t.test('conciliação: conta que vende para três contas recém-criadas aparece no alerta de fluxo concentrado', async () => {
+      const main = await mk('principal');
+      for (const n of ['f1', 'f2', 'f3']) {
+        const feeder = await mk(n), item = await prisma.inventoryItem.create({ data: { characterId: main.characters[0].id, blueprintId: sword.id } });
+        const { listingId } = await listItem(main.id, main.characters[0].id, item.id, '5000', randomUUID());
+        await buyListing(feeder.id, feeder.characters[0].id, listingId);
+      }
+      const alert = (await feederAlerts(prisma)).find(a => a.accountId === main.id);
+      assert(alert, 'a conta principal deveria estar no alerta'); assert.equal(alert.newBuyers, 3); assert.equal(alert.goldFromNew, '15000'); assert.equal(alert.share, 100);
+      // Com exigência maior de compradores novos, ela sai da lista.
+      assert.equal((await feederAlerts(prisma, 7, 4)).some(a => a.accountId === main.id), false);
     });
     await t.test('mercado: taxa de anúncio, taxa de venda e saldos conferem com o livro-razão', async () => {
       const item = await prisma.inventoryItem.create({ data: { characterId: sellerChar.id, blueprintId: sword.id } });
