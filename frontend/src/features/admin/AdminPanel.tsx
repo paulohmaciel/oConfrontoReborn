@@ -4,6 +4,8 @@ import {api} from '../../lib/api';
 import {fmt,brl,when} from '../../lib/format';
 import {reasonLabel} from '../ledger/reasonLabel';
 import type {Permission} from '../../../../shared/permissions';
+import {Pager,usePaged} from '../../ui/Pager';
+import {outcomeLabels,type DuelOutcome} from '../../../../shared/pvp';
 const msg=(e:unknown)=>e instanceof Error?e.message:'Ocorreu um erro.';
 type Me={role:string;permissions:Permission[]};
 const roleName:Record<string,string>={SUPPORT:'Apoio',MODERATOR:'Moderação',ADMIN:'Administração'};
@@ -20,11 +22,11 @@ export default function AdminPanel({onLeave}:{onLeave?:()=>void}) {
   if(error)return <section className="panel"><p className="error" role="alert">{error}</p></section>;
   if(!me)return <section className="panel"><p>Carregando…</p></section>;
   const has=(p:Permission)=>me.permissions.includes(p);
-  const tabs=[has('tickets.read')&&['tickets','Atendimento'],has('accounts.read')&&['accounts','Contas'],has('economy.read')&&['economy','Economia'],has('settings.read')&&['settings','Configurações'],has('orders.read')&&['orders','Pagamentos'],has('notices.manage')&&['notices','Avisos'],has('audit.read')&&['audit','Auditoria']].filter(Boolean) as string[][];
+  const tabs=[has('tickets.read')&&['tickets','Atendimento'],has('accounts.read')&&['accounts','Contas'],has('economy.read')&&['economy','Economia'],has('settings.read')&&['settings','Configurações'],has('orders.read')&&['orders','Pagamentos'],has('notices.manage')&&['notices','Avisos'],has('duels.read')&&['duels','Duelos'],has('audit.read')&&['audit','Auditoria']].filter(Boolean) as string[][];
   return <><section className="panel"><div className="section-title"><h2>Painel da equipe</h2><span className="pill">{roleName[me.role]??me.role}</span></div>
     <div className="admin-bar" role="tablist">{tabs.map(([id,label])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?'active-chip':''} onClick={()=>setTab(id)}>{label}</button>)}</div>
     <p className="muted">Toda alteração exige um motivo e fica registrada na auditoria com seu nome.</p></section>
-    {tab==='tickets'&&<Tickets can={has('tickets.reply')}/>}{tab==='accounts'&&<Accounts has={has}/>}{tab==='economy'&&<Economy/>}{tab==='settings'&&<Settings canWrite={has('settings.write')}/>}{tab==='orders'&&<Orders canManage={has('orders.manage')}/>}{tab==='notices'&&<Notices/>}{tab==='audit'&&<Audit/>}</>;
+    {tab==='tickets'&&<Tickets can={has('tickets.reply')}/>}{tab==='accounts'&&<Accounts has={has}/>}{tab==='economy'&&<Economy/>}{tab==='settings'&&<Settings canWrite={has('settings.write')}/>}{tab==='orders'&&<Orders canManage={has('orders.manage')}/>}{tab==='notices'&&<Notices/>}{tab==='duels'&&<Duels/>}{tab==='audit'&&<Audit/>}</>;
 }
 
 type TicketRow={id:number;kind:string;subject:string;status:string;updatedAt:string;account:{email:string}};
@@ -68,7 +70,7 @@ function Accounts({has}:{has:(p:Permission)=>boolean}) {
       {charId&&<><h3>Ouro (últimas entradas)</h3>{gold.map(g=><div className="ledger-row" key={g.id}><span>{when(g.createdAt)}</span><span>{reasonLabel[g.reason]??g.reason}</span><b className={BigInt(g.delta)<0n?'neg':'pos'}>{fmt(g.delta)}</b><small>saldo {fmt(g.balanceAfter)}</small></div>)}
         <h3>Itens (últimas entradas)</h3>{items.map(g=><div className="ledger-row" key={g.id}><span>{when(g.createdAt)}</span><span>{g.item} +{g.upgradeTier} · {g.reason}</span><b className={g.delta<0?'neg':'pos'}>{g.delta>0?'+':''}{g.delta}</b><small/></div>)}</>}
       {has('punish.apply')&&<><h3>Punições</h3><Limited items={acc.punishments} label="Ver mais" render={p=><div className="ledger-row" key={p.id}><span>{p.kind} · {when(p.startsAt)}</span><span>{p.reason}</span><b>{p.revokedAt?'revogada':p.expiresAt?`até ${when(p.expiresAt)}`:'sem prazo'}</b>{!p.revokedAt&&<button disabled={a.busy} onClick={()=>void act(()=>api(`/admin/punishments/${p.id}/revoke`,{reason}),'Punição revogada.')}>Revogar</button>}</div>}/>
-        <form className="ops-inline" onSubmit={e=>{e.preventDefault();void act(()=>api(`/admin/accounts/${acc.id}/punishments`,{kind,reason,...(hours?{hours:Number(hours)}:{})}),'Punição aplicada.');}}><select aria-label="Tipo" value={kind} onChange={e=>setKind(e.target.value)}><option value="WARNING">Advertência</option><option value="MARKET_BAN">Bloquear mercado</option><option value="BAN">Banir conta</option></select><input aria-label="Horas" inputMode="numeric" placeholder="Horas (vazio = sem prazo)" value={hours} onChange={e=>setHours(e.target.value)}/><button disabled={a.busy}>Aplicar</button></form></>}
+        <form className="ops-inline" onSubmit={e=>{e.preventDefault();void act(()=>api(`/admin/accounts/${acc.id}/punishments`,{kind,reason,...(hours?{hours:Number(hours)}:{})}),'Punição aplicada.');}}><select aria-label="Tipo" value={kind} onChange={e=>setKind(e.target.value)}><option value="WARNING">Advertência</option><option value="MARKET_BAN">Bloquear mercado</option><option value="PVP_BLOCK">Proibir duelos</option><option value="BAN">Banir conta</option></select><input aria-label="Horas" inputMode="numeric" placeholder="Horas (vazio = sem prazo)" value={hours} onChange={e=>setHours(e.target.value)}/><button disabled={a.busy}>Aplicar</button></form></>}
       {has('premium.grant')&&<><h3>Premium</h3><Limited items={acc.periods} label="Ver mais" render={p=><div className="ledger-row" key={p.id}><span>{p.source} · {p.days} dias</span><span>{when(p.startsAt)} → {when(p.endsAt)}</span><b>{p.revokedAt?'revogado':'ativo'}</b>{!p.revokedAt&&<button disabled={a.busy} onClick={()=>void act(()=>api(`/admin/premium-periods/${p.id}/revoke`,{reason}),'Período revogado.')}>Revogar</button>}</div>}/>
         <form className="ops-inline" onSubmit={e=>{e.preventDefault();void act(()=>api(`/admin/accounts/${acc.id}/premium`,{days:Number(days),reason},premiumKey.get(`${acc.id}|${days}|${reason}`)).then(r=>{premiumKey.clear();return r;}),'Dias concedidos.');}}><input aria-label="Dias" inputMode="numeric" value={days} onChange={e=>setDays(e.target.value)} required/><button disabled={a.busy}>Conceder dias de Premium</button></form></>}
       {acc.tickets.length>0&&<><h3>Atendimentos</h3><Limited items={acc.tickets} label="Ver mais" render={t=><div key={t.id}>#{t.id} · {t.subject} <span className="pill">{t.status}</span></div>}/></>}</section>}</>;
@@ -146,4 +148,15 @@ function Notices(){
     <Limited items={rows} label="Ver mais" render={n=><div className="ledger-row" key={n.id}><span>{n.kind==='MAINTENANCE'?'Manutenção':'Aviso'} · {when(n.startsAt)}</span><span>{n.message}</span><b>{active(n)?'No ar':n.endedAt?'Encerrado':'Expirado'}</b>
       {active(n)&&<button disabled={a.busy} onClick={()=>{const r=window.prompt('Motivo para encerrar o aviso (fica na auditoria):');if(r)void a.run(async()=>{await api(`/admin/notices/${n.id}/end`,{reason:r});await load();},'Aviso encerrado.');}}>Encerrar</button>}</div>}/>
     {!rows.length&&<p className="empty">Nenhum aviso publicado ainda.</p>}</section>;
+}
+
+// Duelos recentes, para investigar contas múltiplas (mesmos pares, vitórias em sequência). Só leitura.
+type DuelRow={id:number;challenger:{id:number;name:string;level:number;accountId:number};opponent:{id:number;name:string;level:number;accountId:number};status:string;outcome:DuelOutcome;winnerId:number|null;round:number;createdAt:string;finishedAt:string|null};
+function Duels(){
+  const list=usePaged<DuelRow>('/admin/duels');
+  const who=(c:DuelRow['challenger'],d:DuelRow)=><>{c.name} <small>(Nv. {c.level} · conta #{c.accountId})</small>{d.winnerId===c.id?<b> · venceu</b>:null}</>;
+  return <section className="panel"><div className="section-title"><h2>Duelos</h2><span>{list.total}</span></div>{list.error&&<p className="error" role="alert">{list.error}</p>}
+    <table className="admin-table"><thead><tr><th>#</th><th>Desafiante</th><th>Desafiado</th><th>Resultado</th><th>Rodadas</th><th>Quando</th></tr></thead><tbody>
+      {list.items.map(d=><tr key={d.id}><td>{d.id}</td><td>{who(d.challenger,d)}</td><td>{who(d.opponent,d)}</td><td>{d.status==='FIGHTING'?'Em andamento':outcomeLabels[d.outcome]}</td><td>{d.round}</td><td>{when(d.finishedAt??d.createdAt)}</td></tr>)}</tbody></table>
+    <Pager page={list.page} pages={list.pages} onPage={p=>void list.go(p)} busy={list.loading}/></section>;
 }

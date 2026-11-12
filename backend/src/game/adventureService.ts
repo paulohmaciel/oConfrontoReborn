@@ -14,7 +14,7 @@ export async function awardAchievements(tx:Tx,characterId:number) {
     tx.inventoryItem.count({where:{characterId,upgradeTier:{gte:1}}}),tx.character.findUniqueOrThrow({where:{id:characterId}}),
     tx.groupBattle.findMany({where:{outcome:'VICTORY',fighters:{some:{characterId}}},distinct:['huntKey'],select:{huntKey:true}})
   ]);
-  const conditions:Record<string,boolean>={'first-victory':wins>=1,hunter:wins>=10,blacksmith:upgraded>0,explorer:c.journeyStep>=4,'boss-slayer':bosses>0,'group-hunter':groupWins.length>0,'four-marks':groupWins.length>=4};
+  const conditions:Record<string,boolean>={'first-victory':wins>=1,hunter:wins>=10,blacksmith:upgraded>0,explorer:c.journeyStep>=4,'boss-slayer':bosses>0,'group-hunter':groupWins.length>0,'four-marks':groupWins.length>=4,'first-blood':c.pvpWins>=1,'ten-duels':c.pvpWins+c.pvpLosses>=10};
   for(const def of achievementDefinitions) {
     if(!conditions[def.key])continue;
     if(await tx.characterAchievement.findUnique({where:{characterId_key:{characterId,key:def.key}}}))continue;

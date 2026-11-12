@@ -126,6 +126,9 @@ model Character {
   partiesLed             HuntParty[]            @relation("PartyLeader")
   partyMemberships       HuntPartyMember[]
   groupFights            GroupBattleFighter[]
+  duelsChallenged        Duel[]                 @relation("DuelChallenger")
+  duelsReceived          Duel[]                 @relation("DuelOpponent")
+  duelFights             DuelFighter[]
   profileTitle           String?                @db.VarChar(24)
   profileEmblem          String?                @db.VarChar(40)
   profileBio             String?                @db.VarChar(160)
@@ -746,6 +749,53 @@ model GroupBattleFighter {
 
   @@unique([battleId, characterId])
   @@index([characterId, rewarded])
+}
+
+// Duelo (PvP) entre amigos: convite, rodadas com prazo. Vida e mana do duelo vivem em DuelFighter; o Character só ganha pvpWins/pvpLosses.
+model Duel {
+  id              Int           @id @default(autoincrement())
+  challengerId    Int
+  challenger      Character     @relation("DuelChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
+  opponentId      Int
+  opponent        Character     @relation("DuelOpponent", fields: [opponentId], references: [id], onDelete: Cascade)
+  status          String        @default("INVITED") @db.VarChar(12) // INVITED | FIGHTING | FINISHED
+  round           Int           @default(1)
+  inviteExpiresAt DateTime
+  deadlineAt      DateTime?
+  state           Json?
+  log             Json?
+  outcome         String        @default("PENDING") @db.VarChar(12)
+  winnerId        Int?
+  createdAt       DateTime      @default(now())
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  fighters        DuelFighter[]
+
+  @@index([challengerId, status])
+  @@index([opponentId, status])
+  @@index([status, deadlineAt])
+  @@index([status, inviteExpiresAt])
+}
+
+model DuelFighter {
+  id                Int       @id @default(autoincrement())
+  duelId            Int
+  duel              Duel      @relation(fields: [duelId], references: [id], onDelete: Cascade)
+  characterId       Int
+  character         Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  vocation          String    @db.VarChar(16)
+  hp                Int
+  maxHp             Int
+  mana              Int
+  maxMana           Int
+  action            String?   @db.VarChar(16)
+  // Rodadas seguidas sem escolher (duas = derrota por abandono).
+  missed            Int       @default(0)
+  // Preenchido enquanto o duelo está em andamento: um duelo por vez.
+  activeCharacterId Int?      @unique
+
+  @@unique([duelId, characterId])
+  @@index([characterId])
 }
 
 // Avisos da equipe para todos os jogadores (manutenção, eventos). Aparecem também na tela de entrada.

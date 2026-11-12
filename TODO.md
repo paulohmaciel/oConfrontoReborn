@@ -121,7 +121,7 @@
 - [ ] **[Astra 10]** Rankings por classe/categoria, temporadas cosméticas (sem ranking de ouro)
 - [ ] **[Astra 11]** Mais benefícios cosméticos/organização no Premium
 - [ ] **[Astra 5]** Regiões novas, bestiário, expedições, eventos de mundo
-- [ ] PvP (só depois de equilibrar monstros)
+- [x] PvP: Duelo entre amigos (2026-10-31) — desafio, rodadas com prazo, rendição, histórico, ranking de honra, PVP_BLOCK, lista da equipe e denúncia. Fora por ora: aposta de ouro, títulos cosméticos por marcos, bloco "Duelos" no perfil, duelo ao vivo. Equilíbrio: `npm run duel:simulate` (Cavaleiro × Druida chega a ~67%; Paladino abaixo das outras).
 
 ## 🧑‍💻 Só você pode fazer (eu não consigo rodar aqui)
 - [ ] Dê dois cliques em `iniciar.bat`: atualiza tudo (install, generate, migrações, seed, login master, build) e já inicia o jogo em http://localhost:3333.
