@@ -30,7 +30,7 @@ Todas sem cookie, sem `Origin` e sem `X-Game-Client`: o token vai em `Authorizat
 
 ## Fora desta gaveta (decisões que ficam para depois)
 - **O ouro do app não entra no ouro dos personagens do site.** Nada muda de dono entre os dois jogos nesta fase, por isso não há lançamento em `addGold`/`recordGold`. Juntar as moedas (plano de união, "Moeda: uma só") precisa de uma taxa de conversão decidida pelo dono, e aí entra uma razão nova no extrato.
-- Os tetos padrão são generosos (cerca de 5× o que o jogo paga) e **não foram medidos** com simulação do app. Ajuste no painel da Equipe, grupo "Confrontation (app)".
+- Os tetos padrão de ouro, XP, itens, fase e Vigília são generosos e **não foram medidos** com simulação do app (o de ouro fica largo de propósito: ouro cortado sai do save do jogador). O de poder foi medido no app em 12/11/2026: uma companhia começa com cerca de 500 de poder, seis heróis sem itens têm 2.900, com itens de raridade média 10.800 e no máximo do jogo cerca de 130.000; por isso 3.000 por hora ou 25% por hora, e 48 h no primeiro envio (144.000). Ajuste no painel da Equipe, grupo "Confrontation (app)".
 - Lutas de ranking calculadas no servidor (arena, Vigília) ficam para a próxima etapa (`design/ideias-melhorias.md` do app, item 0c).
 
 ## Dependências permitidas

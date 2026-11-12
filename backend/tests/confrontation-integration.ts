@@ -111,9 +111,9 @@ test('MySQL: app Confrontation — token, save na nuvem, tetos e rankings', asyn
       assert.equal(r.status, 200);
       // Simula 3 horas desde o último envio verificado.
       await prisma.confrontationSave.update({ where: { accountId: B.id }, data: { verifiedAt: new Date(Date.now() - 3 * 3_600_000) } });
-      const later = await putSave(B.id, { baseVersion: 1, data: saveOf({ gold: 50_000, xp: 40_000, items: 200, furthest: 5 }), summary: { power: 30_000 } });
+      const later = await putSave(B.id, { baseVersion: 1, data: saveOf({ gold: 50_000, xp: 40_000, items: 200, furthest: 5 }), summary: { power: 18_000 } });
       assert(!later.conflict);
-      if (!later.conflict) { assert.deepEqual(later.adjusted, []); assert.equal(later.verified.furthest, 5); assert.equal(later.verified.power, '30000'); }
+      if (!later.conflict) { assert.deepEqual(later.adjusted, []); assert.equal(later.verified.furthest, 5); assert.equal(later.verified.power, '18000'); }
     });
     await t.test('rankings: geral e da semana, ordem, posição de quem pede e métrica inválida', async () => {
       const r = await call('GET', '/rankings?metric=power&period=all', undefined, tokenA);
