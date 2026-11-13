@@ -4,9 +4,11 @@
 import art from './itemArt.json';
 
 const files = new Set<string>(art.files);
+/** Os itens que têm GIF próprio, pelo nome do arquivo, em ordem alfabética (para a Biblioteca de ícones). */
+export const itemArtFiles: readonly string[] = art.files;
 
 /** O nome do arquivo de um item: minúsculas, sem acento, com hífen. "Crossbow da 1ª Era" → "crossbow-da-1-era". */
-export const itemFile = (name: string) => name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[ªº]/g, '')
+export const itemFile = (name: string) => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[ªº]/g, '')
   .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 /** O item-base de uma variante das Eras ou de Capriel: "Crossbow da 1ª Era" → "Crossbow". */
