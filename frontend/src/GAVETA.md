@@ -14,7 +14,7 @@
 | `features/shop` · `market` · `forge` · `tasks` | Mercador, Mercado, Ferreiro (risco de quebra), Tarefas |
 | `features/characters` · `premium` · `ledger` · `support` | Personagens/classes, Premium e pagamento, Extrato, Suporte |
 | `features/admin` | Painel da equipe |
-| `features/atlas` | Biblioteca de ícones |
+| `features/atlas` | Biblioteca de ícones: a arte própria dos itens (GIFs) e os sprites do TibiaWiki |
 
 **Regras:** `lib` não importa ninguém; `ui` só `lib`; uma feature não importa outra (exceções declaradas em `scripts/check-drawers.mjs`: admin→ledger, auth→adventure, characters→adventure). Preços, taxas e chances vêm de `/config`; nunca fixe números de economia aqui. Ações do jogador: `command()`/`perform()` do `App.tsx` (já mandam `Idempotency-Key`). Rótulos em português; sprites do TibiaWiki.
 
