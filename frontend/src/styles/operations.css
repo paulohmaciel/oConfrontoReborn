@@ -233,3 +233,5 @@ img.sprite.own-art,canvas.sprite.own-art{transform:scale(1.28);transform-origin:
 main:focus{outline:none}
 .link-button,.pager button,.profile-tabs button,.forge-tabs button{min-height:24px;min-width:24px}
 @media(max-width:760px){.link-button{min-height:32px;padding-top:4px;padding-bottom:4px}}
+/* Retrato de criatura com arte própria (ui/CreatureIcon.tsx): 128 px reduzido com suavização, sem distorcer. */
+img.sprite.creature-art{image-rendering:auto;object-fit:contain}
