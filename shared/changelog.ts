@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-artes-mais-leves', date: '2026-11-12', title: 'Batalhas abrem mais rápido', items: [
+    'As artes da arena ficaram cerca de 6 vezes mais leves, então a batalha carrega mais depressa, principalmente no celular.',
+    'Pequenos defeitos das artes foram limpos: sobras na borda de alguns quadros e uma névoa clara em volta de alguns personagens.',
+  ] },
   { id: '2026-11-12-arte-propria-catalogo', date: '2026-11-12', title: 'Arte própria para todas as criaturas', items: [
     'As 55 criaturas distintas do catálogo de Caçar agora têm arte própria na arena, com animações de movimento, ataque, defesa e queda. As variantes das Eras e de Capriel usam a folha da criatura original.',
   ] },

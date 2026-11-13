@@ -21,12 +21,12 @@ const heroSprites:Record<string,string>={KNIGHT:'Hero',PALADIN:'Hunter',SORCERER
 const shots:Record<string,string>={PALADIN:'Arrow',SORCERER:'Great Fireball Rune',DRUID:'Heavy Magic Missile Rune'};
 export const heroSpriteOf=(baseVocation:string)=>spriteOf(heroSprites[baseVocation]??'Hero',spriteOf('Hero'));
 export const shotOf=(baseVocation:string)=>shots[baseVocation];
-// Arte própria do jogo (frontend/public/assets/sprites, ver CREDITOS.md lá). Linhas da folha: 1 parado, 2 avançar, 3 atacar,
+// Arte própria do jogo (versão de site em frontend/public/assets/sprites, ver CREDITOS.md lá; originais em art/sprites). Linhas da folha: 1 parado, 2 avançar, 3 atacar,
 // 4 defender, 5 curar, 6 apanhar (2 quadros) e cair (2 quadros). Quem não tem folha continua com o sprite do TibiaWiki.
-// A lista do que existe vem de lib/spriteSheets.json, escrito por `npm run art` (o build roda antes): salvar o PNG com o nome do ART.md basta.
+// A lista do que existe vem de lib/spriteSheets.json, escrito por `npm run art` (o build roda antes): salvar o PNG em art/sprites com o nome do ART.md basta.
 const heroSheets:Record<string,string>=sheets.heroes,monsterSheets:Record<string,string>=sheets.monsters;
 const nameOfPath=new Map(manifest.entries.map(e=>[e.path,e.name]));
-const sheetUrl=(file?:string)=>file?`/assets/sprites/${file}.png`:undefined;
+const sheetUrl=(file?:string)=>file?`/assets/sprites/${file}.webp`:undefined;
 export const heroSheetOf=(baseVocation:string)=>sheetUrl(heroSheets[baseVocation]);
 // As criaturas das Eras e de Capriel usam o sprite da original; por isso a folha é achada pelo sprite, e só depois pelo nome.
 export const monsterSheetOf=(name:string,spritePath?:string)=>sheetUrl(monsterSheets[nameOfPath.get(spritePath??'')??'']??monsterSheets[name]);

@@ -30,7 +30,7 @@ Os números de combate e progressão são regras desta adaptação. Não são um
 
 ## Instalação no Laragon
 
-Use Node.js 20+ com npm e MySQL 8/InnoDB. O código foi verificado com MySQL 8.4.3. O Laragon fornece o banco; o servidor Node inicia separadamente.
+Use Node.js 20.9 ou mais novo com npm e MySQL 8/InnoDB. O código foi verificado com MySQL 8.4.3. O Laragon fornece o banco; o servidor Node inicia separadamente.
 
 1. Extraia o ZIP em uma **pasta nova**, por exemplo `C:\laragon\www\oconfronto-moderno`. Não execute o instalador antigo sobre esta versão.
 2. Inicie o MySQL pelo Laragon. Crie uma base vazia chamada `oconfronto_moderno` e um usuário próprio com acesso somente a ela. Você pode fazer isso pelo HeidiSQL do Laragon. Para instalação, o usuário precisa criar tabelas, índices e chaves; em uma implantação pública, separe o usuário de migrações do usuário da aplicação.
