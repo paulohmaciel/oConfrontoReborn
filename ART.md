@@ -2,7 +2,7 @@
 
 > Arquivo gerado por `npm run art` a partir de `scripts/art.mjs`. Para mudar um comando, edite a lista naquele arquivo e rode de novo.
 
-A arena de batalha está trocando os sprites do TibiaWiki por arte própria. Cada personagem vem numa folha só, sempre no mesmo formato. Hoje **2 de 59** folhas estão prontas.
+A arena de batalha está trocando os sprites do TibiaWiki por arte própria. Cada personagem vem numa folha só, sempre no mesmo formato. Hoje **59 de 59** folhas estão prontas.
 
 ## Como usar
 1. Copie o comando inteiro do personagem e cole no ChatGPT (gere um personagem por vez).
@@ -23,64 +23,64 @@ A arena de batalha está trocando os sprites do TibiaWiki por arte própria. Cad
 | Arquivo | Personagem | Tipo | Situação | Usado por |
 |---|---|---|---|---|
 | `cavaleiro.png` | Cavaleiro | Herói | feito | vocação Cavaleiro |
-| `arqueiro.png` | Arqueiro | Herói | falta | vocação Arqueiro |
-| `feiticeiro.png` | Feiticeiro | Herói | falta | vocação Feiticeiro |
-| `druida.png` | Druida | Herói | falta | vocação Druida |
-| `rato-do-celeiro.png` | Rato do Celeiro | Criatura | falta | Rat (nv. 1) |
-| `besouro-de-casca.png` | Besouro de Casca | Criatura | falta | Bug (nv. 2) |
+| `arqueiro.png` | Arqueiro | Herói | feito | vocação Arqueiro |
+| `feiticeiro.png` | Feiticeiro | Herói | feito | vocação Feiticeiro |
+| `druida.png` | Druida | Herói | feito | vocação Druida |
+| `rato-do-celeiro.png` | Rato do Celeiro | Criatura | feito | Rat (nv. 1) |
+| `besouro-de-casca.png` | Besouro de Casca | Criatura | feito | Bug (nv. 2) |
 | `lobo-das-cinzas.png` | Lobo das Cinzas | Criatura | feito | Wolf (nv. 3) |
-| `ciclope-da-pedreira.png` | Ciclope da Pedreira | Criatura | falta | Guardião da Pedreira (nv. 4), Cyclops (nv. 12), Cyclops da 1ª Era (nv. 255) |
-| `vibora-do-capim.png` | Víbora do Capim | Criatura | falta | Snake (nv. 4) |
-| `verme-da-terra.png` | Verme da Terra | Criatura | falta | Rotworm (nv. 5) |
-| `orc-saqueador.png` | Orc Saqueador | Criatura | falta | Orc (nv. 5) |
-| `anao-minerador.png` | Anão Minerador | Criatura | falta | Dwarf (nv. 7) |
-| `esqueleto-errante.png` | Esqueleto Errante | Criatura | falta | Skeleton (nv. 7) |
-| `minotauro.png` | Minotauro | Criatura | falta | Minotaur (nv. 8) |
-| `carnical.png` | Carniçal | Criatura | falta | Ghoul (nv. 10) |
-| `anao-soldado.png` | Anão Soldado | Criatura | falta | Dwarf Soldier (nv. 11) |
-| `anao-guardiao.png` | Anão Guardião | Criatura | falta | Dwarf Guard (nv. 15) |
-| `orc-lanceiro.png` | Orc Lanceiro | Criatura | falta | Orc Spearman (nv. 15) |
-| `mumia.png` | Múmia | Criatura | falta | Mummy (nv. 16), Mummy da 1ª Era (nv. 339) |
-| `orc-guerreiro.png` | Orc Guerreiro | Criatura | falta | Orc Warrior (nv. 18) |
-| `golem-de-pedra.png` | Golem de Pedra | Criatura | falta | Stone Golem (nv. 19), Golem Ancestral (nv. 198), Stone Golem da 1ª Era (nv. 311), Stone Golem da 4ª Era (nv. 747) |
-| `vigia-de-ossos.png` | Vigia de Ossos | Criatura | falta | Bonelord (nv. 21), Bonelord da 1ª Era (nv. 325) |
-| `orc-xama.png` | Orc Xamã | Criatura | falta | Orc Shaman (nv. 22), Orc Shaman da 4ª Era (nv. 705) |
-| `dragao-das-ruinas.png` | Dragão das Ruínas | Criatura | falta | Dragon (nv. 25), Dragon da 1ª Era (nv. 381) |
-| `amazona.png` | Amazona | Criatura | falta | Amazon (nv. 26), Amazon da 4ª Era (nv. 719) |
-| `orc-furioso.png` | Orc Furioso | Criatura | falta | Orc Berserker (nv. 29), Orc Berserker da 1ª Era (nv. 269) |
-| `minotauro-arqueiro.png` | Minotauro Arqueiro | Criatura | falta | Minotaur Archer (nv. 31), Minotaur Archer da 4ª Era (nv. 733) |
-| `valquiria.png` | Valquíria | Criatura | falta | Valkyrie (nv. 33), Valkyrie da 1ª Era (nv. 283) |
-| `minotauro-mago.png` | Minotauro Mago | Criatura | falta | Minotaur Mage (nv. 35), Minotaur Mage da 3ª Era (nv. 611) |
-| `lider-orc.png` | Líder Orc | Chefe | falta | Orc Leader (nv. 36) |
-| `senhor-dos-dragoes.png` | Senhor dos Dragões | Chefe | falta | Dragon Lord (nv. 40), Dragão Ancião (nv. 236), Dragon Lord da 4ª Era (nv. 831), Senhor dos Dragões da 4ª Era (nv. 850), Dragon Lord de Capriel (nv. 967) |
-| `minotauro-guarda.png` | Minotauro Guarda | Criatura | falta | Minotaur Guard (nv. 41), Minotaur Guard da 1ª Era (nv. 297) |
-| `esqueleto-demoniaco.png` | Esqueleto Demoníaco | Criatura | falta | Demon Skeleton (nv. 46), Demon Skeleton da 1ª Era (nv. 353) |
-| `diabrete-de-fogo.png` | Diabrete de Fogo | Criatura | falta | Fire Devil (nv. 51), Fire Devil da 1ª Era (nv. 367), Fire Devil de Capriel (nv. 939) |
-| `elemental-de-fogo.png` | Elemental de Fogo | Criatura | falta | Fire Elemental (nv. 56), Elemental de Fogo Ancestral (nv. 185), Fire Elemental da 3ª Era (nv. 681), Fire Elemental da 4ª Era (nv. 803) |
-| `demonio-do-abismo.png` | Demônio do Abismo | Chefe | falta | Demon (nv. 60), Demon da 1ª Era (nv. 400), Demon da 4ª Era (nv. 817), Demon de Capriel (nv. 981) |
-| `troll-do-gelo.png` | Troll do Gelo | Criatura | falta | Frost Troll (nv. 60), Frost Troll da 2ª Era (nv. 405) |
-| `lobo-do-inverno.png` | Lobo do Inverno | Criatura | falta | Winter Wolf (nv. 64), Winter Wolf da 2ª Era (nv. 419) |
-| `urso-polar.png` | Urso Polar | Criatura | falta | Polar Bear (nv. 69), Polar Bear da 2ª Era (nv. 433) |
-| `mamute.png` | Mamute | Criatura | falta | Mammoth (nv. 75), Mammoth da 2ª Era (nv. 447) |
-| `troll-do-pantano.png` | Troll do Pântano | Criatura | falta | Swamp Troll (nv. 80), Swamp Troll da 2ª Era (nv. 461) |
-| `jacare-matador.png` | Jacaré Matador | Criatura | falta | Killer Caiman (nv. 85), Killer Caiman da 2ª Era (nv. 475) |
-| `bruxa-do-pantano.png` | Bruxa do Pântano | Criatura | falta | Witch (nv. 90), Witch da 2ª Era (nv. 489) |
-| `aranha-gigante.png` | Aranha Gigante | Chefe | falta | Giant Spider (nv. 100), Giant Spider da 4ª Era (nv. 789), Giant Spider de Capriel (nv. 953) |
-| `necromante.png` | Necromante | Criatura | falta | Necromancer (nv. 100), Necromancer da 2ª Era (nv. 517), Necromancer da 4ª Era (nv. 761) |
-| `viuva-lamentosa.png` | Viúva Lamentosa | Criatura | falta | Wailing Widow (nv. 108), Wailing Widow da 2ª Era (nv. 503), Wailing Widow de Capriel (nv. 883) |
-| `cavaleiro-negro.png` | Cavaleiro Negro | Criatura | falta | Black Knight (nv. 116), Black Knight da 2ª Era (nv. 531), Black Knight da 4ª Era (nv. 775), Black Knight de Capriel (nv. 897) |
-| `bruxo-da-cripta.png` | Bruxo da Cripta | Chefe | falta | Warlock (nv. 125), Warlock da 3ª Era (nv. 639), Warlock de Capriel (nv. 925) |
-| `assassino.png` | Assassino | Criatura | falta | Assassin (nv. 126), Assassin da 3ª Era (nv. 555) |
-| `elfo-batedor.png` | Elfo Batedor | Criatura | falta | Elf Scout (nv. 133), Elf Scout da 3ª Era (nv. 569) |
-| `elfo-arcanista.png` | Elfo Arcanista | Criatura | falta | Elf Arcanist (nv. 141), Elf Arcanist da 3ª Era (nv. 583), Elf Arcanist de Capriel (nv. 855) |
-| `monge-renegado.png` | Monge Renegado | Criatura | falta | Monk (nv. 149), Monk da 3ª Era (nv. 597) |
-| `heroi-caido.png` | Herói Caído | Chefe | falta | Hero (nv. 158), Hero da 3ª Era (nv. 625), Hero de Capriel (nv. 911) |
-| `elemental-de-agua.png` | Elemental de Água | Criatura | falta | Water Elemental (nv. 162), Water Elemental da 3ª Era (nv. 653) |
-| `serpente-marinha.png` | Serpente Marinha | Criatura | falta | Young Sea Serpent (nv. 172), Serpente Abissal (nv. 222), Young Sea Serpent da 3ª Era (nv. 667), Young Sea Serpent de Capriel (nv. 869) |
-| `gosma-primordial.png` | Gosma Primordial | Criatura | falta | Gosma Primordial (nv. 210) |
-| `infernatil.png` | Infernatil | Chefe | falta | Infernatil (nv. 250), Infernatil da 3ª Era (nv. 700) |
-| `verminor.png` | Verminor | Chefe | falta | Verminor (nv. 550) |
-| `apocalypse.png` | Apocalypse | Chefe | falta | Apocalypse (nv. 1000) |
+| `ciclope-da-pedreira.png` | Ciclope da Pedreira | Criatura | feito | Guardião da Pedreira (nv. 4), Cyclops (nv. 12), Cyclops da 1ª Era (nv. 255) |
+| `vibora-do-capim.png` | Víbora do Capim | Criatura | feito | Snake (nv. 4) |
+| `verme-da-terra.png` | Verme da Terra | Criatura | feito | Rotworm (nv. 5) |
+| `orc-saqueador.png` | Orc Saqueador | Criatura | feito | Orc (nv. 5) |
+| `anao-minerador.png` | Anão Minerador | Criatura | feito | Dwarf (nv. 7) |
+| `esqueleto-errante.png` | Esqueleto Errante | Criatura | feito | Skeleton (nv. 7) |
+| `minotauro.png` | Minotauro | Criatura | feito | Minotaur (nv. 8) |
+| `carnical.png` | Carniçal | Criatura | feito | Ghoul (nv. 10) |
+| `anao-soldado.png` | Anão Soldado | Criatura | feito | Dwarf Soldier (nv. 11) |
+| `anao-guardiao.png` | Anão Guardião | Criatura | feito | Dwarf Guard (nv. 15) |
+| `orc-lanceiro.png` | Orc Lanceiro | Criatura | feito | Orc Spearman (nv. 15) |
+| `mumia.png` | Múmia | Criatura | feito | Mummy (nv. 16), Mummy da 1ª Era (nv. 339) |
+| `orc-guerreiro.png` | Orc Guerreiro | Criatura | feito | Orc Warrior (nv. 18) |
+| `golem-de-pedra.png` | Golem de Pedra | Criatura | feito | Stone Golem (nv. 19), Golem Ancestral (nv. 198), Stone Golem da 1ª Era (nv. 311), Stone Golem da 4ª Era (nv. 747) |
+| `vigia-de-ossos.png` | Vigia de Ossos | Criatura | feito | Bonelord (nv. 21), Bonelord da 1ª Era (nv. 325) |
+| `orc-xama.png` | Orc Xamã | Criatura | feito | Orc Shaman (nv. 22), Orc Shaman da 4ª Era (nv. 705) |
+| `dragao-das-ruinas.png` | Dragão das Ruínas | Criatura | feito | Dragon (nv. 25), Dragon da 1ª Era (nv. 381) |
+| `amazona.png` | Amazona | Criatura | feito | Amazon (nv. 26), Amazon da 4ª Era (nv. 719) |
+| `orc-furioso.png` | Orc Furioso | Criatura | feito | Orc Berserker (nv. 29), Orc Berserker da 1ª Era (nv. 269) |
+| `minotauro-arqueiro.png` | Minotauro Arqueiro | Criatura | feito | Minotaur Archer (nv. 31), Minotaur Archer da 4ª Era (nv. 733) |
+| `valquiria.png` | Valquíria | Criatura | feito | Valkyrie (nv. 33), Valkyrie da 1ª Era (nv. 283) |
+| `minotauro-mago.png` | Minotauro Mago | Criatura | feito | Minotaur Mage (nv. 35), Minotaur Mage da 3ª Era (nv. 611) |
+| `lider-orc.png` | Líder Orc | Chefe | feito | Orc Leader (nv. 36) |
+| `senhor-dos-dragoes.png` | Senhor dos Dragões | Chefe | feito | Dragon Lord (nv. 40), Dragão Ancião (nv. 236), Dragon Lord da 4ª Era (nv. 831), Senhor dos Dragões da 4ª Era (nv. 850), Dragon Lord de Capriel (nv. 967) |
+| `minotauro-guarda.png` | Minotauro Guarda | Criatura | feito | Minotaur Guard (nv. 41), Minotaur Guard da 1ª Era (nv. 297) |
+| `esqueleto-demoniaco.png` | Esqueleto Demoníaco | Criatura | feito | Demon Skeleton (nv. 46), Demon Skeleton da 1ª Era (nv. 353) |
+| `diabrete-de-fogo.png` | Diabrete de Fogo | Criatura | feito | Fire Devil (nv. 51), Fire Devil da 1ª Era (nv. 367), Fire Devil de Capriel (nv. 939) |
+| `elemental-de-fogo.png` | Elemental de Fogo | Criatura | feito | Fire Elemental (nv. 56), Elemental de Fogo Ancestral (nv. 185), Fire Elemental da 3ª Era (nv. 681), Fire Elemental da 4ª Era (nv. 803) |
+| `demonio-do-abismo.png` | Demônio do Abismo | Chefe | feito | Demon (nv. 60), Demon da 1ª Era (nv. 400), Demon da 4ª Era (nv. 817), Demon de Capriel (nv. 981) |
+| `troll-do-gelo.png` | Troll do Gelo | Criatura | feito | Frost Troll (nv. 60), Frost Troll da 2ª Era (nv. 405) |
+| `lobo-do-inverno.png` | Lobo do Inverno | Criatura | feito | Winter Wolf (nv. 64), Winter Wolf da 2ª Era (nv. 419) |
+| `urso-polar.png` | Urso Polar | Criatura | feito | Polar Bear (nv. 69), Polar Bear da 2ª Era (nv. 433) |
+| `mamute.png` | Mamute | Criatura | feito | Mammoth (nv. 75), Mammoth da 2ª Era (nv. 447) |
+| `troll-do-pantano.png` | Troll do Pântano | Criatura | feito | Swamp Troll (nv. 80), Swamp Troll da 2ª Era (nv. 461) |
+| `jacare-matador.png` | Jacaré Matador | Criatura | feito | Killer Caiman (nv. 85), Killer Caiman da 2ª Era (nv. 475) |
+| `bruxa-do-pantano.png` | Bruxa do Pântano | Criatura | feito | Witch (nv. 90), Witch da 2ª Era (nv. 489) |
+| `aranha-gigante.png` | Aranha Gigante | Chefe | feito | Giant Spider (nv. 100), Giant Spider da 4ª Era (nv. 789), Giant Spider de Capriel (nv. 953) |
+| `necromante.png` | Necromante | Criatura | feito | Necromancer (nv. 100), Necromancer da 2ª Era (nv. 517), Necromancer da 4ª Era (nv. 761) |
+| `viuva-lamentosa.png` | Viúva Lamentosa | Criatura | feito | Wailing Widow (nv. 108), Wailing Widow da 2ª Era (nv. 503), Wailing Widow de Capriel (nv. 883) |
+| `cavaleiro-negro.png` | Cavaleiro Negro | Criatura | feito | Black Knight (nv. 116), Black Knight da 2ª Era (nv. 531), Black Knight da 4ª Era (nv. 775), Black Knight de Capriel (nv. 897) |
+| `bruxo-da-cripta.png` | Bruxo da Cripta | Chefe | feito | Warlock (nv. 125), Warlock da 3ª Era (nv. 639), Warlock de Capriel (nv. 925) |
+| `assassino.png` | Assassino | Criatura | feito | Assassin (nv. 126), Assassin da 3ª Era (nv. 555) |
+| `elfo-batedor.png` | Elfo Batedor | Criatura | feito | Elf Scout (nv. 133), Elf Scout da 3ª Era (nv. 569) |
+| `elfo-arcanista.png` | Elfo Arcanista | Criatura | feito | Elf Arcanist (nv. 141), Elf Arcanist da 3ª Era (nv. 583), Elf Arcanist de Capriel (nv. 855) |
+| `monge-renegado.png` | Monge Renegado | Criatura | feito | Monk (nv. 149), Monk da 3ª Era (nv. 597) |
+| `heroi-caido.png` | Herói Caído | Chefe | feito | Hero (nv. 158), Hero da 3ª Era (nv. 625), Hero de Capriel (nv. 911) |
+| `elemental-de-agua.png` | Elemental de Água | Criatura | feito | Water Elemental (nv. 162), Water Elemental da 3ª Era (nv. 653) |
+| `serpente-marinha.png` | Serpente Marinha | Criatura | feito | Young Sea Serpent (nv. 172), Serpente Abissal (nv. 222), Young Sea Serpent da 3ª Era (nv. 667), Young Sea Serpent de Capriel (nv. 869) |
+| `gosma-primordial.png` | Gosma Primordial | Criatura | feito | Gosma Primordial (nv. 210) |
+| `infernatil.png` | Infernatil | Chefe | feito | Infernatil (nv. 250), Infernatil da 3ª Era (nv. 700) |
+| `verminor.png` | Verminor | Chefe | feito | Verminor (nv. 550) |
+| `apocalypse.png` | Apocalypse | Chefe | feito | Apocalypse (nv. 1000) |
 
 ## Heróis
 
@@ -107,7 +107,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (aço, latão, vinho), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. O mesmo personagem, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Arqueiro · `arqueiro.png` · falta
+### Arqueiro · `arqueiro.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -130,12 +130,12 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-musgo, couro marrom, madeira clara), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. O mesmo personagem, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Feiticeiro · `feiticeiro.png` · falta
+### Feiticeiro · `feiticeiro.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
 
-Personagem: um feiticeiro original, de manto longo azul-noite com bordas roxas e runas douradas, chapéu de aba larga caído para trás, cajado de madeira escura com uma brasa laranja flutuando na ponta. Rosto visível, barba curta grisalha. Design próprio, sem copiar nenhum jogo existente.
+Personagem: um feiticeiro original de rosto maduro e expressão firme, com barba curta grisalha e cabelos brancos longos, penteados inteiramente para trás, sem topete nem franja. Usa manto longo azul-noite com bordas roxas e runas douradas, chapéu de aba larga caído para trás e cajado de madeira escura com uma brasa laranja flutuando na ponta. Design próprio, sem copiar nenhum jogo existente.
 
 Formato obrigatório:
 - Imagem de 1024 x 1536 pixels, fundo totalmente transparente (PNG), limpo, sem halo colorido nas bordas.
@@ -153,7 +153,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (azul-noite, roxo, dourado, laranja de brasa), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. O mesmo personagem, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Druida · `druida.png` · falta
+### Druida · `druida.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -180,7 +180,7 @@ Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitad
 
 Os nomes novos são da arte. As criaturas das Eras e de Capriel usam a mesma folha da criatura original.
 
-### Rato do Celeiro · `rato-do-celeiro.png` · falta
+### Rato do Celeiro · `rato-do-celeiro.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -203,7 +203,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (marrom, bege, rosa do rabo), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Besouro de Casca · `besouro-de-casca.png` · falta
+### Besouro de Casca · `besouro-de-casca.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -249,7 +249,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (cinza-carvão, laranja de brasa, âmbar), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Ciclope da Pedreira · `ciclope-da-pedreira.png` · falta
+### Ciclope da Pedreira · `ciclope-da-pedreira.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -272,7 +272,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (cinza-azulado, couro, ferro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Víbora do Capim · `vibora-do-capim.png` · falta
+### Víbora do Capim · `vibora-do-capim.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -295,7 +295,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-oliva, amarelo, vermelho da língua), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Verme da Terra · `verme-da-terra.png` · falta
+### Verme da Terra · `verme-da-terra.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -318,7 +318,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (rosa-acinzentado, marrom-terra), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Orc Saqueador · `orc-saqueador.png` · falta
+### Orc Saqueador · `orc-saqueador.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -341,7 +341,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-acinzentado, couro, ferro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Anão Minerador · `anao-minerador.png` · falta
+### Anão Minerador · `anao-minerador.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -364,7 +364,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (ruivo, couro, cobre), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Esqueleto Errante · `esqueleto-errante.png` · falta
+### Esqueleto Errante · `esqueleto-errante.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -387,7 +387,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (osso, ferrugem, azul espectral), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Minotauro · `minotauro.png` · falta
+### Minotauro · `minotauro.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -410,7 +410,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (castanho, marfim dos chifres, ferro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Carniçal · `carnical.png` · falta
+### Carniçal · `carnical.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -433,7 +433,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-pálido, cinza, roxo escuro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Anão Soldado · `anao-soldado.png` · falta
+### Anão Soldado · `anao-soldado.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -456,7 +456,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (aço, preto, marrom), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Anão Guardião · `anao-guardiao.png` · falta
+### Anão Guardião · `anao-guardiao.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -479,7 +479,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (aço escuro, branco, dourado), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Orc Lanceiro · `orc-lanceiro.png` · falta
+### Orc Lanceiro · `orc-lanceiro.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -502,7 +502,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde, vermelho, madeira), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Múmia · `mumia.png` · falta
+### Múmia · `mumia.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -525,7 +525,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (bege, âmbar, dourado gasto), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Orc Guerreiro · `orc-guerreiro.png` · falta
+### Orc Guerreiro · `orc-guerreiro.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -548,7 +548,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde, ferro bruto, couro preto), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Golem de Pedra · `golem-de-pedra.png` · falta
+### Golem de Pedra · `golem-de-pedra.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -571,7 +571,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (cinza-pedra, verde-musgo, azul das runas), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Vigia de Ossos · `vigia-de-ossos.png` · falta
+### Vigia de Ossos · `vigia-de-ossos.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -594,7 +594,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (osso, verde brilhante, sombra roxa), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Orc Xamã · `orc-xama.png` · falta
+### Orc Xamã · `orc-xama.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -617,7 +617,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-musgo, osso, vermelho das penas), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Dragão das Ruínas · `dragao-das-ruinas.png` · falta
+### Dragão das Ruínas · `dragao-das-ruinas.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -640,7 +640,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-esmeralda, amarelo, laranja do fogo), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Amazona · `amazona.png` · falta
+### Amazona · `amazona.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -663,7 +663,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (bronze, couro, vermelho do tecido), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Orc Furioso · `orc-furioso.png` · falta
+### Orc Furioso · `orc-furioso.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -686,7 +686,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde, vermelho, ferro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Minotauro Arqueiro · `minotauro-arqueiro.png` · falta
+### Minotauro Arqueiro · `minotauro-arqueiro.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -709,7 +709,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (cinzento, marfim, couro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Valquíria · `valquiria.png` · falta
+### Valquíria · `valquiria.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -732,7 +732,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (prata, azul-claro, loiro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Minotauro Mago · `minotauro-mago.png` · falta
+### Minotauro Mago · `minotauro-mago.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -755,7 +755,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (roxo, dourado, azul elétrico), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Líder Orc · `lider-orc.png` · falta
+### Líder Orc · `lider-orc.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -778,7 +778,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-escuro, ferro negro, vermelho-sangue), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Senhor dos Dragões · `senhor-dos-dragoes.png` · falta
+### Senhor dos Dragões · `senhor-dos-dragoes.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -801,7 +801,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (vermelho-rubi, dourado, laranja do fogo), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Minotauro Guarda · `minotauro-guarda.png` · falta
+### Minotauro Guarda · `minotauro-guarda.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -824,7 +824,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (bronze, castanho, ferro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Esqueleto Demoníaco · `esqueleto-demoniaco.png` · falta
+### Esqueleto Demoníaco · `esqueleto-demoniaco.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -847,7 +847,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (osso escuro, roxo, ferrugem), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Diabrete de Fogo · `diabrete-de-fogo.png` · falta
+### Diabrete de Fogo · `diabrete-de-fogo.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -870,7 +870,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (vermelho, preto, laranja), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Elemental de Fogo · `elemental-de-fogo.png` · falta
+### Elemental de Fogo · `elemental-de-fogo.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -893,7 +893,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (laranja, amarelo, vermelho), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Demônio do Abismo · `demonio-do-abismo.png` · falta
+### Demônio do Abismo · `demonio-do-abismo.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -916,7 +916,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (vermelho-escuro, preto, laranja incandescente), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Troll do Gelo · `troll-do-gelo.png` · falta
+### Troll do Gelo · `troll-do-gelo.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -939,7 +939,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (azul-claro, branco, cinza), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Lobo do Inverno · `lobo-do-inverno.png` · falta
+### Lobo do Inverno · `lobo-do-inverno.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -962,7 +962,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (branco, azul-gelo, cinza-claro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Urso Polar · `urso-polar.png` · falta
+### Urso Polar · `urso-polar.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -985,7 +985,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (branco-creme, preto, cinza), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Mamute · `mamute.png` · falta
+### Mamute · `mamute.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1008,7 +1008,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (marrom, marfim, branco da neve), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Troll do Pântano · `troll-do-pantano.png` · falta
+### Troll do Pântano · `troll-do-pantano.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1031,7 +1031,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-lodo, marrom, amarelo doentio), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Jacaré Matador · `jacare-matador.png` · falta
+### Jacaré Matador · `jacare-matador.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1054,7 +1054,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-escuro, amarelo, branco dos dentes), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Bruxa do Pântano · `bruxa-do-pantano.png` · falta
+### Bruxa do Pântano · `bruxa-do-pantano.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1077,7 +1077,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-escuro, roxo, verde-ácido), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Aranha Gigante · `aranha-gigante.png` · falta
+### Aranha Gigante · `aranha-gigante.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1100,7 +1100,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (preto, vermelho, verde-veneno), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Necromante · `necromante.png` · falta
+### Necromante · `necromante.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1123,7 +1123,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (preto, verde espectral, cinza-pálido), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Viúva Lamentosa · `viuva-lamentosa.png` · falta
+### Viúva Lamentosa · `viuva-lamentosa.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1146,7 +1146,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (branco-acinzentado, preto, roxo-claro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Cavaleiro Negro · `cavaleiro-negro.png` · falta
+### Cavaleiro Negro · `cavaleiro-negro.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1169,7 +1169,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (preto, vermelho brilhante, aço escuro), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Bruxo da Cripta · `bruxo-da-cripta.png` · falta
+### Bruxo da Cripta · `bruxo-da-cripta.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1192,7 +1192,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (vermelho-escuro, dourado, roxo), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Assassino · `assassino.png` · falta
+### Assassino · `assassino.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1215,7 +1215,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (preto, cinza-escuro, prata das lâminas), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Elfo Batedor · `elfo-batedor.png` · falta
+### Elfo Batedor · `elfo-batedor.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1238,7 +1238,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde, marrom, bege), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Elfo Arcanista · `elfo-arcanista.png` · falta
+### Elfo Arcanista · `elfo-arcanista.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1261,7 +1261,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (vermelho, dourado, branco), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Monge Renegado · `monge-renegado.png` · falta
+### Monge Renegado · `monge-renegado.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1284,7 +1284,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (marrom, laranja, bege), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Herói Caído · `heroi-caido.png` · falta
+### Herói Caído · `heroi-caido.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1307,7 +1307,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (dourado gasto, azul, cinza), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Elemental de Água · `elemental-de-agua.png` · falta
+### Elemental de Água · `elemental-de-agua.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1330,7 +1330,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (azul, azul-claro, branco da espuma), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Serpente Marinha · `serpente-marinha.png` · falta
+### Serpente Marinha · `serpente-marinha.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1353,7 +1353,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (azul-esverdeado, turquesa, branco), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Gosma Primordial · `gosma-primordial.png` · falta
+### Gosma Primordial · `gosma-primordial.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1376,7 +1376,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (verde-claro translúcido, verde-escuro, branco), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Infernatil · `infernatil.png` · falta
+### Infernatil · `infernatil.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1399,7 +1399,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (preto-rocha, laranja-lava, azul-gelo), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Verminor · `verminor.png` · falta
+### Verminor · `verminor.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
@@ -1422,7 +1422,7 @@ Formato obrigatório:
 Estilo: pixel art nítido de 32 bits, contorno escuro de 1 pixel, paleta limitada (azul-acinzentado, branco-gelo, verde doentio), luz vindo de cima à esquerda, sem anti-aliasing borrado e sem degradê suave. Mesmo estilo de um cavaleiro de armadura de aço escuro e capa vinho já usado no jogo. A mesma criatura, com as mesmas cores e proporções, em todos os 24 quadros.
 ```
 
-### Apocalypse · `apocalypse.png` · falta
+### Apocalypse · `apocalypse.png` · feito
 
 ```
 Crie uma sprite sheet de pixel art para um jogo de RPG por turnos visto de lado.
