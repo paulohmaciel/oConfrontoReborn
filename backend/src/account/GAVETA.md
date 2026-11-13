@@ -5,12 +5,12 @@
 ## Arquivos
 - `auth.ts` – cadastro, login, logout, `authenticate`, `protectOrigin`, `activeBan`
 - `accountTokens.ts` – tokens de e-mail (hash, uso único)
-- `emailRoutes.ts` – esqueci/redefinir/verificar/reenviar, trocar senha logado, sair dos outros aparelhos, acessos abertos
+- `emailRoutes.ts` – esqueci/redefinir/verificar/reenviar, trocar senha logado, sair dos outros aparelhos, acessos abertos, apagar a conta pelo site (`/auth/delete-account`, pede a senha e derruba todos os acessos)
 - `accountDeletion.ts` – `deleteAccount`: apaga a conta a pedido do dono (pede a senha). Tira e-mail, senha, sessões, perfil, recados, depoimentos, amizades, visitas, atendimentos, eventos de uso e os dados do app Confrontation; renomeia os personagens para "Apagado #id" e marca `Account.deletedAt`. Extrato, mercado, duelos, punições e pagamentos ficam (conciliação e prazo legal). Contas da equipe não são apagadas por aqui. Hoje só o app chama (`POST /api/app/account/delete`); a página pública é `frontend/public/legal/apagar-conta.html`
 - `analyticsRoutes.ts` – registro de eventos de produto autenticados, sem dados pessoais
 
 ## Rotas
-`/auth/{register,login,logout,forgot-password,reset-password,verify-email,resend-verification,change-password,logout-all,sessions}`, `/me`, `/analytics/events`.
+`/auth/{register,login,logout,forgot-password,reset-password,verify-email,resend-verification,change-password,logout-all,sessions,delete-account}`, `/me`, `/analytics/events`.
 
 ## Dependências permitidas
 Depende de `core`, `economy`, `premium`, `game` (cria o primeiro personagem).
