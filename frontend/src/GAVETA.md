@@ -3,8 +3,8 @@
 
 | Pasta | Conteúdo |
 |---|---|
-| `lib/` | `api.ts` (chamadas), `types.ts`, `format.ts` (ouro, datas), `tabs.ts`, `theme.ts`, `itemArt.ts` (qual item tem GIF próprio; a lista `itemArt.json` é escrita por `npm run art`) |
-| `ui/` | peças sem assunto: `GameIcon` (todo ícone passa por ele: GIF próprio do item, senão sprite do TibiaWiki), `ThemeToggle`, `Feedback` |
+| `lib/` | `api.ts` (chamadas), `types.ts`, `format.ts` (ouro, datas), `tabs.ts`, `theme.ts`, `itemArt.ts` (qual item tem GIF próprio; a lista `itemArt.json` é escrita por `npm run art`), `creatureArt.ts` (qual criatura ou herói tem arte própria: folha da arena, retrato e projétil; a lista `spriteSheets.json` também vem de `npm run art`) |
+| `ui/` | peças sem assunto: `GameIcon` (todo ícone passa por ele: GIF próprio do item, senão sprite do TibiaWiki), `CreatureIcon` (ícone de criatura fora da arena: retrato da arte própria, senão `GameIcon`), `BattleStage` (arena animada), `ThemeToggle`, `Feedback` |
 | `styles/` | CSS (tema claro/escuro) |
 | `features/auth` | `LoginScreen`, `RecoveryForms` (esqueci/redefinir/verificar e-mail) |
 | `features/adventure` | Jornada, Diário, Caçar (`HuntPanel`), escolha de vocação |

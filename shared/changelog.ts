@@ -1,6 +1,11 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-retratos-das-criaturas', date: '2026-11-12', title: 'A arte nova saiu da arena', items: [
+    'As criaturas aparecem com o retrato da arte nova também na lista de Caçar, no Bestiário, nas Missões, no registro da batalha e na Caçada em grupo.',
+    'Na Caçada em grupo, a fera da arena também usa a arte nova, com as mesmas animações da caçada.',
+    'Arqueiros, magos e dragões inimigos agora atacam de longe: disparam do lugar em vez de correr até você.',
+  ] },
   { id: '2026-11-12-apagar-conta-no-site', date: '2026-11-12', title: 'Apagar a conta pelo site', items: [
     'Em Configurações há agora o quadro "Apagar a conta". Ele pede a sua senha e a palavra APAGAR, e apaga na hora, sem volta.',
     'Saem do servidor o e-mail, a senha, o perfil, os recados, as amizades e o progresso do app guardado na nuvem. Os registros de ouro, de itens e de pagamentos ficam guardados sem o seu nome, pelo prazo que a lei pede.',
@@ -14,7 +19,7 @@ export const changelog: ChangelogEntry[] = [
   ] },
   { id: '2026-11-12-arqueiro-feiticeiro-arte-propria', date: '2026-11-12', title: 'Arqueiro e Feiticeiro com arte própria', items: [
     'Na arena, o Arqueiro puxa a flecha da aljava e dispara. O Feiticeiro lança fogo com o cajado e se protege com um escudo mágico.',
-    'O Rato do Celeiro e o Besouro de Casca também ganharam animações próprias.',
+    'O rato e o besouro dos primeiros campos também ganharam animações próprias.',
   ] },
   { id: '2026-11-12-druida-arte-propria', date: '2026-11-12', title: 'A Druida ganhou arte própria na arena', items: [
     'A Druida corre, lança espinhos, ergue raízes para se defender e se cura com animações quadro a quadro.',

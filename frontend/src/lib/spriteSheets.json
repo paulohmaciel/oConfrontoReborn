@@ -61,5 +61,24 @@
     "Infernatil": "infernatil",
     "Verminor": "verminor",
     "Apocalypse": "apocalypse"
+  },
+  "shots": {
+    "anao-soldado": "Power Bolt",
+    "vigia-de-ossos": "Heavy Magic Missile Rune",
+    "orc-xama": "Sudden Death Rune",
+    "dragao-das-ruinas": "Great Fireball Rune",
+    "amazona": "Throwing Knife",
+    "minotauro-arqueiro": "Arrow",
+    "valquiria": "Spear",
+    "minotauro-mago": "Energy Bomb Rune",
+    "senhor-dos-dragoes": "Great Fireball Rune",
+    "elemental-de-fogo": "Fireball Rune",
+    "bruxa-do-pantano": "Poison Bomb Rune",
+    "necromante": "Sudden Death Rune",
+    "bruxo-da-cripta": "Heavy Magic Missile Rune",
+    "elfo-batedor": "Arrow",
+    "elfo-arcanista": "Heavy Magic Missile Rune",
+    "elemental-de-agua": "Heavy Magic Missile Rune",
+    "infernatil": "Great Fireball Rune"
   }
 }

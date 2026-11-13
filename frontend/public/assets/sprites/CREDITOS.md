@@ -69,5 +69,5 @@ Arte original do jogo, criada pelo dono com geração de imagens do ChatGPT a pa
 ## Formato das folhas
 - 1024 × 1536 px, fundo transparente, 4 colunas × 6 linhas, quadros de 256 × 256 px, personagem virado para a direita.
 - Linhas: 1 parado, 2 avançar, 3 atacar, 4 defender, 5 curar (heróis) ou gesto especial (criaturas), 6 apanhar (2 quadros) e cair (2 quadros).
-- Os arquivos desta pasta são a versão de site (limpa e comprimida por `npm run art`); não edite à mão. Os originais, como saíram do gerador, ficam em `art/sprites/`.
+- Os arquivos desta pasta são a versão de site (limpa e comprimida por `npm run art`); não edite à mão. Em `retratos/` fica o retrato de 128 px de cada um (primeiro quadro da folha), usado nas listas fora da arena. Os originais, como saíram do gerador, ficam em `art/sprites/`.
 - Os comandos de todas as artes estão em `ART.md`, na raiz do projeto. Para ligar uma folha nova, salve o PNG em `art/sprites/` com o nome indicado lá e rode `npm run build`.

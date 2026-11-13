@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {statusEffects} from '../../../../shared/statusEffects';
 import Icon from '../../ui/GameIcon';
+import CreatureIcon from '../../ui/CreatureIcon';
 import {LimitedRows} from '../../ui/ShowMore';
 import type {TurnRecord} from '../../lib/types';
 const n=(v:number)=>v.toLocaleString('pt-BR');
@@ -41,7 +42,7 @@ export default function TurnLog({turns,log,turnVersion,heroName,heroIcon,monster
       </article>
       <span className="turn-vs" aria-hidden="true"><Icon name="Logout Block Icon" size={27}/></span>
       <article className={`turn-side foe-side ${last.foe==='HEAVY'?'heavy':''} ${foeDown(last)?'down':''}`}>
-        <Icon name={monsterName} src={monsterSprite} size={40}/>
+        <CreatureIcon name={monsterName} src={monsterSprite} size={40}/>
         <div><small>Golpe da criatura · {monsterName}</small><b>{last.foe==='HEAVY'?'Golpe pesado':last.foe==='CHARGE'?'Concentração':last.foe==='INTERRUPTED'?'Interrompido':foeDown(last)?'Derrotado!':last.foe==='NONE'?'Ficou para trás':'Ataque'}</b>
           <p className="turn-number">{struck?(last.dodged?<span>Esquiva!</span>:<span className="hit">−{n(last.received)}</span>):foeDown(last)?<span className="heal">Vitória</span>:last.action==='FLEE'?<span>Fuga</span>:<span>0</span>}</p>
           <p className="turn-tag">{struck?(last.dodged?'você desviou do golpe':'em você'):foeDown(last)?'não resistiu ao seu golpe':last.action==='FLEE'?'você escapou do combate':theirs(last)}</p></div>

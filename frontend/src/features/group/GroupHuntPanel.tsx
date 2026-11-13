@@ -4,7 +4,8 @@ import {msg} from '../../lib/format';
 import type {Hero,Perform} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
 import {Feedback} from '../../ui/Feedback';
-import BattleStage,{heroSheetOf,heroSpriteOf,shotOf,spriteOf,stageNumber,type Step} from '../../ui/BattleStage';
+import BattleStage,{heroSheetOf,heroSpriteOf,monsterSheetOf,shotOf,spriteOf,stageNumber,type Step} from '../../ui/BattleStage';
+import CreatureIcon from '../../ui/CreatureIcon';
 import {classLabel,baseVocation,vocations} from '../../../../shared/adventure';
 import {groupActions,type GroupAction,type GroupHunt} from '../../../../shared/groupHunt';
 type Card={id:number;name:string;level:number;vocation:string;classTier:number;profileAvatar:string|null;profileEmblem:string|null};
@@ -77,7 +78,7 @@ export default function GroupHuntPanel({hero,perform,openProfile}:{hero:Hero;per
         <button disabled={busy} onClick={()=>{if(!leader||window.confirm('Sair desfaz o grupo para todos. Continuar?'))void act('leave');}}>{leader?'Desfazer grupo':'Sair do grupo'}</button></div></section>}
 
     <section className="panel"><div className="section-title"><h2>As quatro caçadas</h2><span>{s.settings.weeklyRewards} recompensas por caçada a cada 7 dias</span></div>
-      <div className="group-hunts">{s.hunts.map(h=><article key={h.key} className={h.available?'group-hunt':'group-hunt soon'}><Icon name={h.sprite} size={56}/><div>
+      <div className="group-hunts">{s.hunts.map(h=><article key={h.key} className={h.available?'group-hunt':'group-hunt soon'}><CreatureIcon name={h.sprite} size={56}/><div>
         <span className="eyebrow">{h.order}ª caçada · nível {h.minLevel}</span><h3>{h.name}</h3><p>{h.story}</p>
         {h.available?<><ul className="role-list">{(Object.keys(vocations) as (keyof typeof vocations)[]).map(v=>h.roles[v]&&<li key={v}><b>{vocations[v].name==='Arqueiro'?'Paladino':vocations[v].name}:</b> {h.roles[v]}</li>)}</ul>
           <p className="muted">Recompensas recebidas nesta semana: {h.rewardsThisWeek}/{s.settings.weeklyRewards}</p>
@@ -109,13 +110,13 @@ function GroupStage({b}:{b:Battle}){
   const size=b.fighters.length<=1?128:b.fighters.length===2?104:84;
   return <BattleStage scene={b.id} turn={scene.turn} steps={scene.steps}
     left={b.fighters.map(f=>({id:String(f.characterId),name:f.character.name,src:heroSpriteOf(baseVocation(f.vocation)),sheet:heroSheetOf(baseVocation(f.vocation)),size,down:f.hp<=0}))}
-    right={[{id:'fera',name:b.name,src:spriteOf(b.sprite),size:160,boss:true,down:b.bossHp<=0}]}/>;
+    right={[{id:'fera',name:b.name,src:spriteOf(b.sprite),sheet:monsterSheetOf(b.sprite),size:160,boss:true,down:b.bossHp<=0}]}/>;
 }
 function BattleView({b,hero,remaining,busy,choose,openProfile}:{b:Battle;hero:Hero;remaining:number;busy:boolean;choose:(a:GroupAction)=>void;openProfile:(n:string)=>void}){
   const me=b.fighters.find(f=>f.characterId===hero.id);
   return <section className="panel group-battle"><div className="section-title"><h2>{b.name}</h2><span>{b.isFinished?outcomeLabel[b.outcome]??b.outcome:`Rodada ${b.round} · ${remaining}s`}</span></div>
     <GroupStage b={b}/>
-    <div className="boss-card"><Icon name={b.sprite} size={80}/><div className="boss-info">
+    <div className="boss-card"><CreatureIcon name={b.sprite} size={80}/><div className="boss-info">
       <div className="gbar"><span style={{width:bar(b.bossHp,b.bossMaxHp)}}/></div><p>{b.bossHp.toLocaleString('pt-BR')} / {b.bossMaxHp.toLocaleString('pt-BR')} de vida</p>
       <p className={b.freed||b.choice==='SLEEP'?'pos':'muted'}>{mechanicLine(b)}</p>
       {!b.isFinished&&b.phase==='FIGHT'&&<p className={b.intent.kind==='STOMP'?'intent warning':'intent'}>{b.intent.label}</p>}</div></div>
