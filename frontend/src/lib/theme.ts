@@ -25,3 +25,21 @@ export function applyMotion(motion: Motion, persist = true) {
   if (persist) { try { localStorage.setItem(MOTION_KEY, motion); } catch { /* funciona sem armazenamento */ } }
 }
 export const smooth = (): ScrollBehavior => document.documentElement.dataset.motion === 'reduce' ? 'auto' : 'smooth';
+
+// Para o que o CSS não consegue parar (um GIF animado): a tela pergunta aqui se as animações estão desligadas e é
+// avisada quando isso muda (botão em Configurações ou na arena, outra aba). Um só observador para todos os ícones.
+export const motionStill = () => document.documentElement.dataset.motion === 'reduce';
+const motionListeners = new Set<() => void>();
+let motionObserver: MutationObserver | null = null;
+/** Para `useSyncExternalStore`: chama `changed` quando `motionStill` muda e devolve como parar de ouvir. */
+export function watchMotion(changed: () => void) {
+  motionListeners.add(changed);
+  if (!motionObserver) {
+    motionObserver = new MutationObserver(() => motionListeners.forEach(listener => listener()));
+    motionObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion'] });
+  }
+  return () => {
+    motionListeners.delete(changed);
+    if (!motionListeners.size && motionObserver) { motionObserver.disconnect(); motionObserver = null; }
+  };
+}
