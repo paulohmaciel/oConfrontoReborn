@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Arte própria do jogo: uma lista só (abaixo) descreve todas as folhas de sprites que a arena precisa.
-// Uso: npm run art   → reescreve ART.md (um comando pronto por arte, com o que já foi feito) e
-//                      frontend/src/lib/spriteSheets.json (folhas que existem em frontend/public/assets/sprites).
-// O build roda este script antes: basta salvar o PNG com o nome indicado e rodar `npm run build`.
+// Uso: npm run art   → prepara a versão de site de cada folha (scripts/art-web.mjs: art/sprites/*.png → frontend/public/assets/sprites/*.webp),
+//                      reescreve ART.md (um comando pronto por arte, com o que já foi feito), o CREDITOS.md da pasta e
+//                      frontend/src/lib/spriteSheets.json (folhas prontas para o site).
+// O build roda este script antes: basta salvar o PNG em art/sprites com o nome indicado e rodar `npm run build`.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildSheets } from './art-web.mjs';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dir = path.join(root, 'frontend/public/assets/sprites');
 
@@ -89,7 +91,8 @@ export const creatures = [
   c('Apocalypse', 'apocalypse', 'Apocalypse', 'o fim de todas as coisas: uma besta colossal de quatro patas, de corpo negro-arroxeado com veios vermelhos pulsando, chifres enormes voltados para a frente, cauda com espinhos e olhos azul-brancos', 'negro-arroxeado, vermelho pulsante, azul-branco', 'investida devastadora (recuar com os veios acendendo, investir de chifres, impacto com onda de choque, recolher)', 'ergue-se e solta um rugido que escurece tudo em volta', true),
 ];
 
-const have = name => fs.existsSync(path.join(dir, `${name}.png`));
+// Pronta = já tem a versão de site (o original fica em art/sprites).
+const have = name => fs.existsSync(path.join(dir, `${name}.webp`));
 const format = (who, sizeRule) => `Formato obrigatório:
 - Imagem de 1024 x 1536 pixels, fundo totalmente transparente (PNG), limpo, sem halo colorido nas bordas.
 - Grade exata de 4 colunas por 6 linhas. Cada quadro tem 256 x 256 pixels. Sem linhas de grade, sem bordas, sem texto, sem números, sem sombra no chão.
@@ -139,6 +142,7 @@ async function usedBy() {
 
 async function main() {
   fs.mkdirSync(dir, { recursive: true });
+  await buildSheets(root);
   const sheets = { heroes: Object.fromEntries(heroes.filter(h => have(h.file)).map(h => [h.key, h.file])), monsters: Object.fromEntries(creatures.filter(m => have(m.file)).map(m => [m.key, m.file])) };
   fs.writeFileSync(path.join(root, 'frontend/src/lib/spriteSheets.json'), JSON.stringify(sheets, null, 2) + '\n');
   const uses = await usedBy(), all = [...heroes, ...creatures], done = all.filter(a => have(a.file)).length;
@@ -152,8 +156,16 @@ A arena de batalha está trocando os sprites do TibiaWiki por arte própria. Cad
 
 ## Como usar
 1. Copie o comando inteiro do personagem e cole no ChatGPT (gere um personagem por vez).
-2. Salve o PNG em \`frontend/public/assets/sprites/\` com o nome indicado no título do comando.
-3. Rode \`npm run build\` (ou o \`iniciar.bat\`). O jogo passa a usar a folha sozinho; quem ainda não tem folha continua com o sprite antigo.
+2. Salve o PNG em \`art/sprites/\` com o nome indicado no título do comando. (Se salvar em \`frontend/public/assets/sprites/\`, como era antes, o build leva o arquivo para \`art/sprites/\` sozinho.)
+3. Rode \`npm run build\` (ou o \`iniciar.bat\`). O build limpa a folha, grava a versão leve que o site usa e liga a arte sozinho; quem ainda não tem folha continua com o sprite antigo.
+
+## O que o build faz com cada folha
+O PNG que sai do gerador pesa cerca de 1,6 MB e vem com pequenos defeitos. \`npm run art\` (rodado pelo build) guarda o original em \`art/sprites/\` e grava em \`frontend/public/assets/sprites/<nome>.webp\` uma versão cerca de 6 vezes mais leve, já corrigida:
+- tira a névoa quase invisível que fica no fundo e deixa o corpo totalmente opaco;
+- apaga a ponta de chifre, chama ou arma do quadro vizinho que vaza na borda de cima ou de baixo do quadro;
+- sobe a folha quando os pés estão abaixo da linha das outras (para ninguém afundar no chão da arena).
+
+Só as folhas novas ou alteradas são refeitas (\`art/web.json\` guarda o que já foi feito). Para refazer todas: \`node scripts/art-web.mjs --refazer\`. Para ver o que a limpeza faria, sem gravar: \`node scripts/art-web.mjs --conferir\`.
 
 ## Formato de toda folha
 - 1024 × 1536 px, fundo transparente, 4 colunas × 6 linhas, quadros de 256 × 256 px, personagem virado para a direita.
@@ -180,6 +192,24 @@ Os nomes novos são da arte. As criaturas das Eras e de Capriel usam a mesma fol
 
 ${creatures.map(m => block(m, creaturePrompt(m))).join('\n')}`;
   fs.writeFileSync(path.join(root, 'ART.md'), md);
+  const row = (a, what, where) => `| \`${a.file}.webp\` | ${a.name}, ${what} | ${where} |`;
+  fs.writeFileSync(path.join(dir, 'CREDITOS.md'), `# Sprites próprios de O Confronto
+
+> Arquivo gerado por \`npm run art\` a partir de \`scripts/art.mjs\`.
+
+Arte original do jogo, criada pelo dono com geração de imagens do ChatGPT a partir de 2026-11-12. Não vem do TibiaWiki nem de nenhum outro jogo.
+
+| Arquivo | O que é | Onde aparece |
+|---|---|---|
+${heroes.filter(h => have(h.file)).map(h => row(h, 'herói', 'Arena de batalha (caçada, Duelo e Caçada em grupo)')).join('\n')}
+${creatures.filter(m => have(m.file)).map(m => row(m, m.boss ? 'chefe' : 'criatura', `Arena de batalha, no lugar do sprite do ${m.key}`)).join('\n')}
+
+## Formato das folhas
+- 1024 × 1536 px, fundo transparente, 4 colunas × 6 linhas, quadros de 256 × 256 px, personagem virado para a direita.
+- Linhas: 1 parado, 2 avançar, 3 atacar, 4 defender, 5 curar (heróis) ou gesto especial (criaturas), 6 apanhar (2 quadros) e cair (2 quadros).
+- Os arquivos desta pasta são a versão de site (limpa e comprimida por \`npm run art\`); não edite à mão. Os originais, como saíram do gerador, ficam em \`art/sprites/\`.
+- Os comandos de todas as artes estão em \`ART.md\`, na raiz do projeto. Para ligar uma folha nova, salve o PNG em \`art/sprites/\` com o nome indicado lá e rode \`npm run build\`.
+`);
   console.log(`ART.md: ${all.length} artes, ${done} prontas. Folhas ligadas: ${[...Object.values(sheets.heroes), ...Object.values(sheets.monsters)].join(', ') || 'nenhuma'}.`);
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

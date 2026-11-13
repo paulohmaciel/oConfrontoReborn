@@ -1,0 +1,241 @@
+{
+  "recipe": 1,
+  "sheets": {
+    "amazona": {
+      "sha256": "5966552754f9b952f3ccbc24a3e00ca1852b7e6a68a2e0239973d43488638b9b",
+      "bytes": 257696
+    },
+    "anao-guardiao": {
+      "sha256": "986a5679c844047a2c6c35f3409d325c9e675b248cda95d1f2df1b06531b2fe2",
+      "bytes": 308968
+    },
+    "anao-minerador": {
+      "sha256": "71ac7e2c12bf60887763d00db33718460c1416306aa686481a34081ca23c1e0f",
+      "bytes": 266068
+    },
+    "anao-soldado": {
+      "sha256": "1f2b4377098976637fb101600f8956f34e6a6fb2500258c8943553610783fd5a",
+      "bytes": 225224
+    },
+    "apocalypse": {
+      "sha256": "a74b7646d72f0099519e21cfa88159442f47b934350ba061c264bce394124e18",
+      "bytes": 341484
+    },
+    "aranha-gigante": {
+      "sha256": "244bb1723082d1dd7db832df396328fe8b4b94cb6edeaca16c4ec829686400cf",
+      "bytes": 249592
+    },
+    "arqueiro": {
+      "sha256": "0b16f40ca5785a4b689fa08e98b3b812ecce033c74c82115ce2317769848d67c",
+      "bytes": 294382
+    },
+    "assassino": {
+      "sha256": "a0c5bc562ac38404913264de4702a336c033c12f72abc821ccef88b3104dd691",
+      "bytes": 187018
+    },
+    "besouro-de-casca": {
+      "sha256": "6d12f797dff16a142fff80f0846147abdee6e5ea63b3df0c88db59918c6eab4d",
+      "bytes": 255316
+    },
+    "bruxa-do-pantano": {
+      "sha256": "af6723d87efd248d586c8227a2a7bede7cc0ed87013306ef5683c67251f6db4c",
+      "bytes": 276286
+    },
+    "bruxo-da-cripta": {
+      "sha256": "942ecb223b0e3860e151c25c91d9135c6e1591d5a033ec26ebcacd50f1f4b5de",
+      "bytes": 424040
+    },
+    "carnical": {
+      "sha256": "45dc877eea98ea7d5b17937353ccb12581861f5227d047ed72eaeaf47093952d",
+      "bytes": 234028
+    },
+    "cavaleiro": {
+      "sha256": "726525bfc8c2b8f25d21f69f94204fa1cc752b217121d2ecd988174cbfc52964",
+      "bytes": 264730
+    },
+    "cavaleiro-negro": {
+      "sha256": "e2d19ada13f1092e99947a566b42ef44db73f1a119d58d68d257e9e2782db5ed",
+      "bytes": 211438
+    },
+    "ciclope-da-pedreira": {
+      "sha256": "78f7e568cd7d2f3a0f567af4ad6adf61572c1a7040aa7ddd1ba78d8cf3769b88",
+      "bytes": 266966
+    },
+    "demonio-do-abismo": {
+      "sha256": "6a0ebd39a27eea5c99a22d7c0966f2c84e2e3686ceb82084a3e6d9e8fe4faadf",
+      "bytes": 474582
+    },
+    "diabrete-de-fogo": {
+      "sha256": "b67327536777de0870f929f4daa44914ea4dec55c69591483ee945f317e35673",
+      "bytes": 319690
+    },
+    "dragao-das-ruinas": {
+      "sha256": "ff981cdf995cba7a1bf91f4b729d81eb09b586f39ef8363dfe5140ffe99c0c28",
+      "bytes": 244810
+    },
+    "druida": {
+      "sha256": "d4648be44a2ab2747d28601a319b936fdad63716d4d510d8cc722a5d55b45afb",
+      "bytes": 305976
+    },
+    "elemental-de-agua": {
+      "sha256": "52ee5546f16748bae423f9adec1a3400f1013f36683a3dcbfb0def7d9449433e",
+      "bytes": 380296
+    },
+    "elemental-de-fogo": {
+      "sha256": "c3543885475a476c6e810c480fb8fc306323717f91c2eb8f0a07bbf6b2b6b21b",
+      "bytes": 327712
+    },
+    "elfo-arcanista": {
+      "sha256": "ce9e8f43e88f1a52874c741fdb7e2764d694c1857d190c3439e45c2dbbdbc990",
+      "bytes": 308608
+    },
+    "elfo-batedor": {
+      "sha256": "5de19b56cb7b95db6036c1ea0efbf9d61a743c6eb9fbb82c6549c290437427e4",
+      "bytes": 288330
+    },
+    "esqueleto-demoniaco": {
+      "sha256": "292f1c5c35f97ae596397e4b4db3450d99edecd452dbcc6878d68170d94ed9c7",
+      "bytes": 322912
+    },
+    "esqueleto-errante": {
+      "sha256": "4e52a5058ede56d4ee66a6783eb7b05188e784dbd39db6b9a2553617b681069b",
+      "bytes": 282760
+    },
+    "feiticeiro": {
+      "sha256": "23961b6098f9be85fabd5d5a9e2843c7738a7026c11ce488890e16f1c53e6a00",
+      "bytes": 338564
+    },
+    "golem-de-pedra": {
+      "sha256": "4c6d21cf571e20cb68d799947392b8c16e5d0949c6563358b44f64b2521a7f92",
+      "bytes": 314808
+    },
+    "gosma-primordial": {
+      "sha256": "0855db015bf59266a83b46178da47c4083dc3cbafaee6de49eb59881c65a2fa3",
+      "bytes": 216530
+    },
+    "heroi-caido": {
+      "sha256": "5795a60ec3252f17d961cf61575a818a8eb4918ff3c0c22d624e45598b9e375e",
+      "bytes": 247752
+    },
+    "infernatil": {
+      "sha256": "8d98f6a5b63d2e2ba5e17498cae7dee51329b647997877dcbac73cf4dbe2a3bb",
+      "bytes": 412594
+    },
+    "jacare-matador": {
+      "sha256": "35a455e5fc0a0669e54feec5ecd453fce053870365c72edb755f9e38bdc3a04b",
+      "bytes": 276826
+    },
+    "lider-orc": {
+      "sha256": "676c7d8d899b6ce452606f9c95eeae220ce19b747a49c7a106295c097b99a539",
+      "bytes": 337288
+    },
+    "lobo-das-cinzas": {
+      "sha256": "a7efd5fe1acfc6a3a9ebd6aae17bfe2ddcb858f4ea612c70df1b95bdb400f325",
+      "bytes": 254104
+    },
+    "lobo-do-inverno": {
+      "sha256": "7e77dd39b7e6ae61034ae70e27e6b421057522d566970125f4a56f2b08516d0d",
+      "bytes": 287904
+    },
+    "mamute": {
+      "sha256": "68e1dccfc3bc38c507668a6e7fcc0031a775b9df9f7e65c668c66ae929b42b03",
+      "bytes": 291834
+    },
+    "minotauro": {
+      "sha256": "113f8897617ff5cd153758fe753ef86a8c3a3cb79a67261410a8494730f652ae",
+      "bytes": 300660
+    },
+    "minotauro-arqueiro": {
+      "sha256": "6fbc0c3cdb302b9d5993747c7bcf65785fad694c44d0b733303f206b25a77ba5",
+      "bytes": 268254
+    },
+    "minotauro-guarda": {
+      "sha256": "bfbc7fc6e024da6c1cb7a6c9eea8cd598387413844e9f47f81c402aba48217a0",
+      "bytes": 306330
+    },
+    "minotauro-mago": {
+      "sha256": "2be3d429fc65c93bf79206ed2f70f0d72ef97e5d604c724423c3f522fc885f12",
+      "bytes": 367684
+    },
+    "monge-renegado": {
+      "sha256": "adafc8607008b8b7b9f75ca96d5551676c9d140c16cf1143a8d541c772627542",
+      "bytes": 262828
+    },
+    "mumia": {
+      "sha256": "20194ff6943a600876db38bdbfd8aed8eed16be9217c23835267c8aaeef1979b",
+      "bytes": 352604
+    },
+    "necromante": {
+      "sha256": "8571f590eb522bc5ad838b7592cc835d3cc7d1c2f3ac8030acf92e8a7fccb77d",
+      "bytes": 254178
+    },
+    "orc-furioso": {
+      "sha256": "6ddd9515382d724a1bdd1906093feca36c58676aad410e2d330390f45203094e",
+      "bytes": 317798
+    },
+    "orc-guerreiro": {
+      "sha256": "c0455a3547533fa6796e0c4ee0b7c27eccf119caaf2254932ee0ce944f23f1f8",
+      "bytes": 226018
+    },
+    "orc-lanceiro": {
+      "sha256": "ed1b5db980977a1606a795e5f70e15739630d4c66cce592324379b2c0b595cfa",
+      "bytes": 279022
+    },
+    "orc-saqueador": {
+      "sha256": "ab4f1894dae6af61eb733fed5b3254e34bdb67786b92628bc87e0f10f7bd4a08",
+      "bytes": 223236
+    },
+    "orc-xama": {
+      "sha256": "c2073fe0ed695e81d220e056dc7b7f7c7905a55448bc4bf90f08712e5095df3f",
+      "bytes": 360712
+    },
+    "rato-do-celeiro": {
+      "sha256": "0396eb351684a4d66661641fcab8dfc9e1cc3647b596dbdf52c838884e535062",
+      "bytes": 233802
+    },
+    "senhor-dos-dragoes": {
+      "sha256": "a2d368e647a5260b515379fa18f2a6003e82713d33ea5e05511f1c62dad0b278",
+      "bytes": 404564
+    },
+    "serpente-marinha": {
+      "sha256": "c8987c86b96354901a7d92fa9b3d3d5e723d5ede2210f4cc0f2289a9cc9fd689",
+      "bytes": 354600
+    },
+    "troll-do-gelo": {
+      "sha256": "55dfbca794c0c2e1f52c23eac81af7cd0b199222423177da3e164d4111674fe0",
+      "bytes": 318112
+    },
+    "troll-do-pantano": {
+      "sha256": "3075c96b79ddc76ea2c5112e94e50dfec8ab0d82fca30b1d74b91475e6d3f026",
+      "bytes": 338656
+    },
+    "urso-polar": {
+      "sha256": "2c1993393ca132847106329964d3351723cc7e4f60d78c99a5634ba08adf3c33",
+      "bytes": 308884
+    },
+    "valquiria": {
+      "sha256": "acede511060749ad1814133faa189704c1aa8c3bd51048b6f20cfb9f7b3ec609",
+      "bytes": 324024
+    },
+    "verme-da-terra": {
+      "sha256": "6b8f0102695a66eeaf5c85727b85c1a79a57457370db0433f223fa7f6b94bf56",
+      "bytes": 215842
+    },
+    "verminor": {
+      "sha256": "421fb3980e3a756cc807b1c744e1a247a97d74fdc472f9e953a1546a03f8c186",
+      "bytes": 500110
+    },
+    "vibora-do-capim": {
+      "sha256": "0258682093e70d3f76ab186a5b1e2a22d0e21699b0b7b365c2edc086c2aec1ee",
+      "bytes": 247900
+    },
+    "vigia-de-ossos": {
+      "sha256": "6adf963c1fe3fef4075e848e3ea3712225433aa475be7ec87fa800a79ba7d3d4",
+      "bytes": 287754
+    },
+    "viuva-lamentosa": {
+      "sha256": "e1f2543e469a861889466c0a16be9c60b8824f053dafec4876feb0879e09f657",
+      "bytes": 254046
+    }
+  }
+}

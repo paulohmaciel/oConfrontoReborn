@@ -6,8 +6,16 @@ A arena de batalha está trocando os sprites do TibiaWiki por arte própria. Cad
 
 ## Como usar
 1. Copie o comando inteiro do personagem e cole no ChatGPT (gere um personagem por vez).
-2. Salve o PNG em `frontend/public/assets/sprites/` com o nome indicado no título do comando.
-3. Rode `npm run build` (ou o `iniciar.bat`). O jogo passa a usar a folha sozinho; quem ainda não tem folha continua com o sprite antigo.
+2. Salve o PNG em `art/sprites/` com o nome indicado no título do comando. (Se salvar em `frontend/public/assets/sprites/`, como era antes, o build leva o arquivo para `art/sprites/` sozinho.)
+3. Rode `npm run build` (ou o `iniciar.bat`). O build limpa a folha, grava a versão leve que o site usa e liga a arte sozinho; quem ainda não tem folha continua com o sprite antigo.
+
+## O que o build faz com cada folha
+O PNG que sai do gerador pesa cerca de 1,6 MB e vem com pequenos defeitos. `npm run art` (rodado pelo build) guarda o original em `art/sprites/` e grava em `frontend/public/assets/sprites/<nome>.webp` uma versão cerca de 6 vezes mais leve, já corrigida:
+- tira a névoa quase invisível que fica no fundo e deixa o corpo totalmente opaco;
+- apaga a ponta de chifre, chama ou arma do quadro vizinho que vaza na borda de cima ou de baixo do quadro;
+- sobe a folha quando os pés estão abaixo da linha das outras (para ninguém afundar no chão da arena).
+
+Só as folhas novas ou alteradas são refeitas (`art/web.json` guarda o que já foi feito). Para refazer todas: `node scripts/art-web.mjs --refazer`. Para ver o que a limpeza faria, sem gravar: `node scripts/art-web.mjs --conferir`.
 
 ## Formato de toda folha
 - 1024 × 1536 px, fundo transparente, 4 colunas × 6 linhas, quadros de 256 × 256 px, personagem virado para a direita.
