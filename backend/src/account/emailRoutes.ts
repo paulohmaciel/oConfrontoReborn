@@ -7,6 +7,7 @@ import { GameError } from '../core/engine';
 import { hashPassword, verifyPassword } from '../core/password';
 import { notifyMail, publicUrl } from '../core/mailer';
 import { consumeToken, sendPasswordReset, sendVerification } from './accountTokens';
+import { deleteAccount } from './accountDeletion';
 
 // Montado em /api/auth (já sob o limitador geral de autenticação).
 export const emailRouter = Router();
@@ -83,6 +84,15 @@ Se foi você, não precisa fazer nada. Se não foi, use "Esqueci minha senha" em
 emailRouter.post('/logout-all', authenticate, accountLimit, asyncRoute(async (_req, res) => {
   const ended = (await prisma.session.deleteMany({ where: { accountId: res.locals.accountId, NOT: { tokenHash: res.locals.sessionHash } } })).count;
   res.json({ ok: true, ended, message: ended ? `${ended} ${ended === 1 ? 'outro acesso foi encerrado' : 'outros acessos foram encerrados'}.` : 'Não havia outro acesso aberto.' });
+}));
+// Apagar a conta pelo site (o app Confrontation tem a mesma coisa em /api/app/account/delete). Pede a senha de novo;
+// o que sai e o que fica está em accountDeletion.ts e em /legal/apagar-conta.html. Todos os acessos caem, este também.
+// Limite próprio e curto: é um pedido que ninguém faz duas vezes, e errar a senha aqui não gasta as outras tentativas.
+const deleteLimit = rateLimit({ windowMs: 15 * 60_000, limit: 5, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Muitas tentativas. Aguarde antes de tentar novamente.' } });
+emailRouter.post('/delete-account', authenticate, deleteLimit, asyncRoute(async (req, res) => {
+  await deleteAccount(res.locals.accountId, req.body?.password);
+  res.clearCookie('oc_session', { path: '/' });
+  res.json({ ok: true, message: 'Conta apagada.' });
 }));
 // Quantos acessos estão abertos nesta conta (para a tela de Configurações).
 emailRouter.get('/sessions', authenticate, asyncRoute(async (_req, res) => {

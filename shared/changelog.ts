@@ -1,6 +1,10 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-apagar-conta-no-site', date: '2026-11-12', title: 'Apagar a conta pelo site', items: [
+    'Em Configurações há agora o quadro "Apagar a conta". Ele pede a sua senha e a palavra APAGAR, e apaga na hora, sem volta.',
+    'Saem do servidor o e-mail, a senha, o perfil, os recados, as amizades e o progresso do app guardado na nuvem. Os registros de ouro, de itens e de pagamentos ficam guardados sem o seu nome, pelo prazo que a lei pede.',
+  ] },
   { id: '2026-11-12-artes-mais-leves', date: '2026-11-12', title: 'Batalhas abrem mais rápido', items: [
     'As artes da arena ficaram cerca de 6 vezes mais leves, então a batalha carrega mais depressa, principalmente no celular.',
     'Pequenos defeitos das artes foram limpos: sobras na borda de alguns quadros e uma névoa clara em volta de alguns personagens.',
