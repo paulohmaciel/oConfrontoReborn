@@ -1,6 +1,16 @@
 // Histórico de atualizações mostrado na página "Novidades". A mais recente primeiro; `id` nunca muda (a tela usa para marcar o que já foi lido).
 export interface ChangelogEntry { id: string; date: string; title: string; items: string[] }
 export const changelog: ChangelogEntry[] = [
+  { id: '2026-11-12-arte-propria-catalogo', date: '2026-11-12', title: 'Arte própria para todas as criaturas', items: [
+    'As 55 criaturas distintas do catálogo de Caçar agora têm arte própria na arena, com animações de movimento, ataque, defesa e queda. As variantes das Eras e de Capriel usam a folha da criatura original.',
+  ] },
+  { id: '2026-11-12-arqueiro-feiticeiro-arte-propria', date: '2026-11-12', title: 'Arqueiro e Feiticeiro com arte própria', items: [
+    'Na arena, o Arqueiro puxa a flecha da aljava e dispara. O Feiticeiro lança fogo com o cajado e se protege com um escudo mágico.',
+    'O Rato do Celeiro e o Besouro de Casca também ganharam animações próprias.',
+  ] },
+  { id: '2026-11-12-druida-arte-propria', date: '2026-11-12', title: 'A Druida ganhou arte própria na arena', items: [
+    'A Druida corre, lança espinhos, ergue raízes para se defender e se cura com animações quadro a quadro.',
+  ] },
   { id: '2026-11-12-fuga-de-frente', date: '2026-11-12', title: 'Ninguém mais corre de costas', items: [
     'Ao fugir da batalha, o personagem agora vira o corpo antes de correr. O mesmo vale na volta depois de um golpe.',
   ] },
