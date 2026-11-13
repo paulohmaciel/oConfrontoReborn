@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildSheets } from './art-web.mjs';
+import { buildSheets, writeText } from './art-web.mjs';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dir = path.join(root, 'frontend/public/assets/sprites');
 
@@ -91,6 +91,16 @@ export const creatures = [
   c('Apocalypse', 'apocalypse', 'Apocalypse', 'o fim de todas as coisas: uma besta colossal de quatro patas, de corpo negro-arroxeado com veios vermelhos pulsando, chifres enormes voltados para a frente, cauda com espinhos e olhos azul-brancos', 'negro-arroxeado, vermelho pulsante, azul-branco', 'investida devastadora (recuar com os veios acendendo, investir de chifres, impacto com onda de choque, recolher)', 'ergue-se e solta um rugido que escurece tudo em volta', true),
 ];
 
+// Criaturas que atacam de longe: o que voa até o herói (ícone do manifesto do TibiaWiki, até os projéteis terem arte própria).
+// Na arena elas disparam do lugar; as outras correm até o herói. Tem de bater com o ataque descrito na lista acima.
+export const shots = {
+  'Dwarf Soldier': 'Power Bolt', Bonelord: 'Heavy Magic Missile Rune', 'Orc Shaman': 'Sudden Death Rune', Dragon: 'Great Fireball Rune',
+  Amazon: 'Throwing Knife', 'Minotaur Archer': 'Arrow', Valkyrie: 'Spear', 'Minotaur Mage': 'Energy Bomb Rune', 'Dragon Lord': 'Great Fireball Rune',
+  'Fire Elemental': 'Fireball Rune', Witch: 'Poison Bomb Rune', Necromancer: 'Sudden Death Rune', Warlock: 'Heavy Magic Missile Rune',
+  'Elf Scout': 'Arrow', 'Elf Arcanist': 'Heavy Magic Missile Rune', 'Water Elemental': 'Heavy Magic Missile Rune', Infernatil: 'Great Fireball Rune',
+};
+const ranged = m => /para a direita|tiro (de|com)/.test(m.attack);
+
 // Pronta = já tem a versão de site (o original fica em art/sprites).
 const have = name => fs.existsSync(path.join(dir, `${name}.webp`));
 const format = (who, sizeRule) => `Formato obrigatório:
@@ -143,8 +153,11 @@ async function usedBy() {
 async function main() {
   fs.mkdirSync(dir, { recursive: true });
   await buildSheets(root);
-  const sheets = { heroes: Object.fromEntries(heroes.filter(h => have(h.file)).map(h => [h.key, h.file])), monsters: Object.fromEntries(creatures.filter(m => have(m.file)).map(m => [m.key, m.file])) };
-  fs.writeFileSync(path.join(root, 'frontend/src/lib/spriteSheets.json'), JSON.stringify(sheets, null, 2) + '\n');
+  const odd = creatures.filter(m => ranged(m) !== (m.key in shots)).map(m => m.key), lost = Object.keys(shots).filter(k => !creatures.some(m => m.key === k));
+  if (odd.length || lost.length) throw new Error(`scripts/art.mjs: a lista \`shots\` não bate com os ataques descritos: ${[...odd, ...lost].join(', ')}`);
+  const sheets = { heroes: Object.fromEntries(heroes.filter(h => have(h.file)).map(h => [h.key, h.file])), monsters: Object.fromEntries(creatures.filter(m => have(m.file)).map(m => [m.key, m.file])),
+    shots: Object.fromEntries(creatures.filter(m => have(m.file) && shots[m.key]).map(m => [m.file, shots[m.key]])) };
+  writeText(path.join(root, 'frontend/src/lib/spriteSheets.json'), JSON.stringify(sheets, null, 2) + '\n');
   const uses = await usedBy(), all = [...heroes, ...creatures], done = all.filter(a => have(a.file)).length;
   const mark = a => have(a.file) ? 'feito' : 'falta';
   const block = (a, prompt) => `### ${a.name} · \`${a.file}.png\` · ${mark(a)}\n\n\`\`\`\n${prompt}\n\`\`\`\n`;
@@ -191,9 +204,9 @@ ${heroes.map(h => block(h, heroPrompt(h))).join('\n')}
 Os nomes novos são da arte. As criaturas das Eras e de Capriel usam a mesma folha da criatura original.
 
 ${creatures.map(m => block(m, creaturePrompt(m))).join('\n')}`;
-  fs.writeFileSync(path.join(root, 'ART.md'), md);
+  writeText(path.join(root, 'ART.md'), md);
   const row = (a, what, where) => `| \`${a.file}.webp\` | ${a.name}, ${what} | ${where} |`;
-  fs.writeFileSync(path.join(dir, 'CREDITOS.md'), `# Sprites próprios de O Confronto
+  writeText(path.join(dir, 'CREDITOS.md'), `# Sprites próprios de O Confronto
 
 > Arquivo gerado por \`npm run art\` a partir de \`scripts/art.mjs\`.
 
@@ -207,7 +220,7 @@ ${creatures.filter(m => have(m.file)).map(m => row(m, m.boss ? 'chefe' : 'criatu
 ## Formato das folhas
 - 1024 × 1536 px, fundo transparente, 4 colunas × 6 linhas, quadros de 256 × 256 px, personagem virado para a direita.
 - Linhas: 1 parado, 2 avançar, 3 atacar, 4 defender, 5 curar (heróis) ou gesto especial (criaturas), 6 apanhar (2 quadros) e cair (2 quadros).
-- Os arquivos desta pasta são a versão de site (limpa e comprimida por \`npm run art\`); não edite à mão. Os originais, como saíram do gerador, ficam em \`art/sprites/\`.
+- Os arquivos desta pasta são a versão de site (limpa e comprimida por \`npm run art\`); não edite à mão. Em \`retratos/\` fica o retrato de 128 px de cada um (primeiro quadro da folha), usado nas listas fora da arena. Os originais, como saíram do gerador, ficam em \`art/sprites/\`.
 - Os comandos de todas as artes estão em \`ART.md\`, na raiz do projeto. Para ligar uma folha nova, salve o PNG em \`art/sprites/\` com o nome indicado lá e rode \`npm run build\`.
 `);
   console.log(`ART.md: ${all.length} artes, ${done} prontas. Folhas ligadas: ${[...Object.values(sheets.heroes), ...Object.values(sheets.monsters)].join(', ') || 'nenhuma'}.`);

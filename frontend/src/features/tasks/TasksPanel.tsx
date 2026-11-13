@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {fmt} from '../../lib/format';
 import type {Hero,Task,GameConfig,Cmd} from '../../lib/types';
 import Icon from '../../ui/GameIcon';
+import CreatureIcon from '../../ui/CreatureIcon';
 import {useShowMore,ShowMore} from '../../ui/ShowMore';
 import {missionFor} from '../../../../shared/missions';
 type Filter='open'|'active'|'done'|'all';
@@ -36,7 +37,7 @@ function Flat({list,row}:{list:Task[];row:(t:Task)=>JSX.Element}){
 }
 function MissionRow({t,hero,config,busy,fighting,command}:{t:Task;hero:Hero;config:GameConfig|null;busy:boolean;fighting:boolean;command:Cmd}){
   const p=t.playerTasks[0],mission=missionFor(t.monster.name),kills=Math.min(p?.currentKills??0,t.requiredKills),ready=!!p&&!p.isCompleted&&kills>=t.requiredKills;
-  return <article className={`mission ${p?.isCompleted?'done':p?'active':'open'}`}><Icon name={t.monster.name} src={t.monster.spriteUrl} size={48}/>
+  return <article className={`mission ${p?.isCompleted?'done':p?'active':'open'}`}><CreatureIcon name={t.monster.name} src={t.monster.spriteUrl} size={48}/>
     <div className="mission-body"><span className="eyebrow">{mission.giver.toUpperCase()}</span><h3>{mission.title}</h3><p className="mission-story">{mission.story}</p>
       <p className="mission-goal">Derrote {t.requiredKills}× {t.monster.name} · Nv. {t.minLevel}+ · {fmt(Math.floor(t.rewardExp*(config?.xpPercent??100)/100))} XP + {fmt(Math.floor(t.rewardGold*(config?.goldPercent??100)/100))} ouro</p>
       {p&&!p.isCompleted&&<div className="mission-progress"><progress max={t.requiredKills} value={kills} aria-label={`Progresso: ${kills} de ${t.requiredKills}`}/><small>{kills}/{t.requiredKills}</small></div>}</div>
