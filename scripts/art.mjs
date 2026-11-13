@@ -20,7 +20,7 @@ export const heroes = [
     palette: 'verde-musgo, couro marrom, madeira clara', attack: 'tiro com o arco (puxar a flecha da aljava, retesar o arco, soltar a flecha, baixar o arco)', defend: 'defesa (recua meio passo, cruza o arco à frente do corpo e se abaixa)',
     special: 'cura (leva a mão ao peito, brilho verde suave e solto ao redor do corpo, sem caixa nem fundo, e volta à pose)' },
   { key: 'SORCERER', file: 'feiticeiro', name: 'Feiticeiro',
-    look: 'um feiticeiro original, de manto longo azul-noite com bordas roxas e runas douradas, chapéu de aba larga caído para trás, cajado de madeira escura com uma brasa laranja flutuando na ponta. Rosto visível, barba curta grisalha',
+    look: 'um feiticeiro original de rosto maduro e expressão firme, com barba curta grisalha e cabelos brancos longos, penteados inteiramente para trás, sem topete nem franja. Usa manto longo azul-noite com bordas roxas e runas douradas, chapéu de aba larga caído para trás e cajado de madeira escura com uma brasa laranja flutuando na ponta',
     palette: 'azul-noite, roxo, dourado, laranja de brasa', attack: 'magia de fogo (ergue o cajado, a brasa cresce, lança uma bola de fogo para a direita, recolhe o cajado)', defend: 'defesa (finca o cajado no chão e ergue um escudo mágico azul translúcido à frente)',
     special: 'cura (ergue a mão livre, brilho verde suave e solto ao redor do corpo, sem caixa nem fundo, e volta à pose)' },
   { key: 'DRUID', file: 'druida', name: 'Druida',
