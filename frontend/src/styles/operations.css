@@ -178,6 +178,11 @@
 @media (prefers-reduced-motion:reduce){.tier-glow{animation:none}}
 /* O ".bag-slot>span" é o rótulo +N/×N no canto; o ícone com brilho/fogo também é span e fica no lugar normal. */
 .bag-slot>.tier-glow,.bag-slot>.fire-icon{position:relative;right:auto;bottom:auto}
+/* Arte própria dos itens (GIF de 128 px, ui/GameIcon.tsx). O desenho fica no meio do quadro, com margem vazia em volta
+   (medido em 12/11/2026 em 100 GIFs, todos os quadros: nada fora de x 17–108 e y 24–118). O ícone é aproximado 1,28×
+   em torno desse miolo e a margem é cortada, sem mudar o tamanho do ícone na tela. Reduzido com suavização, e não
+   "pixelated", porque encolhe de 128 px para 20 a 72 px. */
+img.sprite.own-art,canvas.sprite.own-art{transform:scale(1.28);transform-origin:44.6% 75%;clip-path:inset(16.4% 12.1% 5.5% 9.8%);image-rendering:auto}
 /* Mercado: filtros e comparação com o equipado (▲/▼ além da cor) */
 .market-filters select{min-width:150px}.market-filters .shop-filter{margin:0}
 .compare{font-size:12px;margin:3px 0 0;opacity:.9}.compare span{margin-right:8px;white-space:nowrap}

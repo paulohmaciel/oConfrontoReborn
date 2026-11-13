@@ -22,6 +22,17 @@ O manifesto grava `status: unavailable` e motivo quando um arquivo falha. A inte
 
 Os 16 ícones em `frontend/public/assets/regions/*.svg` foram desenhados para o projeto (não vêm do TibiaWiki), a pedido do dono. São gerados por `node scripts/region-icons.mjs`; para ajustar um desenho, edite o script e rode de novo. Se um ícone não carregar, a tela usa o sprite do TibiaWiki da região como reserva.
 
+## Ícones dos itens (arte própria animada, 2026-11-12)
+
+Os itens estão trocando o sprite do TibiaWiki por arte própria: um GIF animado de 128 × 128 px por item (24 quadros, 80 ms cada) em `frontend/public/assets/items/`, feito a partir da folha-mestre PNG de 1024 × 1536 px descrita em `art-items.md`.
+
+- **Nome do arquivo** = nome do item no catálogo, em minúsculas, sem acento e com hífen: `Sword` → `sword.gif`, `Crossbow da 1ª Era` → `crossbow-da-1-era.gif`, `Pedra de Proteção` → `pedra-de-protecao.gif`. É a mesma regra dos nomes de `art-items.md` (conferida nos 190 itens).
+- **Ligação**: `npm run art` (o `npm run build` roda antes) executa `scripts/item-art.mjs`, que lista os GIFs da pasta em `frontend/src/lib/itemArt.json`. Basta salvar o GIF com o nome certo e rodar o build; nada mais é registrado à mão. GIF com nome fora do formato (maiúscula, espaço, acento) fica de fora e o script avisa.
+- **Na tela**: `ui/GameIcon.tsx` (com `lib/itemArt.ts`) usa o GIF de quem está na lista. Uma variante de Era ou de Capriel sem figura usa a do item-base. Quem não tem nenhuma continua com o sprite do TibiaWiki, e o ícone também volta para ele se o GIF não carregar.
+- **Tamanho na tela**: o desenho ocupa o meio do quadro, com margem vazia; o ícone é aproximado 1,28× e a margem é cortada (`styles/operations.css`, `.own-art`), para o desenho ficar do tamanho dos sprites antigos sem mudar o tamanho do ícone. Se uma folha nova desenhar fora da área medida (x 17–108, y 24–118 de 128), a ponta é cortada: mantenha a peça centrada como em `art-items.md`.
+- **Animações desligadas** (Configurações): o GIF fica parado no primeiro quadro, que é o ícone estático do item.
+- **Peso**: medido em 110 GIFs, cada um tem de 41 a 156 KB (metade deles acima de 123 KB); o sprite antigo tem de 0,1 a 31 KB (metade abaixo de 1,3 KB). Os ícones de uma lista só são baixados quando chegam perto da tela. As folhas-mestre PNG (cerca de 0,7 MB cada) não são usadas pelo jogo; hoje ficam na mesma pasta e vão junto para o `dist`.
+
 ## Materiais do Ferreiro (2026-10-31)
 
 Importados com `node scripts/import-icons.mjs --verified-sources scripts/sprites-materiais.json`: Iron Ore, Small Ruby, Small Sapphire, Small Emerald, Small Diamond, Gold Ingot, Soul Orb, Demonic Essence (usados), além de Small Amethyst e Small Topaz (reserva). Draconian Steel e Hell Steel não responderam com imagem nesse nome de arquivo e ficaram como `unavailable` no manifesto; nada foi contornado.
